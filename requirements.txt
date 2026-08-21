@@ -1,0 +1,41 @@
+# AI & LLM
+openai
+ollama
+
+# ── NEW: Free Cloud LLM (Google Gemini 2.0 Flash) ─────────────────────────────
+google-genai
+google-generativeai
+python-dotenv
+
+# Phase 1 — Whisper voice (offline STT)
+openai-whisper
+torch
+sounddevice
+numpy
+
+# Phase 2 — Knowledge base (PDF, DOCX support)
+pypdf
+python-docx
+
+# Phase 3 — Web search in RAG
+duckduckgo-search
+
+# Smart memory
+chromadb
+sentence-transformers
+
+# Voice input fallback
+SpeechRecognition
+pyaudio
+
+# PC control & utilities
+requests
+
+# ── NEW: System Context Engine ─────────────────────────────────────────────────
+pygetwindow
+pyperclip
+psutil
+
+# ── NEW: Chrome Browser Automation ─────────────────────────────────────────────
+selenium
+webdriver-manager

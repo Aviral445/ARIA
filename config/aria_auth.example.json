@@ -1,0 +1,20 @@
+{
+  "users": {
+    "admin": {
+      "password_hash": "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918",
+      "role": "admin",
+      "display_name": "Admin",
+      "is_master": true,
+      "created": "2026-01-01"
+    }
+  },
+  "devices": {
+    "main_host": {
+      "device_id": "main_host",
+      "name": "Host PC",
+      "type": "master_host",
+      "ip": "127.0.0.1",
+      "last_seen": "2026-01-01 12:00 PM"
+    }
+  }
+}

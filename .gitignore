@@ -1,0 +1,72 @@
+# =====================================================================
+# Aria AI Assistant — Git Ignore Rules
+# =====================================================================
+
+# Environment variables, Secrets, and API Keys
+.env
+.env.*
+!.env.example
+*.env
+
+# Google OAuth Credentials & Cloud Service Accounts
+config/google_credentials.json
+config/client_secret.json
+google_credentials.json
+client_secret.json
+*credentials*.json
+*client_secret*.json
+!config/client_secret.example.json
+
+# Local Machine Auth & User Runtime Configurations
+config/aria_auth.json
+config/gui_config.json
+!config/aria_auth.example.json
+!config/gui_config.example.json
+
+# Personal Memory, Conversation Timelines & Learning Data
+data/memory_timeline.json
+data/memory_cards.json
+data/reminders.json
+data/goals.json
+data/learned_corrections.json
+data/profiles/
+data/profile.json
+data/smart_home.json
+smart_home.json
+!smart_home.example.json
+
+# Vector Databases and SQLite State
+aria_memory/
+data/aria_memory/
+*.sqlite3
+*.sqlite3-journal
+*.db
+*.db-journal
+
+# Large Model Binaries (Piper TTS ONNX models)
+# Models can be downloaded on setup via piper voices repo
+models/piper_models/*.onnx
+piper_models/*.onnx
+
+# Logs and Audit Trails
+*.log
+aria_mcp_audit.log
+
+# Python Bytecode and Virtual Environments
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+env/
+venv/
+.venv/
+ENV/
+
+# IDE and OS Specific Files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,21 @@
+{
+  "voice_rate": 2,
+  "agent_name": "Aria",
+  "model": "llama3.2",
+  "voice": "Microsoft Zira Desktop",
+  "mic_index": null,
+  "mic_name": "Default Microphone",
+  "whisper_model": "small",
+  "auto_web_search": true,
+  "gemini_api_key": "",
+  "ctx_active_window": true,
+  "ctx_clipboard": true,
+  "ctx_running_apps": true,
+  "ctx_system_stats": true,
+  "ctx_screen_ocr": false,
+  "chrome_use_profile": true,
+  "chrome_headless": false,
+  "theme": "cyber_purple",
+  "groq_api_key": "",
+  "personality_mode": "witty"
+}

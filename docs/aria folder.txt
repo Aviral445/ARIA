@@ -1,0 +1,4 @@
+To stop or restart Aria manually when it's hidden, run:
+taskkill /f /im python.exe
+And to start her again:
+python agent.py

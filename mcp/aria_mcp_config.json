@@ -1,0 +1,11 @@
+{
+  "google_credentials_path": "./google_credentials.json",
+  "allowed_local_paths": [
+    "./data/knowledge",
+    "./documents"
+  ],
+  "gmail_whitelist": [],
+  "drive_whitelist": [],
+  "max_file_size_mb": 10,
+  "audit_log_path": "./aria_mcp_audit.log"
+}
