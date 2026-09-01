@@ -43,10 +43,18 @@ data/aria_memory/
 *.db
 *.db-journal
 
-# Large Model Binaries (Piper TTS ONNX models)
-# Models can be downloaded on setup via piper voices repo
+# Large Model Binaries, ADB Platform Tools & Executables
 models/piper_models/*.onnx
 piper_models/*.onnx
+tools/platform-tools/
+platform-tools/
+*.exe
+*.dll
+
+# Temporary Files, Screenshots & Media Captures
+temp_*.png
+temp_*.jpg
+*.tmp
 
 # Logs and Audit Trails
 *.log
@@ -57,6 +65,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 .pytest_cache/
+.cache/
 env/
 venv/
 .venv/

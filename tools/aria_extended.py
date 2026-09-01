@@ -476,3 +476,37 @@ def play_youtube_audio(query: str) -> str:
         webbrowser.open(url)
         return f"Playing YouTube Music stream for '{clean_q}'!"
     return "Please specify a song or artist to play."
+
+
+# ── 13. NVIDIA NIM CODER AUTOMATION (Qwen 2.5 Coder & DeepSeek Coder) ────────
+def synthesize_and_execute_script(task_description: str, language: str = "powershell", execute: bool = False) -> str:
+    """
+    Synthesizes a system automation script using NVIDIA NIM Coder models
+    (Qwen 2.5 Coder 32B) under the 40 RPM rate limit, with optional safe execution.
+    """
+    try:
+        from core.aria_nvidia import get_nvidia_engine
+        nv = get_nvidia_engine()
+        if not nv.is_configured():
+            return "NVIDIA_API_KEY is required for specialized code synthesis."
+        
+        script = nv.generate_code(instruction=task_description, language=language)
+        
+        if not execute:
+            return f"Generated {language.upper()} script using NVIDIA Coder:\n\n```\n{script}\n```"
+        
+        # Verify safety guardrail before execution
+        safe, reason = nv.check_safety(script)
+        if not safe:
+            return f"Script execution blocked by NVIDIA Safety Guard: {reason}\n\n```\n{script}\n```"
+            
+        if language.lower() == "powershell":
+            from tools.aria_vision_executor import execute_system_powershell
+            success, out = execute_system_powershell(script, timeout_sec=20)
+            status = "Executed successfully" if success else "Execution failed"
+            return f"{status} (NVIDIA NIM Qwen 2.5 Coder):\n{out}"
+        else:
+            return f"Generated script (execution not supported for {language}):\n\n```\n{script}\n```"
+    except Exception as e:
+        return f"Code synthesis error: {e}"
+

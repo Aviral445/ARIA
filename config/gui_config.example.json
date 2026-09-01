@@ -17,5 +17,6 @@
   "chrome_headless": false,
   "theme": "cyber_purple",
   "groq_api_key": "",
+  "nvidia_api_key": "",
   "personality_mode": "witty"
 }

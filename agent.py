@@ -1261,6 +1261,26 @@ def build_system_prompt(profile, memory_ctx, knowledge_ctx, web_ctx,
     return prompt
 
 
+def _nvidia_chat(system: str, messages: list, user_input: str) -> str:
+    """Call NVIDIA NIM API with strict 40 RPM rate limiting and cognitive model failover."""
+    try:
+        from core.aria_nvidia import get_nvidia_engine
+    except ImportError:
+        from aria_nvidia import get_nvidia_engine
+    nv_engine = get_nvidia_engine()
+    if not nv_engine.is_configured():
+        raise RuntimeError("NVIDIA_API_KEY is not configured.")
+    
+    msgs = [{"role": m["role"], "content": m["content"]} for m in messages[-6:]]
+    msgs.append({"role": "user", "content": user_input})
+    return nv_engine.chat(
+        messages=msgs,
+        system_prompt=system,
+        temperature=0.7,
+        max_tokens=450
+    )
+
+
 def _groq_chat(system: str, messages: list, user_input: str) -> str:
     """Call Groq Cloud API (ultra-fast inference ~100-200ms)."""
     from groq import Groq
@@ -1343,9 +1363,19 @@ def chat_with_ai(user_input: str, recent: list, profile: dict,
     except Exception as e_adk:
         print(f"[ADK Notice] {e_adk}")
 
-    # Fallback to local Ollama if offline
+    # Fallback cascade to cloud APIs or local Ollama
     try:
         system = build_system_prompt(profile, "", "", "", "", "")
+        if os.environ.get("NVIDIA_API_KEY"):
+            try:
+                return _nvidia_chat(system, recent, user_input)
+            except Exception:
+                pass
+        if os.environ.get("GROQ_API_KEY"):
+            try:
+                return _groq_chat(system, recent, user_input)
+            except Exception:
+                pass
         return _ollama_chat(system, recent, user_input)
     except Exception as e_ollama:
         return f"Sorry, I had trouble thinking. Error: {e_ollama}"
@@ -1375,8 +1405,10 @@ def main():
         print(f"API Server note: {e}")
 
     # Print which LLM is active
-    if gemini_client:
-        print(f"🧠 Brain: Google Gemini 2.0 Flash (free cloud API)")
+    if os.environ.get("NVIDIA_API_KEY"):
+        print("🧠 Brain: NVIDIA NIM Cloud (Frontier Reasoning & Supercharged Inference)")
+    elif gemini_client:
+        print("🧠 Brain: Google Gemini 2.0 Flash (free cloud API)")
     else:
         print(f"🧠 Brain: Ollama / {OLLAMA_MODEL} (local fallback)")
 

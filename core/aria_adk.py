@@ -347,6 +347,72 @@ def send_whatsapp_message(contact_or_number: str, message: str) -> str:
         return f"WhatsApp messaging error: {e}"
 
 
+def unlock_phone(pin: str = "") -> str:
+    """Wirelessly unlock the user's Android phone over Wi-Fi (wakes screen, swipes up, and enters PIN/password)."""
+    try:
+        from tools.aria_android import get_android_controller
+        ctrl = get_android_controller()
+        return ctrl.unlock_phone(pin=pin if pin else None)
+    except Exception as e:
+        return f"Failed to unlock phone: {e}"
+
+
+def lock_phone() -> str:
+    """Lock the user's Android phone and turn off its screen."""
+    try:
+        from tools.aria_android import get_android_controller
+        return get_android_controller().lock_phone()
+    except Exception as e:
+        return f"Failed to lock phone: {e}"
+
+
+def open_mobile_app(app_name: str) -> str:
+    """Launch an application on the user's Android mobile phone (e.g. 'whatsapp', 'instagram', 'camera', 'spotify', 'youtube', 'phone', 'messages', 'maps')."""
+    try:
+        from tools.aria_android import get_android_controller
+        return get_android_controller().open_app(app_name)
+    except Exception as e:
+        return f"Failed to open '{app_name}' on phone: {e}"
+
+
+def make_mobile_call(phone_number: str) -> str:
+    """Dial and place a phone call to a phone number directly on the user's Android mobile phone."""
+    try:
+        from tools.aria_android import get_android_controller
+        return get_android_controller().make_call(phone_number)
+    except Exception as e:
+        return f"Failed to call {phone_number}: {e}"
+
+
+def send_mobile_sms(phone_number: str, message: str) -> str:
+    """Send an SMS text message to a contact/phone number from the user's Android mobile phone."""
+    try:
+        from tools.aria_android import get_android_controller
+        return get_android_controller().send_sms(phone_number, message)
+    except Exception as e:
+        return f"Failed to send SMS to {phone_number}: {e}"
+
+
+def get_phone_battery() -> str:
+    """Check the battery percentage and charging status of the user's connected Android phone."""
+    try:
+        from tools.aria_android import get_android_controller
+        bat = get_android_controller().get_battery_status()
+        status = "charging" if bat.get("charging") else "not charging"
+        return f"Your phone battery is currently at {bat.get('level', 'Unknown')}% ({status})."
+    except Exception as e:
+        return f"Failed to check phone battery: {e}"
+
+
+def analyze_phone_screen(question: str = "Describe what is on my phone screen") -> str:
+    """Capture a screenshot of the user's Android phone and analyze what is on screen using NVIDIA Vision NIM."""
+    try:
+        from tools.aria_android import get_android_controller
+        return get_android_controller().analyze_phone_screen(query=question)
+    except Exception as e:
+        return f"Failed to inspect phone screen: {e}"
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. ADK TOOL REGISTRY
 # ─────────────────────────────────────────────────────────────────────────────
@@ -379,6 +445,14 @@ ALL_ADK_TOOLS: List[Callable] = [
     set_personality_mode,
     smart_home_toggle,
     send_whatsapp_message,
+    # Mobile Phone Tools
+    unlock_phone,
+    lock_phone,
+    open_mobile_app,
+    make_mobile_call,
+    send_mobile_sms,
+    get_phone_battery,
+    analyze_phone_screen,
 ]
 
 TOOL_NAME_MAP: Dict[str, Callable] = {fn.__name__: fn for fn in ALL_ADK_TOOLS}
@@ -447,6 +521,16 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "accent": "#f59e0b",
         "tools": ["smart_home_toggle", "send_whatsapp_message"],
         "status": "READY"
+    },
+    "mobile": {
+        "id": "mobile",
+        "name": "Mobile & Phone Operative",
+        "role": "Wireless Android ADB & Mobile Device Autonomy",
+        "description": "Wirelessly unlocks phone with PIN, launches mobile apps, inspects phone screen with NVIDIA Vision, dials calls, and reads battery.",
+        "icon": "📱",
+        "accent": "#10b981",
+        "tools": ["unlock_phone", "lock_phone", "open_mobile_app", "make_mobile_call", "send_mobile_sms", "get_phone_battery", "analyze_phone_screen"],
+        "status": "READY"
     }
 }
 
@@ -502,11 +586,13 @@ class AriaADK:
     Core ADK Orchestrator for Aria.
     Coordinates tool execution, multi-agent capabilities, and multi-tier model failover.
     """
-    def __init__(self, gemini_api_key: Optional[str] = None, groq_api_key: Optional[str] = None):
+    def __init__(self, gemini_api_key: Optional[str] = None, groq_api_key: Optional[str] = None, nvidia_api_key: Optional[str] = None):
         self.gemini_api_key = gemini_api_key or os.environ.get("GEMINI_API_KEY", "")
         self.groq_api_key = groq_api_key or os.environ.get("GROQ_API_KEY", "")
+        self.nvidia_api_key = nvidia_api_key or os.environ.get("NVIDIA_API_KEY", "")
         self.gemini_model = "gemini-2.5-flash"
         self.groq_model = "openai/gpt-oss-120b"
+        self.nvidia_model = "meta/llama-3.3-70b-instruct"
         self.ollama_model = "llama3.2"
 
         self._init_clients()
@@ -528,6 +614,20 @@ class AriaADK:
                     self.has_new_genai = False
                 except ImportError:
                     self.genai_client = None
+
+        # NVIDIA NIM Client & 40 RPM Rate Limiter Engine
+        self.nvidia_engine = None
+        if self.nvidia_api_key and self.nvidia_api_key != "your_nvidia_api_key_here":
+            try:
+                try:
+                    from core.aria_nvidia import get_nvidia_engine
+                except ImportError:
+                    from aria_nvidia import get_nvidia_engine
+                self.nvidia_engine = get_nvidia_engine(api_key=self.nvidia_api_key)
+            except Exception as e_nv:
+                print(f"[ADK] NVIDIA NIM engine init notice: {e_nv}")
+                self.nvidia_engine = None
+        self.nvidia_client = self.nvidia_engine._client if self.nvidia_engine else None
 
         # Groq Client
         self.groq_client = None
@@ -727,7 +827,46 @@ class AriaADK:
             except Exception as e_gemini:
                 print(f"[ADK] Gemini engine notice: {e_gemini}")
 
-        # ── 2. SECONDARY: Groq Cloud ──────────────────────────────────────────
+        # ── 2. NVIDIA NIM Cloud (Frontier Reasoning & High Speed, 40 RPM Limiter) ───
+        if self.nvidia_engine and self.nvidia_engine.is_configured():
+            try:
+                # Cognitive routing: If question involves deep logic / math / puzzles -> reason()
+                is_reasoning_heavy = any(k in user_input.lower() for k in ["why", "explain step", "proof", "logic", "algorithm", "solve", "puzzle", "compare", "plan"])
+                is_code_heavy = any(k in user_input.lower() for k in ["write a script", "powershell", "python code", "function", "fix bug", "compile", "regex"])
+
+                if is_reasoning_heavy:
+                    if on_status_callback:
+                        on_status_callback("Routing to DeepSeek-R1 / Nemotron on NVIDIA NIM (Deep Reasoning)...")
+                    return self.nvidia_engine.reason(
+                        prompt=user_input,
+                        system_instruction=system_instruction,
+                        history=history
+                    )
+                elif is_code_heavy:
+                    if on_status_callback:
+                        on_status_callback("Routing to Qwen 2.5 Coder on NVIDIA NIM (Code Synthesis)...")
+                    return self.nvidia_engine.generate_code(
+                        instruction=user_input,
+                        context=f"Conversation context: {str(history[-2:]) if history else ''}"
+                    )
+                else:
+                    if on_status_callback:
+                        on_status_callback("Routing through NVIDIA NIM Cloud (40 RPM Guard)...")
+                    msgs = []
+                    for m in history[-6:]:
+                        msgs.append({"role": m.get("role", "user"), "content": m.get("content", "")})
+                    msgs.append({"role": "user", "content": user_input})
+                    return self.nvidia_engine.chat(
+                        messages=msgs,
+                        model=self.nvidia_model,
+                        system_prompt=system_instruction,
+                        temperature=0.7,
+                        max_tokens=450
+                    )
+            except Exception as e_nvidia:
+                print(f"[ADK] NVIDIA NIM notice ({self.nvidia_model}): {e_nvidia}")
+
+        # ── 3. TERTIARY: Groq Cloud ───────────────────────────────────────────
         if self.groq_client:
             try:
                 if on_status_callback:
@@ -761,7 +900,7 @@ class AriaADK:
                         except Exception:
                             continue
 
-        # ── 3. TERTIARY: Local Ollama (100% Offline) ──────────────────────────
+        # ── 4. QUATERNARY: Local Ollama (100% Offline) ─────────────────────────
         if self.ollama_client:
             try:
                 if on_status_callback:
@@ -788,8 +927,9 @@ class AriaADK:
 # Singleton instance
 _adk_instance: Optional[AriaADK] = None
 
-def get_adk_engine(gemini_key: Optional[str] = None, groq_key: Optional[str] = None) -> AriaADK:
+def get_adk_engine(gemini_key: Optional[str] = None, groq_key: Optional[str] = None, nvidia_key: Optional[str] = None) -> AriaADK:
     global _adk_instance
-    if _adk_instance is None or gemini_key is not None:
-        _adk_instance = AriaADK(gemini_api_key=gemini_key, groq_api_key=groq_key)
+    if _adk_instance is None or gemini_key is not None or nvidia_key is not None or groq_key is not None:
+        _adk_instance = AriaADK(gemini_api_key=gemini_key, groq_api_key=groq_key, nvidia_api_key=nvidia_key)
     return _adk_instance
+

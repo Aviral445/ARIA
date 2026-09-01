@@ -81,6 +81,45 @@ def capture_screen_image() -> Image.Image:
     return im
 
 
+def analyze_screen_with_nvidia(query: str, api_key: str = "") -> str:
+    """
+    Takes a snapshot of the user's screen and sends it to NVIDIA NIM Vision models
+    (Llama 3.2 11B/90B Vision) under the 40 RPM rate limiter.
+    """
+    try:
+        from core.aria_nvidia import get_nvidia_engine
+        nv_engine = get_nvidia_engine(api_key=api_key or os.environ.get("NVIDIA_API_KEY", ""))
+        if not nv_engine.is_configured():
+            return "NVIDIA_API_KEY is not configured in Settings."
+        
+        shot = capture_screen_image()
+        system_instruction = (
+            "You are Aria, viewing the user's live Windows computer screen.\n"
+            "Analyze clearly, concisely, and helpfully what is on the screen in 2 to 4 sentences."
+        )
+        return nv_engine.vision_analyze(image_data=shot, query=query, system_instruction=system_instruction)
+    except Exception as e:
+        return f"NVIDIA NIM Vision analysis error: {e}"
+
+
+def analyze_screen(query: str, gemini_key: str = "", nvidia_key: str = "") -> str:
+    """
+    Unified screen analysis: tries NVIDIA NIM Vision first (with 40 RPM limit),
+    then falls back to Gemini 2.5 Flash if needed.
+    """
+    nv_k = nvidia_key or os.environ.get("NVIDIA_API_KEY", "")
+    if nv_k and nv_k != "your_nvidia_api_key_here":
+        res = analyze_screen_with_nvidia(query, api_key=nv_k)
+        if res and not res.startswith("NVIDIA_API_KEY is not configured") and not "error:" in res.lower():
+            return res
+    
+    gem_k = gemini_key or os.environ.get("GEMINI_API_KEY", "")
+    if gem_k and gem_k != "your_gemini_api_key_here":
+        return analyze_screen_with_gemini(query, api_key=gem_k)
+        
+    return "Please configure your NVIDIA or Gemini API key in Settings to use Screen Vision."
+
+
 def analyze_screen_with_gemini(query: str, api_key: str) -> str:
     """
     Takes a snapshot of the user's screen and sends it to Gemini 2.5 Flash
@@ -125,20 +164,59 @@ def analyze_screen_with_gemini(query: str, api_key: str) -> str:
 
 
 # ── 3. VISUAL UI GROUNDING & CLICKING ────────────────────────────────────────
-def click_ui_element_with_vision(target_desc: str, api_key: str) -> str:
+def click_ui_element_with_vision(target_desc: str, api_key: str = "", nvidia_key: str = "") -> str:
     """
-    Takes a screenshot, asks Gemini 2.5 Flash for the normalized (x, y) coordinates
-    of the target visual element, and clicks on it using pyautogui.
+    Takes a screenshot, locates the target visual element coordinates using
+    NVIDIA NIM Vision or Gemini, and clicks on it using pyautogui.
     """
-    if not api_key:
-        return "Gemini API key required for visual UI clicking."
     if pyautogui is None:
         return "pyautogui required for mouse interaction."
 
-    try:
-        raw_shot = capture_screen_image()
-        screen_w, screen_h = pyautogui.size()
+    raw_shot = capture_screen_image()
+    screen_w, screen_h = pyautogui.size()
 
+    # 1. Try NVIDIA NIM Vision first if available
+    nv_k = nvidia_key or os.environ.get("NVIDIA_API_KEY", "")
+    if nv_k and nv_k != "your_nvidia_api_key_here":
+        try:
+            from core.aria_nvidia import get_nvidia_engine
+            nv_engine = get_nvidia_engine(api_key=nv_k)
+            if nv_engine.is_configured():
+                prompt = (
+                    f"You are a computer vision agent controlling a PC mouse.\n"
+                    f"Target Element: '{target_desc}'\n"
+                    f"Locate the target element in this screenshot.\n"
+                    f"Respond ONLY with a JSON object in this exact format, with no markdown fences:\n"
+                    f'{{"found": true, "x_percent": 0.50, "y_percent": 0.30, "label": "description of button"}}\n'
+                    f"If the element is not found on screen, respond with:\n"
+                    f'{{"found": false, "reason": "why not found"}}'
+                )
+                raw_text = nv_engine.vision_analyze(
+                    image_data=raw_shot,
+                    query=prompt,
+                    system_instruction="You are a precise UI coordinate locator. Output valid JSON only."
+                )
+                raw_text = re.sub(r"^```json\s*", "", raw_text)
+                raw_text = re.sub(r"\s*```$", "", raw_text).strip()
+                data = json.loads(raw_text)
+                if data.get("found"):
+                    x_pct = float(data.get("x_percent", 0.5))
+                    y_pct = float(data.get("y_percent", 0.5))
+                    target_x = int(x_pct * screen_w)
+                    target_y = int(y_pct * screen_h)
+                    pyautogui.moveTo(target_x, target_y, duration=0.3)
+                    pyautogui.click()
+                    label = data.get("label", target_desc)
+                    return f"Found and clicked '{label}' at ({target_x}, {target_y}) using NVIDIA Vision!"
+        except Exception:
+            pass
+
+    # 2. Fallback to Gemini
+    gem_k = api_key or os.environ.get("GEMINI_API_KEY", "")
+    if not gem_k or gem_k == "your_gemini_api_key_here":
+        return "API key required for visual UI clicking (NVIDIA or Gemini)."
+
+    try:
         # Send resized image to Gemini for coordinate estimation
         img_byte_arr = io.BytesIO()
         raw_shot.save(img_byte_arr, format='JPEG', quality=85)
@@ -147,7 +225,7 @@ def click_ui_element_with_vision(target_desc: str, api_key: str) -> str:
         from google import genai
         from google.genai import types
 
-        client = genai.Client(api_key=api_key)
+        client = genai.Client(api_key=gem_k)
         prompt = (
             f"You are a computer vision agent controlling a PC mouse.\n"
             f"Target Element: '{target_desc}'\n"
