@@ -20,6 +20,10 @@ CONFIG_DIR = os.path.join(ROOT_DIR, "config")
 MODELS_DIR = os.path.join(ROOT_DIR, "models")
 DOCS_DIR   = os.path.join(ROOT_DIR, "docs")
 TESTS_DIR  = os.path.join(ROOT_DIR, "tests")
+GAIA_DIR   = os.path.join(ROOT_DIR, "gaia")
+ARIA_EVOLVED_DIR = r"E:\MyAgent" if os.path.exists(r"E:\MyAgent") else os.path.join(ROOT_DIR, "gaia", "sandbox")
+ARIA_BASELINE_FILE = os.path.join(ROOT_DIR, "agent.py")
+ARIA_EVOLVED_FILE = os.path.join(ARIA_EVOLVED_DIR, "aria_evolved.py")
 
 # Environment
 ENV_FILE   = os.path.join(ROOT_DIR, ".env")

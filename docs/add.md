@@ -301,6 +301,12 @@ Export your full conversation history as a formatted Markdown or text file from 
 - **Files affected:** aria_memory.py, aria_gui.py, agent.py
 - **Status:** ✅ DONE
 
+### 51. Human-in-the-Loop Approval Gates
+Risk-tiered confirmation modal and voice prompt before executing consequential or irreversible actions (e.g. file deletion, bulk file modifications, sending external emails/messages, executing shell scripts).
+- **Difficulty:** Medium
+- **Files affected:** aria_gui.py, aria_adk.py, aria_api.py, aria_mcp_server.py
+- **Status:** ⏳ Planned
+
 ---
 
 ## 🔌 Integrations & Connectivity
@@ -331,6 +337,12 @@ Talk to Aria from your phone or tablet with voice and text.
 - **Difficulty:** Hard
 - **Files affected:** aria_api.py
 - **Status:** ✅ DONE
+
+### 52. Expanded Enterprise SaaS Connectors (Slack, GitHub, Jira)
+Add standardized MCP connectors for Slack channel messaging, GitHub issue/PR management, and Jira task tracking to enable full workplace workflow automation.
+- **Difficulty:** Medium
+- **Files affected:** aria_mcp_server.py, mcp/, tools/aria_tools.py
+- **Status:** ⏳ Planned
 
 ---
 
@@ -368,6 +380,12 @@ organizer, emotion tuning, personality modes, multi-profiles, and analytics.
 - **Difficulty:** Medium
 - **Files affected:** tests/test_aria.py
 - **Status:** ✅ DONE
+
+### 53. `aisuite` Multi-Provider Abstraction Layer
+Integrate Andrew Ng's standardized `aisuite` interface as a unified abstraction layer across LLM providers (Anthropic, OpenAI, Gemini, Groq, Ollama) for plug-and-play provider switching.
+- **Difficulty:** Medium
+- **Files affected:** core/agent_core.py, core/aria_adk.py, config/
+- **Status:** ⏳ Planned
 
 ---
 
@@ -447,3 +465,6 @@ Remembers special dates in profile.json and includes greetings in daily briefing
 | 48 | Daily Motivational Opener | Easy | Fun | ✅ DONE |
 | 49 | Jokes & Riddles | Easy | Fun | ✅ DONE |
 | 50 | Birthday Reminders | Easy | Fun | ✅ DONE |
+| 51 | Human-in-the-Loop Approval Gates | Medium | Security | ⏳ Planned |
+| 52 | Enterprise SaaS Connectors (Slack/Jira/GitHub) | Medium | Integration | ⏳ Planned |
+| 53 | `aisuite` Multi-Provider Abstraction | Medium | Performance | ⏳ Planned |

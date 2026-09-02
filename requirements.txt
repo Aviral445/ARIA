@@ -39,3 +39,7 @@ psutil
 # ── NEW: Chrome Browser Automation ─────────────────────────────────────────────
 selenium
 webdriver-manager
+
+# ── High-Fidelity Neural TTS & Audio Playback ────────────────────────────────
+edge-tts
+pygame

@@ -156,19 +156,156 @@ def listen() -> str:
 
 
 # ─────────────────────────────────────────
-#  NEURAL TTS — Piper (natural voice)
+#  HIGH-FIDELITY NEURAL TTS (Edge-TTS Cute Girl + Piper Fallback)
 # ─────────────────────────────────────────
 import wave
 import subprocess as sp
+import asyncio
 
-PIPER_VOICE     = "en_US-amy-medium"
+try:
+    import edge_tts
+    HAS_EDGE_TTS = True
+except ImportError:
+    HAS_EDGE_TTS = False
+
+try:
+    import pygame
+    HAS_PYGAME = True
+except ImportError:
+    HAS_PYGAME = False
+
+EDGE_VOICE = "en-US-AnaNeural"  # Microsoft's high-fidelity cute / young girl neural voice
+PIPER_VOICE = "en_US-amy-medium"
 PIPER_MODEL_DIR = "./piper_models"
+
+
+def clean_text_for_speech(text: str) -> str:
+    """
+    Cleans, normalizes, and smooths text for natural, gap-free, fluent speech synthesis.
+    Eliminates erratic pauses, markdown syntax, weird symbols, and expands contractions/abbreviations.
+    """
+    if not text:
+        return ""
+
+    # 1. Remove markdown links [text](url) -> text
+    text = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', text)
+    # 2. Remove code blocks and inline backticks
+    text = re.sub(r'```[\s\S]*?```', 'code block omitted', text)
+    text = re.sub(r'`([^`]+)`', r'\1', text)
+    # 3. Remove bold/italics asterisks and underscores
+    text = re.sub(r'\*{1,3}([^*]+)\*{1,3}', r'\1', text)
+    text = re.sub(r'_{1,3}([^_]+)_{1,3}', r'\1', text)
+    # 4. Remove headers (# Header)
+    text = re.sub(r'^\s*#{1,6}\s*', '', text, flags=re.MULTILINE)
+    # 5. Remove bullet list markers (- or * or + at line start)
+    text = re.sub(r'^\s*[-*+]\s+', '', text, flags=re.MULTILINE)
+    # 6. Remove numbered lists (1. 2. etc at line start)
+    text = re.sub(r'^\s*\d+[\.\)]\s+', '', text, flags=re.MULTILINE)
+
+    # 7. Expand common contractions & abbreviations for flawless pronunciation
+    abbreviations = {
+        r'\be\.g\.?': 'for example',
+        r'\bi\.e\.?': 'that is',
+        r'\betc\.?': 'et cetera',
+        r'\bvs\.?': 'versus',
+        r'\bapprox\.?': 'approximately',
+        r'\bmin\.?': 'minutes',
+        r'\bsec\.?': 'seconds',
+        r'\bhrs?\.?': 'hours',
+        r'\bdeg\.?': 'degrees',
+        r'\bavg\.?': 'average',
+        r'\bgovt\.?': 'government',
+        r'\bdept\.?': 'department',
+        r'\binfo\b': 'information',
+        r'\bdr\.?': 'Doctor',
+        r'\bmr\.?': 'Mister',
+        r'\bmrs\.?': 'Missus',
+        r'\bms\.?': 'Miss',
+        r'\bprof\.?': 'Professor',
+    }
+    for pattern, repl in abbreviations.items():
+        text = re.sub(pattern, repl, text, flags=re.IGNORECASE)
+
+    # 8. Currency & symbols
+    text = re.sub(r'\$(\d+(?:\.\d+)?)', r'\1 dollars', text)
+    text = re.sub(r'(\d+)%', r'\1 percent', text)
+    text = text.replace('&', ' and ')
+    text = text.replace('@', ' at ')
+    text = text.replace('°C', ' degrees Celsius')
+    text = text.replace('°F', ' degrees Fahrenheit')
+
+    # 9. Clean up erratic punctuation & pauses
+    text = re.sub(r'\.{2,}', '.', text)
+    text = re.sub(r'!{2,}', '!', text)
+    text = re.sub(r'\?{2,}', '?', text)
+    # Strip emojis and non-standard unicode characters
+    text = re.sub(r'[^\w\s.,!?\'"\-:;]', ' ', text)
+    # Normalize dashes and hyphens to commas for gentle natural pauses
+    text = re.sub(r'\s*[-—–]+\s*', ', ', text)
+    # Convert colons and semicolons to commas
+    text = re.sub(r'[:;]', ',', text)
+    # Consolidate multiple spaces and line breaks
+    text = re.sub(r'\s+', ' ', text).strip()
+
+    return text
+
+
+def _play_audio_file(file_path: str) -> bool:
+    """Plays an MP3 or WAV file reliably with clean buffering and proper resource cleanup."""
+    if not os.path.exists(file_path):
+        return False
+
+    if HAS_PYGAME:
+        try:
+            if not pygame.mixer.get_init():
+                pygame.mixer.init()
+            pygame.mixer.music.load(file_path)
+            pygame.mixer.music.play()
+            while pygame.mixer.music.get_busy():
+                pygame.time.Clock().tick(25)
+            pygame.mixer.music.unload()
+            return True
+        except Exception as e:
+            print(f"Pygame playback error: {e}")
+
+    # Fallback to wave / pyaudio if WAV
+    if file_path.endswith(".wav") and HAS_PYAUDIO:
+        try:
+            wf = wave.open(file_path, "rb")
+            p = pyaudio.PyAudio()
+            stream = p.open(
+                format=p.get_format_from_width(wf.getsampwidth()),
+                channels=wf.getnchannels(),
+                rate=wf.getframerate(),
+                output=True
+            )
+            data = wf.readframes(2048)
+            while data:
+                stream.write(data)
+                data = wf.readframes(2048)
+            stream.stop_stream()
+            stream.close()
+            p.terminate()
+            wf.close()
+            return True
+        except Exception as e:
+            print(f"PyAudio playback error: {e}")
+
+    # Fallback to PowerShell SoundPlayer
+    try:
+        sp.call([
+            "PowerShell", "-Command",
+            f"(New-Object Media.SoundPlayer '{file_path}').PlaySync()"
+        ], creationflags=sp.CREATE_NO_WINDOW if os.name == 'nt' else 0)
+        return True
+    except Exception:
+        return False
 
 
 def _ensure_piper_model():
     import os, requests
     os.makedirs(PIPER_MODEL_DIR, exist_ok=True)
-    model_file  = os.path.join(PIPER_MODEL_DIR, f"{PIPER_VOICE}.onnx")
+    model_file = os.path.join(PIPER_MODEL_DIR, f"{PIPER_VOICE}.onnx")
     config_file = os.path.join(PIPER_MODEL_DIR, f"{PIPER_VOICE}.onnx.json")
     if os.path.exists(model_file) and os.path.exists(config_file):
         return model_file
@@ -195,48 +332,93 @@ _piper_model_path = _ensure_piper_model()
 
 
 def speak(text: str):
-    """Speak using Piper neural TTS (Windows TTS fallback)."""
+    """
+    Speak using high-fidelity Little Girl neural TTS (Edge-TTS en-US-AnaNeural)
+    with seamless local Piper neural TTS and Windows SAPI fallback.
+    """
     print(f"\n🤖 {AGENT_NAME}: {text}\n")
-    if not _piper_model_path:
-        clean = text.replace("'", "").replace('"', "")
+
+    # Check DND mode
+    try:
+        import aria_extended
+        if aria_extended.is_dnd_active():
+            return
+    except Exception:
+        pass
+
+    clean_text = clean_text_for_speech(text)
+    if not clean_text:
+        return
+
+    # 1. Primary Engine: Edge-TTS (en-US-AnaNeural — Cute / Little Girl Voice)
+    if HAS_EDGE_TTS:
+        try:
+            rate_mod = 0
+            try:
+                import aria_extended
+                rate_mod = aria_extended.detect_emotion_rate_modifier(clean_text)
+            except Exception:
+                pass
+            rate_str = f"{rate_mod:+d}%" if rate_mod != 0 else "+0%"
+
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
+                mp3_path = tmp.name
+
+            async def _synth():
+                comm = edge_tts.Communicate(clean_text, voice=EDGE_VOICE, rate=rate_str, pitch="+0Hz")
+                await comm.save(mp3_path)
+
+            asyncio.run(_synth())
+            if os.path.exists(mp3_path) and os.path.getsize(mp3_path) > 0:
+                played = _play_audio_file(mp3_path)
+                try:
+                    os.remove(mp3_path)
+                except Exception:
+                    pass
+                if played:
+                    return
+        except Exception:
+            # Fall back to Piper if offline or connection fails
+            pass
+
+    # 2. Offline Fallback: Optimized Piper Neural TTS
+    if _piper_model_path:
+        try:
+            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
+                wav_path = tmp.name
+            piper_cmd = [
+                "piper",
+                "--model", _piper_model_path,
+                "--sentence-silence", "0.05",
+                "--length-scale", "0.88",
+                "--output_file", wav_path
+            ]
+            process = sp.Popen(piper_cmd, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE, text=True)
+            stdout, stderr = process.communicate(input=clean_text)
+            if process.returncode == 0 and os.path.exists(wav_path):
+                _play_audio_file(wav_path)
+                try:
+                    os.remove(wav_path)
+                except Exception:
+                    pass
+                return
+            else:
+                print(f"⚠️ Piper error: {stderr}")
+        except Exception as e:
+            print(f"Piper TTS error: {e}")
+
+    # 3. Tertiary Fallback: Windows PowerShell Speech Synthesizer
+    try:
+        safe_clean = clean_text.replace("'", "").replace('"', "")
         sp.call([
             "PowerShell", "-Command",
             f"Add-Type -AssemblyName System.Speech; "
             f"$s = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
             f"$s.SelectVoice('Microsoft Zira Desktop'); "
-            f"$s.Rate = 2; $s.Speak('{clean}')"
-        ])
-        return
-    try:
-        with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
-            wav_path = tmp.name
-        piper_cmd = ["piper", "--model", _piper_model_path, "--output_file", wav_path]
-        process = sp.Popen(piper_cmd, stdin=sp.PIPE, stdout=sp.PIPE, stderr=sp.PIPE, text=True)
-        stdout, stderr = process.communicate(input=text)
-        if process.returncode == 0 and os.path.exists(wav_path):
-            wf = wave.open(wav_path, "rb")
-            p  = pyaudio.PyAudio()
-            stream = p.open(
-                format=p.get_format_from_width(wf.getsampwidth()),
-                channels=wf.getnchannels(),
-                rate=wf.getframerate(),
-                output=True)
-            data = wf.readframes(1024)
-            while data:
-                stream.write(data)
-                data = wf.readframes(1024)
-            stream.stop_stream()
-            stream.close()
-            p.terminate()
-            wf.close()
-            try:
-                os.remove(wav_path)
-            except Exception:
-                pass
-        else:
-            print(f"⚠️ Piper error: {stderr}")
+            f"$s.Rate = 2; $s.Speak('{safe_clean}')"
+        ], creationflags=sp.CREATE_NO_WINDOW if os.name == 'nt' else 0)
     except Exception as e:
-        print(f"TTS error: {e}")
+        print(f"TTS fallback error: {e}")
 
 
 # ─────────────────────────────────────────
@@ -1195,16 +1377,22 @@ def maybe_update_profile(text: str, profile: dict):
 # ─────────────────────────────────────────
 #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
 # ─────────────────────────────────────────
-DEFAULT_SYSTEM_PROMPT = """You are {name}, a warm, witty, and highly capable personal AI assistant.
+DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
 You are speaking directly to {user} via voice. Current time: {time}
 
 RULES:
-- Replies must be SHORT — 2 to 4 sentences max. This is voice.
-- Never use bullet points, markdown, or formatting. Speak naturally.
-- Use memory and documents below to give personalised answers.
+- Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+- Sound sweet, energetic, caring, and cheerful.
+- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+- Never use bullet points, markdown symbols (*, #, `), URLs, or robotic structured lists.
+- Speak numbers, units, and dates conversationally.
+- Use memory and documents below to give personalized answers.
 - Naturally reference things you remember from past conversations.
 - Be honest if you don't know something.
-- If the user asks you to use Chrome (research, browse, read a page), say you are on it.
+- If the user asks you to use Chrome or assist with apps, gladly help out!
 
 ABOUT THE USER:
 - Name: {user}

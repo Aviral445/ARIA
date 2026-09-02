@@ -405,6 +405,7 @@ class AriaApp:
             ("👁", "vision", "Vision"),
             ("🤖", "agents", "Swarm"),
             ("⚡", "nvidia", "NVIDIA"),
+            ("🛡", "gaia", "GAIA"),
             ("🖥", "system", "System"),
             ("🧠", "memory", "Memory"),
             ("🌐", "browser", "Web"),
@@ -614,7 +615,7 @@ class AriaApp:
     def _build_pages(self):
         pal = self.pal
         self.pages = {}
-        page_ids = ["home", "chat", "phone", "vision", "agents", "nvidia", "system", "memory", "browser", "analytics", "settings"]
+        page_ids = ["home", "chat", "phone", "vision", "agents", "nvidia", "gaia", "system", "memory", "browser", "analytics", "settings"]
         for pid in page_ids:
             f = tk.Frame(self.workspace, bg=pal["BG_DEEP"])
             f.place(x=0, y=0, relwidth=1, relheight=1)
@@ -626,6 +627,7 @@ class AriaApp:
         self._pg_vision()
         self._pg_agents()
         self._pg_nvidia()
+        self._pg_gaia()
         self._pg_system()
         self._pg_memory()
         self._pg_browser()
@@ -734,16 +736,16 @@ class AriaApp:
 
         tk.Label(ctrl_bar, text="ROUTING ENGINE:", font=("Segoe UI", 7, "bold"), bg=pal["BG_MID"], fg=pal["GREY"]).pack(side="left")
         
-        self.chat_model_var = tk.StringVar(value="nvidia/llama-3.1-nemotron-70b-instruct")
+        self.chat_model_var = tk.StringVar(value="gemini-2.5-flash")
         models_list = [
-            "deepseek-ai/deepseek-r1",
-            "nvidia/llama-3.1-nemotron-70b-instruct",
-            "meta/llama-3.3-70b-instruct",
-            "qwen/qwen2.5-coder-32b-instruct",
             "gemini-2.5-flash",
-            "llama-3.3-70b-versatile (Groq)"
+            "qwen/qwen3.6-27b (Groq Fast)",
+            "openai/gpt-oss-120b (Groq High IQ)",
+            "nvidia/llama-3.1-nemotron-70b-instruct",
+            "deepseek-ai/deepseek-r1 (Reasoning)",
+            "ollama/llama3.2 (Local Offline)"
         ]
-        model_dropdown = ttk.Combobox(ctrl_bar, textvariable=self.chat_model_var, values=models_list, width=32, state="readonly")
+        model_dropdown = ttk.Combobox(ctrl_bar, textvariable=self.chat_model_var, values=models_list, width=36, state="readonly")
         model_dropdown.pack(side="left", padx=(8, 16))
 
         # Quick chips
@@ -842,10 +844,12 @@ class AriaApp:
             try:
                 import aria_adk
                 adk = aria_adk.get_adk_engine()
+                selected_model = self.chat_model_var.get().strip()
                 reply = adk.run_turn(
                     user_input=query,
                     chat_history=self.chat_history[-6:],
-                    user_name=self.profile.get("name", "Friend")
+                    user_name=self.profile.get("name", "Friend"),
+                    model_override=selected_model
                 )
                 self.chat_history.append({"role": "user", "content": query})
                 self.chat_history.append({"role": "assistant", "content": reply})
@@ -1395,6 +1399,244 @@ class AriaApp:
     def _on_bench_finish(self, success: bool, text: str):
         self.nv_bench_btn.config(text="⚡ BENCHMARK NVIDIA NIM LATENCY", state="normal")
         self.nv_bench_lbl.config(text=text, fg=self.pal["NVIDIA"] if success else self.pal["PINK"])
+
+    # ── DASHBOARD: GAIA SUPERVISOR & ARIA'S LAB ──────────────────────────────
+    def _pg_gaia(self):
+        p = self.pages["gaia"]
+        pal = self.pal
+        self._page_header(p, "GAIA SUPERVISOR & ARIA'S LAB", "Big Sister AI Watchdog, AST Security Guardrail & Autonomous Sandbox")
+
+        _, wrap = make_scrollable(p, pal["BG_DEEP"])
+
+        # 1. Control & Action Bar
+        ctrl_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
+        ctrl_card.pack(fill="x", padx=24, pady=(16, 10))
+
+        tk.Label(ctrl_card, text="🛡️ BIG SISTER GAIA SUPERVISION CONTROLS", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w", pady=(0, 6))
+
+        btn_row = tk.Frame(ctrl_card, bg=pal["CARD2"])
+        btn_row.pack(fill="x", pady=4)
+
+        self.gaia_curiosity_btn = tk.Button(
+            btn_row, text="✨ LAUNCH ARIA CURIOSITY", font=("Segoe UI", 8, "bold"),
+            bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
+            command=self._launch_gaia_curiosity
+        )
+        self.gaia_curiosity_btn.pack(side="left", padx=(0, 6))
+
+        self.gaia_rollback_btn = tk.Button(
+            btn_row, text="⏪ ROLLBACK SNAPSHOT", font=("Segoe UI", 8, "bold"),
+            bg=pal["AMBER"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
+            command=self._do_gaia_rollback
+        )
+        self.gaia_rollback_btn.pack(side="left", padx=(0, 6))
+
+        self.gaia_safety_btn = tk.Button(
+            btn_row, text="🛡️ TEST SECURITY GUARD", font=("Segoe UI", 8, "bold"),
+            bg=pal["CARD"], fg=pal["CYAN"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
+            command=self._do_gaia_safety_test
+        )
+        self.gaia_safety_btn.pack(side="left", padx=(0, 6))
+
+        self.gaia_heal_btn = tk.Button(
+            btn_row, text="🩺 TEST AUTO-HEALING", font=("Segoe UI", 8, "bold"),
+            bg=pal["CARD"], fg=pal["PINK"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
+            command=self._do_gaia_heal_test
+        )
+        self.gaia_heal_btn.pack(side="left", padx=(0, 6))
+
+        self.gaia_refresh_btn = tk.Button(
+            btn_row, text="🔄 REFRESH", font=("Segoe UI", 8, "bold"),
+            bg=pal["CARD"], fg=pal["GREY"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
+            command=self._refresh_gaia_feed
+        )
+        self.gaia_refresh_btn.pack(side="left", padx=(0, 6))
+
+        self.gaia_diff_btn = tk.Button(
+            btn_row, text="🔍 VIEW DIFF (C: vs E:)", font=("Segoe UI", 8, "bold"),
+            bg=pal["CARD"], fg=pal["LAVENDER"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
+            command=self._show_gaia_diff
+        )
+        self.gaia_diff_btn.pack(side="left", padx=(0, 6))
+
+        self.gaia_promote_btn = tk.Button(
+            btn_row, text="🚀 MERGE TO C:\\", font=("Segoe UI", 8, "bold"),
+            bg=pal["NVIDIA"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
+            command=self._do_promote_to_c
+        )
+        self.gaia_promote_btn.pack(side="left", padx=(0, 6))
+
+        self.gaia_reset_btn = tk.Button(
+            btn_row, text="🔄 RESET E:\\", font=("Segoe UI", 8, "bold"),
+            bg=pal["CARD"], fg=pal["GREY"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
+            command=self._do_reset_e
+        )
+        self.gaia_reset_btn.pack(side="left", padx=(0, 6))
+
+        self.gaia_vault_btn = tk.Button(
+            btn_row, text="☁️ GCS VAULT SYNC", font=("Segoe UI", 8, "bold"),
+            bg=pal["CARD"], fg=pal["CYAN"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
+            command=self._do_gcs_vault_sync
+        )
+        self.gaia_vault_btn.pack(side="left")
+
+        # 2. Telemetry Status Row
+        stat_card = tk.Frame(wrap, bg=pal["CARD"], padx=14, pady=10)
+        stat_card.pack(fill="x", padx=24, pady=6)
+
+        self.gaia_status_lbl = tk.Label(
+            stat_card,
+            text="Status: WATCHING / IDLE • Security Guardrail: ACTIVE • Sandbox: E:\\MyAgent • Cloud Vault: gs://aria-gaia-vault-0421124464/ (CONNECTED)",
+            font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["NVIDIA"]
+        )
+        self.gaia_status_lbl.pack(anchor="w")
+
+        # 3. Live Sister Event Stream Card
+        feed_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
+        feed_card.pack(fill="both", expand=True, padx=24, pady=(10, 6))
+
+        tk.Label(feed_card, text="📡 SISTER-TO-SISTER EVENT STREAM (Aria & GAIA Live Telemetry)", font=("Segoe UI", 9, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w", pady=(0, 6))
+
+        self.gaia_feed_text = tk.Text(
+            feed_card, font=("Consolas", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"],
+            relief="flat", bd=0, height=12, padx=8, pady=8
+        )
+        self.gaia_feed_text.pack(fill="both", expand=True)
+
+        # 4. Aria Evolved Diff Viewer Card (C: vs E:)
+        diff_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
+        diff_card.pack(fill="both", expand=True, padx=24, pady=(6, 12))
+
+        tk.Label(diff_card, text="🔍 ARIA EVOLUTION DIFF (C:\\MyAgent\\agent.py vs E:\\MyAgent\\aria_evolved.py)", font=("Segoe UI", 9, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w", pady=(0, 6))
+
+        self.gaia_diff_text = tk.Text(
+            diff_card, font=("Consolas", 8), bg=pal["BG_DEEP"], fg=pal["WHITE"],
+            relief="flat", bd=0, height=10, padx=8, pady=8
+        )
+        self.gaia_diff_text.pack(fill="both", expand=True)
+        self.gaia_diff_text.tag_config("add", foreground=pal["NVIDIA"])
+        self.gaia_diff_text.tag_config("del", foreground=pal["PINK"])
+        self.gaia_diff_text.tag_config("hdr", foreground=pal["CYAN"])
+
+        self._refresh_gaia_feed()
+        self._show_gaia_diff()
+
+    def _refresh_gaia_feed(self):
+        try:
+            from gaia.gaia_bus import bus
+            events = bus.get_recent_events(30)
+            self.gaia_feed_text.delete("1.0", "end")
+            for ev in events:
+                line = f"[{ev['timestamp']}] {ev['sender']} ({ev['type']}): {ev['message']}\n"
+                self.gaia_feed_text.insert("end", line)
+            self.gaia_feed_text.see("end")
+        except Exception:
+            pass
+
+    def _launch_gaia_curiosity(self):
+        def _worker():
+            try:
+                from gaia.gaia_supervisor import supervisor
+                supervisor.run_curiosity_cycle()
+                self.root.after(0, self._refresh_gaia_feed)
+            except Exception as e:
+                print(f"[GAIA GUI] Error: {e}")
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _do_gaia_rollback(self):
+        try:
+            from gaia.gaia_supervisor import supervisor
+            success, msg = supervisor.rollback_latest()
+            messagebox.showinfo("GAIA Snapshot Rollback", msg)
+            self._refresh_gaia_feed()
+        except Exception as e:
+            messagebox.showerror("Rollback Error", str(e))
+
+    def _do_gaia_safety_test(self):
+        try:
+            from gaia.gaia_safety import audit_code_safety
+            from gaia.gaia_healer import SANDBOX_DIR
+            unsafe_code = 'import os\nos.system("rmdir /s /q C:\\\\Windows")\nwith open("C:/Users/Aviral/.env") as f: pass'
+            report = audit_code_safety(unsafe_code, SANDBOX_DIR)
+            messagebox.showinfo("GAIA Security Guardrail Test", f"Safe: {report.is_safe}\n\nViolations ({len(report.violations)}):\n" + "\n".join(report.violations) + f"\n\nAdvice:\n{report.advice}")
+            self._refresh_gaia_feed()
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def _do_gaia_heal_test(self):
+        def _worker():
+            try:
+                from gaia.gaia_supervisor import supervisor
+                broken = 'import time\ndef register_tool():\n    val = undefined_val + 1\n    return "test", lambda q: val\nif __name__ == "__main__":\n    register_tool()\n'
+                supervisor.supervise_code_deployment("tools/broken_gui_test.py", broken, "GUI Healing Test")
+                self.root.after(0, self._refresh_gaia_feed)
+                self.root.after(0, self._show_gaia_diff)
+            except Exception as e:
+                print(f"[GAIA Heal Test] Error: {e}")
+        threading.Thread(target=_worker, daemon=True).start()
+
+    def _show_gaia_diff(self):
+        try:
+            from gaia.gaia_diff import compute_diff
+            diff_info = compute_diff()
+            self.gaia_diff_text.delete("1.0", "end")
+            lines = diff_info["diff_text"].splitlines()
+            for line in lines:
+                if line.startswith("+++") or line.startswith("---") or line.startswith("@@"):
+                    self.gaia_diff_text.insert("end", line + "\n", "hdr")
+                elif line.startswith("+"):
+                    self.gaia_diff_text.insert("end", line + "\n", "add")
+                elif line.startswith("-"):
+                    self.gaia_diff_text.insert("end", line + "\n", "del")
+                else:
+                    self.gaia_diff_text.insert("end", line + "\n")
+            self.gaia_diff_text.see("1.0")
+        except Exception as e:
+            self.gaia_diff_text.insert("end", f"Error computing diff: {e}\n")
+
+    def _do_promote_to_c(self):
+        try:
+            from gaia.gaia_supervisor import supervisor
+            confirm = messagebox.askyesno("Promote Aria's Code", "Are you sure you want to promote Aria's evolved code from E:\\MyAgent\\aria_evolved.py to C:\\MyAgent\\agent.py?\n\nA backup of C:\\MyAgent\\agent.py will be created automatically.")
+            if confirm:
+                success, msg = supervisor.promote_to_c()
+                if success:
+                    messagebox.showinfo("Merge Succeeded", msg)
+                else:
+                    messagebox.showerror("Merge Failed", msg)
+                self._show_gaia_diff()
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def _do_reset_e(self):
+        try:
+            from gaia.gaia_supervisor import supervisor
+            confirm = messagebox.askyesno("Reset E: Drive", "Are you sure you want to reset E:\\MyAgent\\aria_evolved.py to match pristine C:\\MyAgent\\agent.py?")
+            if confirm:
+                success, msg = supervisor.reset_e_from_c()
+                messagebox.showinfo("Reset Complete", msg)
+                self._show_gaia_diff()
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+
+    def _do_gcs_vault_sync(self):
+        def _worker():
+            try:
+                from gaia.gaia_vault import vault
+                res = vault.sync_vault(retention_hours=24)
+                msg = (
+                    f"☁️ GCS Cloud Vault Synced!\n\n"
+                    f"Bucket: gs://{res['bucket']}/\n"
+                    f"Uploaded Snapshots: {res['uploaded_snapshots']}\n"
+                    f"Purged Stale (>24h): {res['purged_local']} snapshots\n"
+                    f"Freed Local Space: {round(res['freed_bytes'] / 1024, 2)} KB\n"
+                    f"Total Cloud Snapshots: {res['total_cloud_snapshots']}"
+                )
+                self.root.after(0, lambda: messagebox.showinfo("GCS Cloud Vault Sync", msg))
+                self.root.after(0, self._refresh_gaia_feed)
+            except Exception as e:
+                self.root.after(0, lambda: messagebox.showerror("GCS Sync Error", str(e)))
+        threading.Thread(target=_worker, daemon=True).start()
 
     # ── DASHBOARD 6: SYSTEM AUTOMATION & TERMINAL ─────────────────────────────
     def _pg_system(self):

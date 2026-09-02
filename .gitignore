@@ -79,3 +79,11 @@ ENV/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# GAIA Runtime Events, Sandbox & Temp Audio
+gaia/events.json
+gaia/sandbox/
+*.mp3
+*.wav
+snapshots/
+diffs/
