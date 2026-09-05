@@ -873,12 +873,55 @@ class AriaApp:
         time_fg = pal["LAVENDER"] if is_user else pal["GREY"]
         tk.Label(hdr, text=f"  {time.strftime('%I:%M %p')}", font=("Segoe UI", 9), bg=bubble_bg, fg=time_fg).pack(side="left")
 
+        # Copy to Clipboard Action
+        def _copy_message_text(btn=None, content=text):
+            try:
+                if HAS_PYPERCLIP:
+                    pyperclip.copy(content)
+                self.root.clipboard_clear()
+                self.root.clipboard_append(content)
+                self.root.update()
+                if btn:
+                    btn.config(text="✓ Copied!", fg=pal["GREEN"])
+                    self.root.after(1400, lambda: btn.config(text="📋 Copy", fg=pal["GREY"]))
+            except Exception:
+                pass
+
+        # Sleek Copy Button in Header
+        copy_btn = tk.Button(
+            hdr, text="📋 Copy", font=("Segoe UI", 8, "bold"),
+            bg=bubble_bg, fg=pal["GREY"], activebackground=bubble_bg,
+            activeforeground=pal["CYAN"], relief="flat", bd=0, padx=6, pady=0,
+            cursor="hand2", command=lambda: _copy_message_text(copy_btn)
+        )
+        copy_btn.pack(side="right", padx=(8, 0))
+
+        # Hover highlights for copy button
+        copy_btn.bind("<Enter>", lambda e: copy_btn.config(fg=pal["CYAN"]))
+        copy_btn.bind("<Leave>", lambda e: copy_btn.config(fg=pal["GREY"]) if copy_btn.cget("text") == "📋 Copy" else None)
+
         # Formatted Body Text (11pt: clear, readable, zero eye strain)
         msg_lbl = tk.Label(
             bubble, text=text, font=("Segoe UI", 11), bg=bubble_bg, fg=pal["WHITE"],
             wraplength=820, justify="left"
         )
         msg_lbl.pack(anchor="w")
+
+        # Right-Click Context Menu for message block
+        def _show_context_menu(event):
+            menu = tk.Menu(self.root, tearoff=0, bg=pal["CARD2"], fg=pal["WHITE"],
+                           activebackground=pal["GLOW"], activeforeground=pal["BG_DEEP"],
+                           font=("Segoe UI", 9))
+            menu.add_command(label="📋 Copy Message Text", command=lambda: _copy_message_text(copy_btn))
+            menu.add_command(label="✏️ Quote in Chat Bar", command=lambda: (
+                self.chat_main_entry.delete(0, "end"),
+                self.chat_main_entry.insert(0, f"> {text[:80]}...\n" if len(text) > 80 else f"> {text}\n"),
+                self.chat_main_entry.focus()
+            ))
+            menu.tk_popup(event.x_root, event.y_root)
+
+        for w in (bubble, msg_lbl, hdr):
+            w.bind("<Button-3>", _show_context_menu)
 
         self.chat_canvas.update_idletasks()
         self.chat_canvas.yview_moveto(1.0)
