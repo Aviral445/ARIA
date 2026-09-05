@@ -182,6 +182,8 @@ def main():
     parser.add_argument("--reset", action="store_true", help="Reset E:\\MyAgent\\aria_evolved.py to match pristine C: baseline")
     parser.add_argument("--vault-status", action="store_true", help="Show Google Cloud Storage Vault status and storage savings")
     parser.add_argument("--vault-sync", action="store_true", help="Upload local snapshots to GCS and purge stale local files")
+    parser.add_argument("--thoughts", type=str, nargs="?", const="5", help="Inspect Aria's inner thoughts and GAIA's labels (default: 5)")
+    parser.add_argument("--thoughts-stats", action="store_true", help="View inner mind emotional and thought statistics")
 
     args = parser.parse_args()
 
@@ -207,8 +209,24 @@ def main():
         cmd_vault_status()
     elif args.vault_sync:
         cmd_vault_sync()
+    elif args.thoughts is not None:
+        try:
+            from inner_mind.thought_cli import main as inner_cli
+            n = int(args.thoughts) if args.thoughts.isdigit() else 5
+            sys.argv = ["thought_cli.py", "--last", str(n)]
+            inner_cli()
+        except Exception as e:
+            print(f"Error loading inner mind thoughts: {e}")
+    elif args.thoughts_stats:
+        try:
+            from inner_mind.thought_cli import main as inner_cli
+            sys.argv = ["thought_cli.py", "--stats"]
+            inner_cli()
+        except Exception as e:
+            print(f"Error loading inner mind stats: {e}")
     else:
         cmd_status()
+
 
 
 if __name__ == "__main__":

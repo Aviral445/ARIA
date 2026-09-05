@@ -309,7 +309,7 @@ class AriaNvidia:
         messages: List[Dict[str, str]],
         model: Optional[str] = None,
         temperature: float = 0.7,
-        max_tokens: int = 450,
+        max_tokens: int = 1024,
         system_prompt: Optional[str] = None
     ) -> str:
         """
@@ -637,12 +637,32 @@ class AriaNvidia:
         return stats
 
 
-# Global Singleton Instance
+# Global Singleton Instances
 _nvidia_engine: Optional[AriaNvidia] = None
+_gaia_nvidia_engine: Optional[AriaNvidia] = None
 
 def get_nvidia_engine(api_key: Optional[str] = None) -> AriaNvidia:
-    """Returns or initializes the global AriaNvidia singleton."""
+    """Returns or initializes Aria's global AriaNvidia singleton."""
     global _nvidia_engine
     if _nvidia_engine is None or (api_key and api_key != _nvidia_engine.api_key):
         _nvidia_engine = AriaNvidia(api_key=api_key)
     return _nvidia_engine
+
+
+def get_gaia_nvidia_engine(api_key: Optional[str] = None) -> AriaNvidia:
+    """
+    Returns or initializes Big Sister GAIA's dedicated AriaNvidia engine.
+    Uses GAIA_NVIDIA_API_KEY from .env (with fallback to NVIDIA_API_KEY)
+    and has its own isolated 40 RPM sliding-window limiter.
+    """
+    global _gaia_nvidia_engine
+    if api_key is None:
+        key = os.environ.get("GAIA_NVIDIA_API_KEY", "").strip()
+        if not key or key == "your_gaia_nvidia_key_here":
+            key = os.environ.get("NVIDIA_API_KEY", "").strip()
+        api_key = key
+
+    if _gaia_nvidia_engine is None or (api_key and api_key != _gaia_nvidia_engine.api_key):
+        _gaia_nvidia_engine = AriaNvidia(api_key=api_key)
+    return _gaia_nvidia_engine
+

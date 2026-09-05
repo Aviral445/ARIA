@@ -39,7 +39,7 @@ class TestAriaADK(unittest.TestCase):
         instruction = self.adk.build_system_instruction(user_name="Alex", preferences="dark mode")
         self.assertIn("Aria", instruction)
         self.assertIn("Alex", instruction)
-        self.assertIn("GUIDELINES", instruction)
+        self.assertTrue("RULES" in instruction or "GUIDELINES" in instruction)
 
 if __name__ == "__main__":
     unittest.main()

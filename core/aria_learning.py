@@ -52,20 +52,42 @@ def add_custom_alias(trigger: str, target_action: str) -> str:
     return f"Got it! Whenever you say '{trigger}', I will execute '{target_action}'."
 
 def get_learned_context_prompt() -> str:
-    """Formats all learned rules and corrections for prompt injection."""
+    """Formats all learned rules, GAIA sister lessons, and RL game context for prompt injection."""
     data = _load_corrections()
     rules = data.get("rules", [])
     mappings = data.get("custom_mappings", {})
     
-    if not rules and not mappings:
-        return ""
-        
-    lines = ["\n[CONTINUOUS LEARNING & CORRECTIONS RULES]"]
-    for r in rules:
-        lines.append(f"- {r}")
-    for k, v in mappings.items():
-        lines.append(f"- Shortcut: When user says '{k}', do '{v}'.")
-    lines.append("[END CORRECTIONS RULES]\n")
+    lines = []
+    if rules or mappings:
+        lines.append("[CONTINUOUS LEARNING & CORRECTIONS RULES]")
+        for r in rules:
+            lines.append(f"- {r}")
+        for k, v in mappings.items():
+            lines.append(f"- Shortcut: When user says '{k}', do '{v}'.")
+        lines.append("[END CORRECTIONS RULES]")
+
+    # Load Big Sister GAIA lessons
+    try:
+        from core.paths import ARIA_EVOLVED_DIR
+        sister_file = os.path.join(ARIA_EVOLVED_DIR, "sister_learning.json")
+        if os.path.exists(sister_file):
+            with open(sister_file, "r", encoding="utf-8") as f:
+                lessons = json.load(f)
+                if lessons:
+                    lines.append("\n[GAIA BIG SISTER LESSONS LEARNED]")
+                    for l in lessons[-4:]:
+                        lines.append(f"- [{l.get('solver', 'GAIA')} | {l.get('error_summary', 'Lesson')}]: {l.get('lesson', '')}")
+                    lines.append("[END SISTER LESSONS]")
+    except Exception:
+        pass
+
+    # Load Reinforcement Learning Game Status
+    try:
+        from gaia.gaia_rl import rl_game
+        lines.append(rl_game.get_prompt_context())
+    except Exception:
+        pass
+
     return "\n".join(lines)
 
 def detect_and_learn_feedback(user_text: str, last_response: str) -> tuple[bool, str]:

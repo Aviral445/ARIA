@@ -148,8 +148,23 @@ class GaiaHealer:
 
     # ── 2. LLM CALL FOR HEALING ───────────────────────────────────────────────
     def _call_llm_for_fix(self, prompt: str) -> str:
-        """Attempts available LLM providers (Gemini, Groq, NVIDIA, Ollama) to fix code."""
-        # Try Gemini
+        """Attempts Big Sister GAIA's dedicated NVIDIA NIM engine first, then fails over to Gemini, Groq, Ollama."""
+        # 1. Primary: Dedicated NVIDIA NIM Engine for GAIA (Isolated 40 RPM quota)
+        try:
+            from core.aria_nvidia import get_gaia_nvidia_engine
+            gaia_nv = get_gaia_nvidia_engine()
+            if gaia_nv and gaia_nv.is_configured():
+                # Prefer Qwen 2.5 Coder 32B for deep code diagnosis and healing
+                resp = gaia_nv.generate_code(
+                    instruction=prompt,
+                    context="Fix the broken Python script and output ONLY clean, working code."
+                )
+                if resp:
+                    return resp.strip()
+        except Exception as ex_nv:
+            print(f"[GAIA Healer] NVIDIA NIM notice: {ex_nv}")
+
+        # 2. Secondary: Gemini 2.5 Flash
         gem_key = os.environ.get("GEMINI_API_KEY", "")
         if gem_key:
             try:
@@ -164,7 +179,7 @@ class GaiaHealer:
             except Exception:
                 pass
 
-        # Try Groq
+        # 3. Tertiary: Groq Cloud
         groq_key = os.environ.get("GROQ_API_KEY", "")
         if groq_key:
             try:
@@ -180,7 +195,7 @@ class GaiaHealer:
             except Exception:
                 pass
 
-        # Fallback to local Ollama
+        # 4. Quaternary: Local Ollama
         try:
             from openai import OpenAI
             client = OpenAI(base_url="http://localhost:11434/v1", api_key="ollama")

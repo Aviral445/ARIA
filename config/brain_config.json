@@ -1,0 +1,261 @@
+{
+  "active_brain": "nvidia",
+  "custom_models": {
+    "gemini": "gemini-2.5-flash",
+    "nvidia": "deepseek-ai/deepseek-r1",
+    "groq": "qwen/qwen3.6-27b",
+    "ollama": "llama3.2"
+  },
+  "history": [
+    {
+      "timestamp": "2026-09-05 22:29:06",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "nvidia",
+      "model": "meta/llama-3.3-70b-instruct"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "auto",
+      "model": "dynamic"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:29:09",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:02",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "auto",
+      "model": "dynamic"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "meta/llama-3.3-70b-instruct"
+    },
+    {
+      "timestamp": "2026-09-05 22:30:24",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:11",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "auto",
+      "model": "dynamic"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "meta/llama-3.3-70b-instruct"
+    },
+    {
+      "timestamp": "2026-09-05 22:46:21",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "auto",
+      "model": "dynamic"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "meta/llama-3.3-70b-instruct"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "groq",
+      "model": "qwen/qwen3.6-27b"
+    },
+    {
+      "timestamp": "2026-09-05 23:14:13",
+      "brain": "nvidia",
+      "model": "deepseek-ai/deepseek-r1"
+    }
+  ]
+}

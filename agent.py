@@ -1309,9 +1309,24 @@ def _tool_wallpaper(text):
     return False, ""
 
 
+@tool("brain_switcher")
+def _tool_brain(text):
+    text_lower = text.lower()
+    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+        from core.aria_brains import switch_ai_brain, get_brain_status
+        if "brain status" in text_lower or "which brain" in text_lower:
+            return True, get_brain_status()
+        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+            if b in text_lower:
+                return True, switch_ai_brain(b)
+        return True, get_brain_status()
+    return False, ""
+
+
 def run_tools(text: str):
     """Try all registered tools. Returns (handled, response)."""
     priority = [
+        "brain_switcher",
         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
         "screen_vision", "visual_click", "system_powershell",
         "create_folder", "organize_files",
@@ -1551,20 +1566,58 @@ def chat_with_ai(user_input: str, recent: list, profile: dict,
     except Exception as e_adk:
         print(f"[ADK Notice] {e_adk}")
 
-    # Fallback cascade to cloud APIs or local Ollama
+    # Fallback cascade to cloud APIs or local Ollama respecting active brain
     try:
+        from core.aria_brains import get_active_brain, get_active_model
+        active_b = get_active_brain()
         system = build_system_prompt(profile, "", "", "", "", "")
-        if os.environ.get("NVIDIA_API_KEY"):
+        raw_reply = ""
+
+        # Order fallback attempts based on active brain
+        preferred = [active_b] if active_b in ["nvidia", "groq", "ollama"] else ["nvidia", "groq", "ollama"]
+        for b in preferred:
+            if b == "nvidia" and os.environ.get("NVIDIA_API_KEY"):
+                try:
+                    raw_reply = _nvidia_chat(system, recent, user_input)
+                    if raw_reply:
+                        break
+                except Exception:
+                    pass
+            elif b == "groq" and os.environ.get("GROQ_API_KEY"):
+                try:
+                    raw_reply = _groq_chat(system, recent, user_input)
+                    if raw_reply:
+                        break
+                except Exception:
+                    pass
+            elif b == "ollama":
+                try:
+                    raw_reply = _ollama_chat(system, recent, user_input)
+                    if raw_reply:
+                        break
+                except Exception:
+                    pass
+
+        if not raw_reply and os.environ.get("NVIDIA_API_KEY"):
             try:
-                return _nvidia_chat(system, recent, user_input)
+                raw_reply = _nvidia_chat(system, recent, user_input)
             except Exception:
                 pass
-        if os.environ.get("GROQ_API_KEY"):
+        if not raw_reply and os.environ.get("GROQ_API_KEY"):
             try:
-                return _groq_chat(system, recent, user_input)
+                raw_reply = _groq_chat(system, recent, user_input)
             except Exception:
                 pass
-        return _ollama_chat(system, recent, user_input)
+        if not raw_reply:
+            raw_reply = _ollama_chat(system, recent, user_input)
+
+        # Supervise turn through Big Sister GAIA reality check
+        try:
+            from gaia.gaia_supervisor import supervisor
+            _, supervised_reply = supervisor.supervise_turn(user_input, raw_reply)
+            return supervised_reply
+        except Exception:
+            return raw_reply
     except Exception as e_ollama:
         return f"Sorry, I had trouble thinking. Error: {e_ollama}"
 
@@ -1592,17 +1645,31 @@ def main():
     except Exception as e:
         print(f"API Server note: {e}")
 
-    # Print which LLM is active
-    if os.environ.get("NVIDIA_API_KEY"):
-        print("🧠 Brain: NVIDIA NIM Cloud (Frontier Reasoning & Supercharged Inference)")
-    elif gemini_client:
-        print("🧠 Brain: Google Gemini 2.0 Flash (free cloud API)")
-    else:
-        print(f"🧠 Brain: Ollama / {OLLAMA_MODEL} (local fallback)")
+    # Print which AI brain is active
+    try:
+        from core.aria_brains import get_active_brain, get_active_model
+        curr_b = get_active_brain()
+        curr_m = get_active_model(curr_b)
+        print(f"🧠 Brain: {curr_b.upper()} ({curr_m})")
+    except Exception:
+        if os.environ.get("NVIDIA_API_KEY"):
+            print("🧠 Brain: NVIDIA NIM Cloud (Frontier Reasoning & Supercharged Inference)")
+        elif gemini_client:
+            print("🧠 Brain: Google Gemini 2.0 Flash (free cloud API)")
+        else:
+            print(f"🧠 Brain: Ollama / {OLLAMA_MODEL} (local fallback)")
 
     # Print which context sources are active
     print("🖥️  System context: active window, clipboard, running apps, system stats")
     print("🌐 Chrome automation: ready (browser will launch on first Chrome command)")
+
+    try:
+        from core.aria_adk import load_dynamic_sandbox_tools
+        dyn_tools = load_dynamic_sandbox_tools()
+        if dyn_tools:
+            print(f"✨ Discovered {len(dyn_tools)} dynamic sandbox tool(s): {list(dyn_tools.keys())}")
+    except Exception:
+        pass
 
     profile = load_profile()
     recent  = []
