@@ -451,7 +451,7 @@ class AriaApp:
         self.nav_dot_c = tk.Canvas(n, width=64, height=44, bg=pal["BG_PANEL"], highlightthickness=0)
         self.nav_dot_c.pack(side="bottom", pady=(0, 4))
         self.nav_dot_c.create_oval(26, 6, 38, 18, fill=pal["DGREY"], outline="", tags="dot")
-        self.nav_dot_c.create_text(32, 28, text="IDLE", font=("Segoe UI", 7.5, "bold"), fill=pal["GREY"], tags="lbl")
+        self.nav_dot_c.create_text(32, 28, text="IDLE", font=("Segoe UI", 8, "bold"), fill=pal["GREY"], tags="lbl")
 
         # Theme Cycle Button
         theme_btn = tk.Button(
@@ -474,7 +474,7 @@ class AriaApp:
 
         col = pal["WHITE"] if active else (pal["LAVENDER"] if hover else pal["GREY"])
         c.create_text(32, 16, text=icon, font=("Segoe UI", 13), fill=col)
-        c.create_text(32, 32, text=label, font=("Segoe UI", 7.5, "bold"), fill=col)
+        c.create_text(32, 32, text=label, font=("Segoe UI", 8, "bold"), fill=col)
 
     def _nav(self, page_id: str):
         self.active_page = page_id
@@ -527,12 +527,12 @@ class AriaApp:
         self.status_pill.pack(pady=(0, 8))
         self.status_dot = tk.Label(self.status_pill, text="●", font=("Segoe UI", 9), bg=pal["CARD2"], fg=pal["GLOW"])
         self.status_dot.pack(side="left", padx=(0, 6))
-        self.status_text = tk.Label(self.status_pill, text="STANDBY // IDLE", font=("Segoe UI", 8.5, "bold"), bg=pal["CARD2"], fg=pal["WHITE"])
+        self.status_text = tk.Label(self.status_pill, text="STANDBY // IDLE", font=("Segoe UI", 9, "bold"), bg=pal["CARD2"], fg=pal["WHITE"])
         self.status_text.pack(side="left")
 
         # 3. Master Launch / Stop Button
         self.start_btn = tk.Button(
-            s, text="▶   LAUNCH ARIA AGENT", font=("Segoe UI", 10.5, "bold"),
+            s, text="▶   LAUNCH ARIA AGENT", font=("Segoe UI", 11, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"],
             activebackground=pal["GLOW2"], activeforeground=pal["WHITE"],
             relief="flat", bd=0, pady=7, cursor="hand2",
@@ -546,8 +546,8 @@ class AriaApp:
         
         t_hdr = tk.Frame(telem_card, bg=pal["CARD"])
         t_hdr.pack(fill="x", pady=(0, 6))
-        tk.Label(t_hdr, text="SYSTEM TELEMETRY", font=("Segoe UI", 8.5, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(side="left")
-        self.ping_lbl = tk.Label(t_hdr, text="● 24ms", font=("Segoe UI", 8.5, "bold"), bg=pal["CARD"], fg=pal["CYAN"])
+        tk.Label(t_hdr, text="SYSTEM TELEMETRY", font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(side="left")
+        self.ping_lbl = tk.Label(t_hdr, text="● 24ms", font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["CYAN"])
         self.ping_lbl.pack(side="right")
 
         # Grid of 2x2 stats
@@ -583,7 +583,7 @@ class AriaApp:
         self.quick_cmd_entry.bind("<FocusOut>", _focus_out)
 
         tk.Button(
-            cmd_box, text="➤", font=("Segoe UI", 9.5, "bold"),
+            cmd_box, text="➤", font=("Segoe UI", 10, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=8, cursor="hand2",
             command=self._send_quick_command
         ).pack(side="left", padx=(4, 0))
@@ -594,13 +594,13 @@ class AriaApp:
 
         s_hdr = tk.Frame(srv_card, bg=pal["CARD"])
         s_hdr.pack(fill="x")
-        tk.Label(s_hdr, text="📱 MOBILE LAN COMPANION", font=("Segoe UI", 8.5, "bold"), bg=pal["CARD"], fg=pal["CYAN"]).pack(side="left")
+        tk.Label(s_hdr, text="📱 MOBILE LAN COMPANION", font=("Segoe UI", 9, "bold"), bg=pal["CARD"], fg=pal["CYAN"]).pack(side="left")
         self.srv_state_lbl = tk.Label(s_hdr, text="● ONLINE", font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["GREEN"])
         self.srv_state_lbl.pack(side="right")
 
         self.srv_url_text = tk.Label(
             srv_card, text=getattr(self, "mobile_server_url", "http://0.0.0.0:8765"),
-            font=("Segoe UI", 9.5, "bold"), bg=pal["CARD"], fg=pal["WHITE"], cursor="hand2"
+            font=("Segoe UI", 10, "bold"), bg=pal["CARD"], fg=pal["WHITE"], cursor="hand2"
         )
         self.srv_url_text.pack(anchor="w", pady=(4, 6))
         self.srv_url_text.bind("<Button-1>", lambda e: self._copy_mobile_server_url())
@@ -628,8 +628,8 @@ class AriaApp:
         f = tk.Frame(parent, bg=pal["CARD2"], padx=8, pady=6)
         f.grid(row=row, column=col, sticky="nsew", padx=3, pady=3)
         parent.columnconfigure(col, weight=1)
-        tk.Label(f, text=title, font=("Segoe UI", 7.5, "bold"), bg=pal["CARD2"], fg=pal["GREY"]).pack(anchor="w")
-        lbl = tk.Label(f, text=val, font=("Segoe UI", 11.5, "bold"), bg=pal["CARD2"], fg=accent)
+        tk.Label(f, text=title, font=("Segoe UI", 8, "bold"), bg=pal["CARD2"], fg=pal["GREY"]).pack(anchor="w")
+        lbl = tk.Label(f, text=val, font=("Segoe UI", 12, "bold"), bg=pal["CARD2"], fg=accent)
         lbl.pack(anchor="w")
         return lbl
 
@@ -760,7 +760,7 @@ class AriaApp:
         top_ctrl = tk.Frame(ctrl_bar, bg=pal["BG_MID"])
         top_ctrl.pack(fill="x", pady=(0, 6))
 
-        tk.Label(top_ctrl, text="⚡ COGNITIVE ENGINE:", font=("Segoe UI", 8.5, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"]).pack(side="left")
+        tk.Label(top_ctrl, text="⚡ COGNITIVE ENGINE:", font=("Segoe UI", 9, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"]).pack(side="left")
         
         self.chat_model_var = tk.StringVar(value="gemini-2.5-flash")
         models_list = [
@@ -791,7 +791,7 @@ class AriaApp:
         ]
         for chip_lbl, prompt_val in chip_items:
             btn = tk.Button(
-                chip_bar, text=chip_lbl, font=("Segoe UI", 8.5, "bold"),
+                chip_bar, text=chip_lbl, font=("Segoe UI", 9, "bold"),
                 bg=pal["CARD2"], fg=pal["LAVENDER"], activebackground=pal["CARD_HOVER"], activeforeground=pal["WHITE"],
                 relief="flat", bd=0, padx=9, pady=3, cursor="hand2",
                 command=lambda p=prompt_val: self._inject_chat_prompt(p)
@@ -827,13 +827,13 @@ class AriaApp:
         self.chat_main_entry.bind("<Return>", lambda e: self._send_pro_chat())
 
         tk.Button(
-            in_bar, text="SEND  ➤", font=("Segoe UI", 9.5, "bold"),
+            in_bar, text="SEND  ➤", font=("Segoe UI", 10, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=14, pady=4, cursor="hand2",
             command=self._send_pro_chat
         ).pack(side="left", padx=2)
 
         tk.Button(
-            in_bar, text="CLEAR", font=("Segoe UI", 8.5),
+            in_bar, text="CLEAR", font=("Segoe UI", 9),
             bg=pal["BG_MID"], fg=pal["PINK"], relief="flat", bd=0, padx=8, pady=4, cursor="hand2",
             command=self._clear_chat_stream
         ).pack(side="left", padx=2)
@@ -869,9 +869,9 @@ class AriaApp:
         
         hdr = tk.Frame(bubble, bg=bubble_bg)
         hdr.pack(fill="x", pady=(0, 2))
-        tk.Label(hdr, text=sender, font=("Segoe UI", 9.5, "bold"), bg=bubble_bg, fg=tag_col).pack(side="left")
+        tk.Label(hdr, text=sender, font=("Segoe UI", 10, "bold"), bg=bubble_bg, fg=tag_col).pack(side="left")
         time_fg = pal["LAVENDER"] if is_user else pal["GREY"]
-        tk.Label(hdr, text=f"  {time.strftime('%I:%M %p')}", font=("Segoe UI", 8.5), bg=bubble_bg, fg=time_fg).pack(side="left")
+        tk.Label(hdr, text=f"  {time.strftime('%I:%M %p')}", font=("Segoe UI", 9), bg=bubble_bg, fg=time_fg).pack(side="left")
 
         # Formatted Body Text (11pt: clear, readable, zero eye strain)
         msg_lbl = tk.Label(
