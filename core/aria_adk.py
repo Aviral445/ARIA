@@ -811,6 +811,10 @@ def _sanitize_aria_response(text: str) -> str:
         if d in text:
             text = text.replace(d, "")
 
+    # Strip raw tool calling XML/function tags if leaked into response
+    text = re.sub(r'<tool_call>.*?</tool_call>', '', text, flags=re.DOTALL)
+    text = re.sub(r'<function=.*?</function>', '', text, flags=re.DOTALL)
+
     text = text.strip()
     if text:
         text = text[0].upper() + text[1:]

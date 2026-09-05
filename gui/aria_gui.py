@@ -297,8 +297,8 @@ class AriaApp:
     def __init__(self, root: tk.Tk):
         self.root = root
         self.root.title("ARIA — Autonomous AI Pro Workstation")
-        self.root.geometry("1480x920")
-        self.root.minsize(1200, 780)
+        self.root.geometry("1440x880")
+        self.root.minsize(1120, 720)
 
         self.config = load_config()
         self.profile = load_profile()
@@ -330,6 +330,28 @@ class AriaApp:
             }
             for _ in range(12)
         ]
+
+        # Style ttk Combobox to dark theme
+        try:
+            style = ttk.Style()
+            style.theme_use('clam')
+            style.configure("TCombobox",
+                fieldbackground=self.pal["CARD2"],
+                background=self.pal["CARD"],
+                foreground=self.pal["WHITE"],
+                darkcolor=self.pal["BORDER"],
+                lightcolor=self.pal["BORDER"],
+                arrowcolor=self.pal["CYAN"],
+                bordercolor=self.pal["BORDER"]
+            )
+            style.map("TCombobox",
+                fieldbackground=[("readonly", self.pal["CARD2"])],
+                foreground=[("readonly", self.pal["WHITE"])],
+                selectbackground=[("readonly", self.pal["CARD2"])],
+                selectforeground=[("readonly", self.pal["CYAN"])]
+            )
+        except Exception:
+            pass
 
         # Bind universal mousewheel
         self._bind_mousewheel()
@@ -364,12 +386,12 @@ class AriaApp:
     # ── 3-TIER MASTER LAYOUT ──────────────────────────────────────────────────
     def _build_layout(self):
         # 1. Left Nav Rail (56px)
-        self.navbar = tk.Frame(self.root, bg=self.pal["BG_PANEL"], width=68)
+        self.navbar = tk.Frame(self.root, bg=self.pal["BG_PANEL"], width=64)
         self.navbar.pack(side="left", fill="y")
         self.navbar.pack_propagate(False)
 
         # 2. Command & Telemetry Sidebar (340px)
-        self.sidebar = tk.Frame(self.root, bg=self.pal["BG_MID"], width=380)
+        self.sidebar = tk.Frame(self.root, bg=self.pal["BG_MID"], width=360)
         self.sidebar.pack(side="left", fill="y")
         self.sidebar.pack_propagate(False)
 
@@ -391,10 +413,10 @@ class AriaApp:
         pal = self.pal
 
         # Top Logo Badge
-        lc = tk.Canvas(n, width=68, height=62, bg=pal["BG_PANEL"], highlightthickness=0)
+        lc = tk.Canvas(n, width=64, height=58, bg=pal["BG_PANEL"], highlightthickness=0)
         lc.pack(pady=(8, 4))
-        lc.create_oval(18, 14, 50, 46, fill=blend(pal["GLOW"], pal["BG_PANEL"], 0.7), outline=pal["GLOW"], width=1)
-        lc.create_text(34, 30, text="A", font=("Segoe UI", 20, "bold"), fill=pal["WHITE"])
+        lc.create_oval(16, 12, 48, 44, fill=blend(pal["GLOW"], pal["BG_PANEL"], 0.7), outline=pal["GLOW"], width=1)
+        lc.create_text(32, 28, text="A", font=("Segoe UI", 14, "bold"), fill=pal["WHITE"])
 
         tk.Frame(n, bg=pal["BORDER"], height=1).pack(fill="x", padx=8, pady=4)
 
@@ -415,7 +437,7 @@ class AriaApp:
 
         self.nav_btns = {}
         for icon, pid, label in self._nav_items:
-            c = tk.Canvas(n, width=68, height=52, bg=pal["BG_PANEL"], highlightthickness=0, cursor="hand2")
+            c = tk.Canvas(n, width=64, height=44, bg=pal["BG_PANEL"], highlightthickness=0, cursor="hand2")
             c.pack(pady=1)
             self._draw_nav_btn(c, icon, label, pid, pid == "home")
             c.bind("<Button-1>", lambda e, p=pid: self._nav(p))
@@ -426,33 +448,33 @@ class AriaApp:
         # Bottom Status Dot & Theme Switcher
         tk.Frame(n, bg=pal["BORDER"], height=1).pack(side="bottom", fill="x", padx=8, pady=4)
         
-        self.nav_dot_c = tk.Canvas(n, width=68, height=46, bg=pal["BG_PANEL"], highlightthickness=0)
-        self.nav_dot_c.pack(side="bottom")
-        self.nav_dot_c.create_oval(28, 6, 40, 18, fill=pal["DGREY"], outline="", tags="dot")
-        self.nav_dot_c.create_text(34, 32, text="IDLE", font=("Segoe UI", 20, "bold"), fill=pal["GREY"], tags="lbl")
+        self.nav_dot_c = tk.Canvas(n, width=64, height=44, bg=pal["BG_PANEL"], highlightthickness=0)
+        self.nav_dot_c.pack(side="bottom", pady=(0, 4))
+        self.nav_dot_c.create_oval(26, 6, 38, 18, fill=pal["DGREY"], outline="", tags="dot")
+        self.nav_dot_c.create_text(32, 28, text="IDLE", font=("Segoe UI", 7.5, "bold"), fill=pal["GREY"], tags="lbl")
 
         # Theme Cycle Button
         theme_btn = tk.Button(
-            n, text="🎨", font=("Segoe UI", 15), bg=pal["BG_PANEL"], fg=pal["LAVENDER"],
+            n, text="🎨", font=("Segoe UI", 11), bg=pal["BG_PANEL"], fg=pal["LAVENDER"],
             relief="flat", bd=0, cursor="hand2", activebackground=pal["CARD"],
             command=self._cycle_theme
         )
-        theme_btn.pack(side="bottom", pady=4)
+        theme_btn.pack(side="bottom", pady=(0, 4))
 
     def _draw_nav_btn(self, c: tk.Canvas, icon: str, label: str, pid: str, active: bool = False, hover: bool = False):
         pal = self.pal
         c.delete("all")
         if active:
-            c.create_rectangle(0, 0, 68, 52, fill=blend(pal["GLOW"], pal["BG_PANEL"], 0.85), outline="")
-            c.create_rectangle(0, 4, 4, 48, fill=pal["GLOW"], outline="")
+            c.create_rectangle(0, 0, 64, 44, fill=blend(pal["GLOW"], pal["BG_PANEL"], 0.85), outline="")
+            c.create_rectangle(0, 4, 3, 40, fill=pal["GLOW"], outline="")
         elif hover:
-            c.create_rectangle(0, 0, 68, 52, fill=blend(pal["GLOW"], pal["BG_PANEL"], 0.93), outline="")
+            c.create_rectangle(0, 0, 64, 44, fill=blend(pal["GLOW"], pal["BG_PANEL"], 0.93), outline="")
         else:
-            c.create_rectangle(0, 0, 68, 52, fill=pal["BG_PANEL"], outline="")
+            c.create_rectangle(0, 0, 64, 44, fill=pal["BG_PANEL"], outline="")
 
         col = pal["WHITE"] if active else (pal["LAVENDER"] if hover else pal["GREY"])
-        c.create_text(34, 18, text=icon, font=("Segoe UI", 16), fill=col)
-        c.create_text(34, 38, text=label, font=("Segoe UI", 12, "bold"), fill=col)
+        c.create_text(32, 16, text=icon, font=("Segoe UI", 13), fill=col)
+        c.create_text(32, 32, text=label, font=("Segoe UI", 7.5, "bold"), fill=col)
 
     def _nav(self, page_id: str):
         self.active_page = page_id
@@ -490,42 +512,42 @@ class AriaApp:
         # 1. Header & Version Badge
         hdr = tk.Frame(s, bg=pal["BG_MID"], padx=16, pady=12)
         hdr.pack(fill="x")
-        tk.Label(hdr, text="ARIA PRO", font=("Segoe UI", 20, "bold"), bg=pal["BG_MID"], fg=pal["WHITE"]).pack(side="left")
+        tk.Label(hdr, text="ARIA PRO", font=("Segoe UI", 14, "bold"), bg=pal["BG_MID"], fg=pal["WHITE"]).pack(side="left")
         
-        badge = tk.Frame(hdr, bg=pal["CARD2"], padx=6, pady=2)
+        badge = tk.Frame(hdr, bg=pal["CARD2"], padx=8, pady=3)
         badge.pack(side="right")
-        tk.Label(badge, text="v5.0 SINGULARITY", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack()
+        tk.Label(badge, text="v5.0 SINGULARITY", font=("Segoe UI", 8, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack()
 
-        # 2. Black Hole Singularity Canvas (220px)
-        self.sc = tk.Canvas(s, width=360, height=220, bg=pal["BG_MID"], highlightthickness=0)
+        # 2. Black Hole Singularity Canvas (210px)
+        self.sc = tk.Canvas(s, width=340, height=210, bg=pal["BG_MID"], highlightthickness=0)
         self.sc.pack(pady=(0, 4))
 
         # Status Pill under Orb
-        self.status_pill = tk.Frame(s, bg=pal["CARD2"], padx=12, pady=4)
+        self.status_pill = tk.Frame(s, bg=pal["CARD2"], padx=14, pady=4)
         self.status_pill.pack(pady=(0, 8))
-        self.status_dot = tk.Label(self.status_pill, text="●", font=("Segoe UI", 15), bg=pal["CARD2"], fg=pal["GLOW"])
+        self.status_dot = tk.Label(self.status_pill, text="●", font=("Segoe UI", 9), bg=pal["CARD2"], fg=pal["GLOW"])
         self.status_dot.pack(side="left", padx=(0, 6))
-        self.status_text = tk.Label(self.status_pill, text="STANDBY // IDLE", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["WHITE"])
+        self.status_text = tk.Label(self.status_pill, text="STANDBY // IDLE", font=("Segoe UI", 8.5, "bold"), bg=pal["CARD2"], fg=pal["WHITE"])
         self.status_text.pack(side="left")
 
         # 3. Master Launch / Stop Button
         self.start_btn = tk.Button(
-            s, text="▶   LAUNCH ARIA AGENT", font=("Segoe UI", 20, "bold"),
+            s, text="▶   LAUNCH ARIA AGENT", font=("Segoe UI", 10.5, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"],
             activebackground=pal["GLOW2"], activeforeground=pal["WHITE"],
-            relief="flat", bd=0, pady=8, cursor="hand2",
+            relief="flat", bd=0, pady=7, cursor="hand2",
             command=self._toggle_agent
         )
         self.start_btn.pack(fill="x", padx=16, pady=(0, 8))
 
         # 4. Hardware Telemetry Card
-        telem_card = tk.Frame(s, bg=pal["CARD"], padx=10, pady=8)
+        telem_card = tk.Frame(s, bg=pal["CARD"], padx=12, pady=10)
         telem_card.pack(fill="x", padx=16, pady=(0, 8))
         
         t_hdr = tk.Frame(telem_card, bg=pal["CARD"])
-        t_hdr.pack(fill="x", pady=(0, 4))
-        tk.Label(t_hdr, text="SYSTEM TELEMETRY", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(side="left")
-        self.ping_lbl = tk.Label(t_hdr, text="24ms", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["CYAN"])
+        t_hdr.pack(fill="x", pady=(0, 6))
+        tk.Label(t_hdr, text="SYSTEM TELEMETRY", font=("Segoe UI", 8.5, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(side="left")
+        self.ping_lbl = tk.Label(t_hdr, text="● 24ms", font=("Segoe UI", 8.5, "bold"), bg=pal["CARD"], fg=pal["CYAN"])
         self.ping_lbl.pack(side="right")
 
         # Grid of 2x2 stats
@@ -537,14 +559,14 @@ class AriaApp:
         self.bat_lbl = self._mini_stat(grid, 1, 1, "BATTERY", "100%", pal["GREEN"])
 
         # 5. Quick Command Launcher
-        cmd_box = tk.Frame(s, bg=pal["CARD2"], padx=8, pady=6)
+        cmd_box = tk.Frame(s, bg=pal["CARD2"], padx=10, pady=6)
         cmd_box.pack(fill="x", padx=16, pady=(0, 8))
         
         self.quick_cmd_entry = tk.Entry(
-            cmd_box, font=("Segoe UI", 15), bg=pal["CARD2"], fg=pal["WHITE"],
+            cmd_box, font=("Segoe UI", 10), bg=pal["CARD2"], fg=pal["WHITE"],
             insertbackground=pal["CYAN"], relief="flat", bd=0
         )
-        self.quick_cmd_entry.pack(side="left", fill="x", expand=True, ipady=3)
+        self.quick_cmd_entry.pack(side="left", fill="x", expand=True, ipady=4)
         self.quick_cmd_entry.bind("<Return>", lambda e: self._send_quick_command())
         self.quick_cmd_entry.insert(0, "Quick prompt / task...")
         self.quick_cmd_entry.config(fg=pal["GREY"])
@@ -561,53 +583,53 @@ class AriaApp:
         self.quick_cmd_entry.bind("<FocusOut>", _focus_out)
 
         tk.Button(
-            cmd_box, text="➤", font=("Segoe UI", 12, "bold"),
-            bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=6, cursor="hand2",
+            cmd_box, text="➤", font=("Segoe UI", 9.5, "bold"),
+            bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=8, cursor="hand2",
             command=self._send_quick_command
         ).pack(side="left", padx=(4, 0))
 
         # 6. Mobile Companion Server Card
-        srv_card = tk.Frame(s, bg=pal["CARD"], padx=10, pady=8)
+        srv_card = tk.Frame(s, bg=pal["CARD"], padx=12, pady=10)
         srv_card.pack(fill="x", padx=16, pady=(0, 6))
 
         s_hdr = tk.Frame(srv_card, bg=pal["CARD"])
         s_hdr.pack(fill="x")
-        tk.Label(s_hdr, text="📱 MOBILE LAN COMPANION", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["CYAN"]).pack(side="left")
-        self.srv_state_lbl = tk.Label(s_hdr, text="● ONLINE", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["GREEN"])
+        tk.Label(s_hdr, text="📱 MOBILE LAN COMPANION", font=("Segoe UI", 8.5, "bold"), bg=pal["CARD"], fg=pal["CYAN"]).pack(side="left")
+        self.srv_state_lbl = tk.Label(s_hdr, text="● ONLINE", font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["GREEN"])
         self.srv_state_lbl.pack(side="right")
 
         self.srv_url_text = tk.Label(
             srv_card, text=getattr(self, "mobile_server_url", "http://0.0.0.0:8765"),
-            font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["WHITE"], cursor="hand2"
+            font=("Segoe UI", 9.5, "bold"), bg=pal["CARD"], fg=pal["WHITE"], cursor="hand2"
         )
-        self.srv_url_text.pack(anchor="w", pady=(2, 4))
+        self.srv_url_text.pack(anchor="w", pady=(4, 6))
         self.srv_url_text.bind("<Button-1>", lambda e: self._copy_mobile_server_url())
 
         s_btns = tk.Frame(srv_card, bg=pal["CARD"])
         s_btns.pack(fill="x")
         self.toggle_srv_btn = tk.Button(
-            s_btns, text="TOGGLE", font=("Segoe UI", 20, "bold"), bg=pal["BG_MID"], fg=pal["LAVENDER"],
-            relief="flat", bd=0, pady=3, padx=6, cursor="hand2", command=self._toggle_mobile_server
+            s_btns, text="TOGGLE", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["LAVENDER"],
+            relief="flat", bd=0, pady=4, padx=6, cursor="hand2", command=self._toggle_mobile_server
         )
-        self.toggle_srv_btn.pack(side="left", fill="x", expand=True, padx=(0, 2))
+        self.toggle_srv_btn.pack(side="left", fill="x", expand=True, padx=(0, 3))
 
         tk.Button(
-            s_btns, text="COPY", font=("Segoe UI", 20, "bold"), bg=pal["BG_MID"], fg=pal["LAVENDER"],
-            relief="flat", bd=0, pady=3, padx=6, cursor="hand2", command=self._copy_mobile_server_url
-        ).pack(side="left", padx=2)
+            s_btns, text="COPY", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["LAVENDER"],
+            relief="flat", bd=0, pady=4, padx=8, cursor="hand2", command=self._copy_mobile_server_url
+        ).pack(side="left", padx=3)
 
         tk.Button(
-            s_btns, text="OPEN", font=("Segoe UI", 20, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"],
-            relief="flat", bd=0, pady=3, padx=6, cursor="hand2", command=self._open_mobile_server_browser
-        ).pack(side="left", padx=(2, 0))
+            s_btns, text="OPEN", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"],
+            relief="flat", bd=0, pady=4, padx=8, cursor="hand2", command=self._open_mobile_server_browser
+        ).pack(side="left", padx=(3, 0))
 
     def _mini_stat(self, parent, row: int, col: int, title: str, val: str, accent: str):
         pal = self.pal
-        f = tk.Frame(parent, bg=pal["CARD2"], padx=6, pady=4)
-        f.grid(row=row, column=col, sticky="nsew", padx=2, pady=2)
+        f = tk.Frame(parent, bg=pal["CARD2"], padx=8, pady=6)
+        f.grid(row=row, column=col, sticky="nsew", padx=3, pady=3)
         parent.columnconfigure(col, weight=1)
-        tk.Label(f, text=title, font=("Segoe UI", 12, "bold"), bg=pal["CARD2"], fg=pal["GREY"]).pack(anchor="w")
-        lbl = tk.Label(f, text=val, font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=accent)
+        tk.Label(f, text=title, font=("Segoe UI", 7.5, "bold"), bg=pal["CARD2"], fg=pal["GREY"]).pack(anchor="w")
+        lbl = tk.Label(f, text=val, font=("Segoe UI", 11.5, "bold"), bg=pal["CARD2"], fg=accent)
         lbl.pack(anchor="w")
         return lbl
 
@@ -643,15 +665,15 @@ class AriaApp:
         
         t_row = tk.Frame(hdr, bg=pal["BG_MID"])
         t_row.pack(fill="x")
-        tk.Label(t_row, text=title, font=("Segoe UI", 22, "bold"), bg=pal["BG_MID"], fg=pal["WHITE"]).pack(side="left")
+        tk.Label(t_row, text=title, font=("Segoe UI", 15, "bold"), bg=pal["BG_MID"], fg=pal["WHITE"]).pack(side="left")
         
         # Engine indicator badge
         eng_badge = tk.Frame(t_row, bg=pal["CARD2"], padx=8, pady=3)
         eng_badge.pack(side="right")
-        tk.Label(eng_badge, text="⚡ NVIDIA NIM 40 RPM + GEMINI 2.5", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["NVIDIA"]).pack()
+        tk.Label(eng_badge, text="⚡ NVIDIA NIM 40 RPM + GEMINI 2.5", font=("Segoe UI", 7, "bold"), bg=pal["CARD2"], fg=pal["NVIDIA"]).pack()
 
         if subtitle:
-            tk.Label(hdr, text=subtitle, font=("Segoe UI", 11), bg=pal["BG_MID"], fg=pal["GREY"]).pack(anchor="w", pady=(2, 0))
+            tk.Label(hdr, text=subtitle, font=("Segoe UI", 8), bg=pal["BG_MID"], fg=pal["GREY"]).pack(anchor="w", pady=(2, 0))
         
         tk.Frame(parent, bg=pal["BORDER"], height=1).pack(fill="x")
 
@@ -668,19 +690,19 @@ class AriaApp:
         hero.pack(fill="x", padx=24, pady=(16, 12))
         
         user_name = self.profile.get("name", "Aviral")
-        tk.Label(hero, text=f"Welcome back, {user_name}!", font=("Segoe UI", 22, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w")
+        tk.Label(hero, text=f"Welcome back, {user_name}!", font=("Segoe UI", 18, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w")
         tk.Label(hero, text="Aria is operating at full frontier capability with NVIDIA NIM DeepSeek-R1, Screen Vision, and Windows OS Control.",
-                 font=("Segoe UI", 15), bg=pal["CARD2"], fg=pal["LAVENDER"]).pack(anchor="w", pady=(4, 12))
+                 font=("Segoe UI", 9), bg=pal["CARD2"], fg=pal["LAVENDER"]).pack(anchor="w", pady=(4, 12))
 
         hero_tags = tk.Frame(hero, bg=pal["CARD2"])
         hero_tags.pack(anchor="w")
         for tag, col in [("● NVIDIA NIM 70B Active", pal["NVIDIA"]), ("● Screen Vision Ready", pal["CYAN"]), ("● ChromaDB Memory Synced", pal["VIOLET"]), ("● 40 RPM Guard Paced", pal["AMBER"])]:
             badge = tk.Frame(hero_tags, bg=pal["BG_DEEP"], padx=8, pady=4)
             badge.pack(side="left", padx=(0, 8))
-            tk.Label(badge, text=tag, font=("Segoe UI", 20, "bold"), bg=pal["BG_DEEP"], fg=col).pack()
+            tk.Label(badge, text=tag, font=("Segoe UI", 7, "bold"), bg=pal["BG_DEEP"], fg=col).pack()
 
         # 2. Quick Action Launchpad
-        tk.Label(wrap, text="🚀 QUICK ACTION LAUNCHPAD", font=("Segoe UI", 12, "bold"), bg=pal["BG_DEEP"], fg=pal["GREY"]).pack(anchor="w", padx=24, pady=(8, 6))
+        tk.Label(wrap, text="🚀 QUICK ACTION LAUNCHPAD", font=("Segoe UI", 9, "bold"), bg=pal["BG_DEEP"], fg=pal["GREY"]).pack(anchor="w", padx=24, pady=(8, 6))
 
         launch_grid = tk.Frame(wrap, bg=pal["BG_DEEP"])
         launch_grid.pack(fill="x", padx=24, pady=(0, 16))
@@ -704,21 +726,21 @@ class AriaApp:
 
             hdr = tk.Frame(card, bg=pal["CARD"])
             hdr.pack(fill="x")
-            tk.Label(hdr, text=icon, font=("Segoe UI", 16), bg=pal["CARD"], fg=col).pack(side="left")
-            tk.Label(hdr, text=f"  {title}", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(side="left")
+            tk.Label(hdr, text=icon, font=("Segoe UI", 14), bg=pal["CARD"], fg=col).pack(side="left")
+            tk.Label(hdr, text=f"  {title}", font=("Segoe UI", 10, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(side="left")
 
-            tk.Label(card, text=desc, font=("Segoe UI", 11), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w", pady=(4, 0))
+            tk.Label(card, text=desc, font=("Segoe UI", 8), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w", pady=(4, 0))
 
         # 3. Live System Context Card
-        tk.Label(wrap, text="🖥️ LIVE SYSTEM CONTEXT & ACTIVE APPLICATION", font=("Segoe UI", 12, "bold"), bg=pal["BG_DEEP"], fg=pal["GREY"]).pack(anchor="w", padx=24, pady=(0, 6))
+        tk.Label(wrap, text="🖥️ LIVE SYSTEM CONTEXT & ACTIVE APPLICATION", font=("Segoe UI", 9, "bold"), bg=pal["BG_DEEP"], fg=pal["GREY"]).pack(anchor="w", padx=24, pady=(0, 6))
         
         ctx_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
         ctx_card.pack(fill="x", padx=24, pady=(0, 24))
         
-        self.home_active_win_lbl = tk.Label(ctx_card, text="Focused Window: Visual Studio Code", font=("Segoe UI", 12, "bold"), bg=pal["CARD2"], fg=pal["WHITE"])
+        self.home_active_win_lbl = tk.Label(ctx_card, text="Focused Window: Visual Studio Code", font=("Segoe UI", 9, "bold"), bg=pal["CARD2"], fg=pal["WHITE"])
         self.home_active_win_lbl.pack(anchor="w")
 
-        self.home_clipboard_lbl = tk.Label(ctx_card, text="Clipboard: No text copied", font=("Segoe UI", 11), bg=pal["CARD2"], fg=pal["LAVENDER"])
+        self.home_clipboard_lbl = tk.Label(ctx_card, text="Clipboard: No text copied", font=("Segoe UI", 8), bg=pal["CARD2"], fg=pal["LAVENDER"])
         self.home_clipboard_lbl.pack(anchor="w", pady=(4, 0))
 
     # ── DASHBOARD 2: PRO AI CHAT STUDIO ───────────────────────────────────────
@@ -730,11 +752,15 @@ class AriaApp:
         wrap = tk.Frame(p, bg=pal["BG_DEEP"])
         wrap.pack(fill="both", expand=True, padx=20, pady=12)
 
-        # Control Bar: Model Selector & Suggestion Chips
-        ctrl_bar = tk.Frame(wrap, bg=pal["BG_MID"], padx=12, pady=8)
+        # Control Bar: 2-Row High-Tech Control Panel
+        ctrl_bar = tk.Frame(wrap, bg=pal["BG_MID"], padx=14, pady=8)
         ctrl_bar.pack(fill="x", pady=(0, 8))
 
-        tk.Label(ctrl_bar, text="ROUTING ENGINE:", font=("Segoe UI", 20, "bold"), bg=pal["BG_MID"], fg=pal["GREY"]).pack(side="left")
+        # Row 1: Engine Selector + Status
+        top_ctrl = tk.Frame(ctrl_bar, bg=pal["BG_MID"])
+        top_ctrl.pack(fill="x", pady=(0, 6))
+
+        tk.Label(top_ctrl, text="⚡ COGNITIVE ENGINE:", font=("Segoe UI", 8.5, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"]).pack(side="left")
         
         self.chat_model_var = tk.StringVar(value="gemini-2.5-flash")
         models_list = [
@@ -742,18 +768,33 @@ class AriaApp:
             "qwen/qwen3.6-27b (Groq Fast)",
             "openai/gpt-oss-120b (Groq High IQ)",
             "nvidia/llama-3.1-nemotron-70b-instruct",
-            "deepseek-ai/deepseek-r1 (Reasoning)",
+            "meta/llama-3.2-11b-vision-instruct",
             "ollama/llama3.2 (Local Offline)"
         ]
-        model_dropdown = ttk.Combobox(ctrl_bar, textvariable=self.chat_model_var, values=models_list, width=36, state="readonly")
+        model_dropdown = ttk.Combobox(top_ctrl, textvariable=self.chat_model_var, values=models_list, width=38, state="readonly", font=("Segoe UI", 9))
         model_dropdown.pack(side="left", padx=(8, 16))
 
-        # Quick chips
-        for chip_text in ["Inspect Screen", "List Open Windows", "NVIDIA RPM Stats", "Summarize Clipboard"]:
+        tk.Label(top_ctrl, text="● ADAPTIVE SWARM ACTIVE", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["GREEN"]).pack(side="right")
+
+        # Row 2: Action Chips with Icons and Proper Spacing
+        chip_bar = tk.Frame(ctrl_bar, bg=pal["BG_MID"])
+        chip_bar.pack(fill="x")
+
+        tk.Label(chip_bar, text="QUICK ACTIONS:", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["GREY"]).pack(side="left", padx=(0, 6))
+
+        chip_items = [
+            ("👁 Screen Vision", "Inspect Screen"),
+            ("🪟 Windows", "List Open Windows"),
+            ("⚡ NVIDIA RPM", "NVIDIA RPM Stats"),
+            ("📋 Clipboard", "Summarize Clipboard"),
+            ("📝 Quick Note", "Aria, take a quick note: ")
+        ]
+        for chip_lbl, prompt_val in chip_items:
             btn = tk.Button(
-                ctrl_bar, text=chip_text, font=("Segoe UI", 20, "bold"),
-                bg=pal["CARD2"], fg=pal["CYAN"], relief="flat", bd=0, padx=8, pady=3, cursor="hand2",
-                command=lambda t=chip_text: self._inject_chat_prompt(t)
+                chip_bar, text=chip_lbl, font=("Segoe UI", 8.5, "bold"),
+                bg=pal["CARD2"], fg=pal["LAVENDER"], activebackground=pal["CARD_HOVER"], activeforeground=pal["WHITE"],
+                relief="flat", bd=0, padx=9, pady=3, cursor="hand2",
+                command=lambda p=prompt_val: self._inject_chat_prompt(p)
             )
             btn.pack(side="left", padx=3)
 
@@ -775,24 +816,24 @@ class AriaApp:
         self._append_chat_message("assistant", f"Greetings {self.profile.get('name', 'Friend')}! I am Aria. How can I assist your workflow today?")
 
         # Input Bar
-        in_bar = tk.Frame(wrap, bg=pal["CARD2"], padx=10, pady=8)
+        in_bar = tk.Frame(wrap, bg=pal["CARD2"], padx=12, pady=8)
         in_bar.pack(fill="x", pady=(8, 0))
 
         self.chat_main_entry = tk.Entry(
-            in_bar, font=("Segoe UI", 15), bg=pal["CARD2"], fg=pal["WHITE"],
+            in_bar, font=("Segoe UI", 11), bg=pal["CARD2"], fg=pal["WHITE"],
             insertbackground=pal["CYAN"], relief="flat", bd=0
         )
-        self.chat_main_entry.pack(side="left", fill="x", expand=True, ipady=8, padx=(6, 10))
+        self.chat_main_entry.pack(side="left", fill="x", expand=True, ipady=6, padx=(4, 8))
         self.chat_main_entry.bind("<Return>", lambda e: self._send_pro_chat())
 
         tk.Button(
-            in_bar, text="SEND  ➤", font=("Segoe UI", 12, "bold"),
+            in_bar, text="SEND  ➤", font=("Segoe UI", 9.5, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=14, pady=4, cursor="hand2",
             command=self._send_pro_chat
         ).pack(side="left", padx=2)
 
         tk.Button(
-            in_bar, text="CLEAR", font=("Segoe UI", 11),
+            in_bar, text="CLEAR", font=("Segoe UI", 8.5),
             bg=pal["BG_MID"], fg=pal["PINK"], relief="flat", bd=0, padx=8, pady=4, cursor="hand2",
             command=self._clear_chat_stream
         ).pack(side="left", padx=2)
@@ -806,10 +847,18 @@ class AriaApp:
         pal = self.pal
         is_user = (role == "user")
         
+        # Clean text: strip raw tool call XML artifacts
+        if not is_user:
+            text = re.sub(r'<tool_call>.*?</tool_call>', '', text, flags=re.DOTALL)
+            text = re.sub(r'<function=.*?</function>', '', text, flags=re.DOTALL)
+            text = text.strip()
+            if not text:
+                text = "Task executed successfully."
+
         row = tk.Frame(self.chat_inner, bg=pal["CARD"], pady=4)
         row.pack(fill="x", padx=16)
 
-        bubble_bg = blend(pal["GLOW"], pal["CARD2"], 0.35) if is_user else pal["CARD2"]
+        bubble_bg = blend(pal["GLOW"], pal["CARD2"], 0.22) if is_user else pal["CARD2"]
         align = "e" if is_user else "w"
 
         bubble = tk.Frame(row, bg=bubble_bg, padx=14, pady=8)
@@ -820,13 +869,14 @@ class AriaApp:
         
         hdr = tk.Frame(bubble, bg=bubble_bg)
         hdr.pack(fill="x", pady=(0, 2))
-        tk.Label(hdr, text=sender, font=("Segoe UI", 20, "bold"), bg=bubble_bg, fg=tag_col).pack(side="left")
-        tk.Label(hdr, text=f" {time.strftime('%I:%M %p')}", font=("Segoe UI", 15), bg=bubble_bg, fg=pal["GREY"]).pack(side="left")
+        tk.Label(hdr, text=sender, font=("Segoe UI", 9.5, "bold"), bg=bubble_bg, fg=tag_col).pack(side="left")
+        time_fg = pal["LAVENDER"] if is_user else pal["GREY"]
+        tk.Label(hdr, text=f"  {time.strftime('%I:%M %p')}", font=("Segoe UI", 8.5), bg=bubble_bg, fg=time_fg).pack(side="left")
 
-        # Formatted Body Text
+        # Formatted Body Text (11pt: clear, readable, zero eye strain)
         msg_lbl = tk.Label(
-            bubble, text=text, font=("Segoe UI", 15), bg=bubble_bg, fg=pal["WHITE"],
-            wraplength=850, justify="left"
+            bubble, text=text, font=("Segoe UI", 11), bg=bubble_bg, fg=pal["WHITE"],
+            wraplength=820, justify="left"
         )
         msg_lbl.pack(anchor="w")
 
@@ -877,27 +927,27 @@ class AriaApp:
         conn_card = tk.Frame(wrap, bg=pal["CARD2"], padx=18, pady=14)
         conn_card.pack(fill="x", padx=24, pady=(16, 12))
 
-        tk.Label(conn_card, text="📶 WIRELESS ADB CONNECTION & UNLOCK PIN", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w")
+        tk.Label(conn_card, text="📶 WIRELESS ADB CONNECTION & UNLOCK PIN", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w")
 
         fields_row = tk.Frame(conn_card, bg=pal["CARD2"])
         fields_row.pack(fill="x", pady=(8, 10))
 
         # IP Field
-        tk.Label(fields_row, text="Phone IP:", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["LAVENDER"]).grid(row=0, column=0, sticky="w", padx=(0, 4))
+        tk.Label(fields_row, text="Phone IP:", font=("Segoe UI", 8, "bold"), bg=pal["CARD2"], fg=pal["LAVENDER"]).grid(row=0, column=0, sticky="w", padx=(0, 4))
         self.phone_ip_var = tk.StringVar(value=self.config.get("phone_ip", "192.168.1."))
-        self.phone_ip_entry = tk.Entry(fields_row, textvariable=self.phone_ip_var, font=("Segoe UI", 15), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=16)
+        self.phone_ip_entry = tk.Entry(fields_row, textvariable=self.phone_ip_var, font=("Segoe UI", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=16)
         self.phone_ip_entry.grid(row=0, column=1, padx=(0, 12), ipady=4)
 
         # Port Field
-        tk.Label(fields_row, text="Port:", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["LAVENDER"]).grid(row=0, column=2, sticky="w", padx=(0, 4))
+        tk.Label(fields_row, text="Port:", font=("Segoe UI", 8, "bold"), bg=pal["CARD2"], fg=pal["LAVENDER"]).grid(row=0, column=2, sticky="w", padx=(0, 4))
         self.phone_port_var = tk.StringVar(value=str(self.config.get("phone_port", "5555")))
-        self.phone_port_entry = tk.Entry(fields_row, textvariable=self.phone_port_var, font=("Segoe UI", 15), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=8)
+        self.phone_port_entry = tk.Entry(fields_row, textvariable=self.phone_port_var, font=("Segoe UI", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=8)
         self.phone_port_entry.grid(row=0, column=3, padx=(0, 12), ipady=4)
 
         # PIN Field
-        tk.Label(fields_row, text="Unlock PIN:", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["LAVENDER"]).grid(row=0, column=4, sticky="w", padx=(0, 4))
+        tk.Label(fields_row, text="Unlock PIN:", font=("Segoe UI", 8, "bold"), bg=pal["CARD2"], fg=pal["LAVENDER"]).grid(row=0, column=4, sticky="w", padx=(0, 4))
         self.phone_pin_var = tk.StringVar(value=self.config.get("phone_pin", ""))
-        self.phone_pin_entry = tk.Entry(fields_row, textvariable=self.phone_pin_var, font=("Segoe UI", 15), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=12, show="•")
+        self.phone_pin_entry = tk.Entry(fields_row, textvariable=self.phone_pin_var, font=("Segoe UI", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=12, show="•")
         self.phone_pin_entry.grid(row=0, column=5, padx=(0, 6), ipady=4)
 
         self._pin_vis = [False]
@@ -905,49 +955,49 @@ class AriaApp:
             self._pin_vis[0] = not self._pin_vis[0]
             self.phone_pin_entry.config(show="" if self._pin_vis[0] else "•")
 
-        tk.Button(fields_row, text="👁", font=("Segoe UI", 11), bg=pal["BG_MID"], fg=pal["GREY"], relief="flat", bd=0, padx=6, command=_toggle_pin_vis).grid(row=0, column=6)
+        tk.Button(fields_row, text="👁", font=("Segoe UI", 8), bg=pal["BG_MID"], fg=pal["GREY"], relief="flat", bd=0, padx=6, command=_toggle_pin_vis).grid(row=0, column=6)
 
         btn_row = tk.Frame(conn_card, bg=pal["CARD2"])
         btn_row.pack(fill="x", pady=(0, 8))
 
         self.connect_phone_btn = tk.Button(
-            btn_row, text="⚡ CONNECT OVER WI-FI", font=("Segoe UI", 20, "bold"),
+            btn_row, text="⚡ CONNECT OVER WI-FI", font=("Segoe UI", 8, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=self._connect_phone_wireless
         )
         self.connect_phone_btn.pack(side="left", padx=(0, 6))
 
         tk.Button(
-            btn_row, text="💾 SAVE SETTINGS", font=("Segoe UI", 11),
+            btn_row, text="💾 SAVE SETTINGS", font=("Segoe UI", 8),
             bg=pal["CARD"], fg=pal["WHITE"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
             command=self._save_phone_settings
         ).pack(side="left", padx=(0, 10))
 
         tk.Button(
-            btn_row, text="🔌 1-CLICK USB-TO-WIFI (PORT 5555)", font=("Segoe UI", 20, "bold"),
+            btn_row, text="🔌 1-CLICK USB-TO-WIFI (PORT 5555)", font=("Segoe UI", 7, "bold"),
             bg=pal["CARD"], fg=pal["GREEN"], relief="flat", bd=0, padx=8, pady=6, cursor="hand2",
             command=self._enable_tcpip_via_usb
         ).pack(side="left", padx=(0, 10))
 
-        self.phone_status_lbl = tk.Label(btn_row, text="Status: Disconnected", font=("Segoe UI", 11), bg=pal["CARD2"], fg=pal["GREY"])
+        self.phone_status_lbl = tk.Label(btn_row, text="Status: Disconnected", font=("Segoe UI", 8), bg=pal["CARD2"], fg=pal["GREY"])
         self.phone_status_lbl.pack(side="left")
 
         # 1b. Optional Android 11+ Pairing Sub-Row
         pair_row = tk.Frame(conn_card, bg=pal["CARD2"])
         pair_row.pack(fill="x", pady=(4, 0))
 
-        tk.Label(pair_row, text="Android 11+ Pairing (if not paired):", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["GREY"]).pack(side="left", padx=(0, 6))
+        tk.Label(pair_row, text="Android 11+ Pairing (if not paired):", font=("Segoe UI", 7, "bold"), bg=pal["CARD2"], fg=pal["GREY"]).pack(side="left", padx=(0, 6))
         
-        tk.Label(pair_row, text="Pair Port:", font=("Segoe UI", 15), bg=pal["CARD2"], fg=pal["LAVENDER"]).pack(side="left", padx=(0, 2))
-        self.pair_port_entry = tk.Entry(pair_row, font=("Segoe UI", 11), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=7)
+        tk.Label(pair_row, text="Pair Port:", font=("Segoe UI", 7), bg=pal["CARD2"], fg=pal["LAVENDER"]).pack(side="left", padx=(0, 2))
+        self.pair_port_entry = tk.Entry(pair_row, font=("Segoe UI", 8), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=7)
         self.pair_port_entry.pack(side="left", ipady=2, padx=(0, 6))
 
-        tk.Label(pair_row, text="6-Digit Code:", font=("Segoe UI", 15), bg=pal["CARD2"], fg=pal["LAVENDER"]).pack(side="left", padx=(0, 2))
-        self.pair_code_entry = tk.Entry(pair_row, font=("Segoe UI", 11), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=8)
+        tk.Label(pair_row, text="6-Digit Code:", font=("Segoe UI", 7), bg=pal["CARD2"], fg=pal["LAVENDER"]).pack(side="left", padx=(0, 2))
+        self.pair_code_entry = tk.Entry(pair_row, font=("Segoe UI", 8), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, width=8)
         self.pair_code_entry.pack(side="left", ipady=2, padx=(0, 8))
 
         tk.Button(
-            pair_row, text="PAIR DEVICE", font=("Segoe UI", 20, "bold"),
+            pair_row, text="PAIR DEVICE", font=("Segoe UI", 7, "bold"),
             bg=pal["BG_MID"], fg=pal["CYAN"], relief="flat", bd=0, padx=8, pady=3, cursor="hand2",
             command=self._pair_phone_wireless
         ).pack(side="left")
@@ -956,32 +1006,32 @@ class AriaApp:
         act_card = tk.Frame(wrap, bg=pal["CARD"], padx=18, pady=14)
         act_card.pack(fill="x", padx=24, pady=(0, 12))
 
-        tk.Label(act_card, text="🎮 ONE-TOUCH WIRELESS COMMANDS", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(anchor="w", pady=(0, 8))
+        tk.Label(act_card, text="🎮 ONE-TOUCH WIRELESS COMMANDS", font=("Segoe UI", 10, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(anchor="w", pady=(0, 8))
 
         act_grid = tk.Frame(act_card, bg=pal["CARD"])
         act_grid.pack(fill="x")
 
         self.unlock_btn = tk.Button(
-            act_grid, text="🔓 AUTO-UNLOCK PHONE", font=("Segoe UI", 12, "bold"),
+            act_grid, text="🔓 AUTO-UNLOCK PHONE", font=("Segoe UI", 9, "bold"),
             bg=pal["NVIDIA"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=14, pady=8, cursor="hand2",
             command=self._gui_unlock_phone
         )
         self.unlock_btn.grid(row=0, column=0, padx=4, pady=4, sticky="nsew")
 
         tk.Button(
-            act_grid, text="🔒 LOCK SCREEN", font=("Segoe UI", 12, "bold"),
+            act_grid, text="🔒 LOCK SCREEN", font=("Segoe UI", 9, "bold"),
             bg=pal["CARD2"], fg=pal["PINK"], relief="flat", bd=0, padx=12, pady=8, cursor="hand2",
             command=self._gui_lock_phone
         ).grid(row=0, column=1, padx=4, pady=4, sticky="nsew")
 
         tk.Button(
-            act_grid, text="📸 INSPECT SCREEN (NVIDIA VISION)", font=("Segoe UI", 12, "bold"),
+            act_grid, text="📸 INSPECT SCREEN (NVIDIA VISION)", font=("Segoe UI", 9, "bold"),
             bg=pal["CARD2"], fg=pal["CYAN"], relief="flat", bd=0, padx=12, pady=8, cursor="hand2",
             command=self._gui_inspect_phone_screen
         ).grid(row=0, column=2, padx=4, pady=4, sticky="nsew")
 
         tk.Button(
-            act_grid, text="🔋 CHECK BATTERY", font=("Segoe UI", 12, "bold"),
+            act_grid, text="🔋 CHECK BATTERY", font=("Segoe UI", 9, "bold"),
             bg=pal["CARD2"], fg=pal["GREEN"], relief="flat", bd=0, padx=12, pady=8, cursor="hand2",
             command=self._gui_check_phone_battery
         ).grid(row=0, column=3, padx=4, pady=4, sticky="nsew")
@@ -994,7 +1044,7 @@ class AriaApp:
         nav_row.pack(fill="x", pady=(8, 0))
         for key_text, cmd_fn in [("🏠 HOME BUTTON", self._gui_home_phone), ("◀ BACK BUTTON", self._gui_back_phone)]:
             tk.Button(
-                nav_row, text=key_text, font=("Segoe UI", 20, "bold"),
+                nav_row, text=key_text, font=("Segoe UI", 8, "bold"),
                 bg=pal["BG_MID"], fg=pal["LAVENDER"], relief="flat", bd=0, padx=10, pady=4, cursor="hand2",
                 command=cmd_fn
             ).pack(side="left", padx=(0, 6))
@@ -1003,7 +1053,7 @@ class AriaApp:
         app_card = tk.Frame(wrap, bg=pal["CARD2"], padx=18, pady=14)
         app_card.pack(fill="x", padx=24, pady=(0, 12))
 
-        tk.Label(app_card, text="📱 1-CLICK MOBILE APP LAUNCHER", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w", pady=(0, 8))
+        tk.Label(app_card, text="📱 1-CLICK MOBILE APP LAUNCHER", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w", pady=(0, 8))
 
         app_grid = tk.Frame(app_card, bg=pal["CARD2"])
         app_grid.pack(fill="x")
@@ -1027,7 +1077,7 @@ class AriaApp:
             r_idx = idx // 4
             col_idx = idx % 4
             btn = tk.Button(
-                app_grid, text=app_label, font=("Segoe UI", 20, "bold"),
+                app_grid, text=app_label, font=("Segoe UI", 8, "bold"),
                 bg=pal["BG_DEEP"], fg=app_col, relief="flat", bd=0, padx=8, pady=8, cursor="hand2",
                 command=lambda k=app_key: self._gui_launch_mobile_app(k)
             )
@@ -1038,10 +1088,10 @@ class AriaApp:
         res_card = tk.Frame(wrap, bg=pal["CARD"], padx=18, pady=12)
         res_card.pack(fill="both", expand=True, padx=24, pady=(0, 24))
 
-        tk.Label(res_card, text="OUTPUT & PHONE TELEMETRY:", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w")
+        tk.Label(res_card, text="OUTPUT & PHONE TELEMETRY:", font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w")
 
         self.phone_res_text = tk.Text(
-            res_card, font=("Segoe UI", 15), bg=pal["BG_MID"], fg=pal["WHITE"],
+            res_card, font=("Segoe UI", 9), bg=pal["BG_MID"], fg=pal["WHITE"],
             relief="flat", bd=0, height=8, wrap="word", padx=10, pady=8
         )
         self.phone_res_text.pack(fill="both", expand=True, pady=(6, 0))
@@ -1205,10 +1255,10 @@ class AriaApp:
         act_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
         act_card.pack(fill="x", padx=24, pady=(16, 12))
 
-        tk.Label(act_card, text="📸 SCREEN PERCEPTION & VISUAL QA", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w")
+        tk.Label(act_card, text="📸 SCREEN PERCEPTION & VISUAL QA", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w")
         
         self.vision_query_entry = tk.Entry(
-            act_card, font=("Segoe UI", 15), bg=pal["BG_DEEP"], fg=pal["WHITE"],
+            act_card, font=("Segoe UI", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"],
             insertbackground=pal["CYAN"], relief="flat", bd=0
         )
         self.vision_query_entry.pack(fill="x", ipady=6, pady=(6, 8))
@@ -1218,14 +1268,14 @@ class AriaApp:
         btn_row.pack(fill="x")
 
         self.vision_inspect_btn = tk.Button(
-            btn_row, text="👁 SNAPSHOT & ANALYZE (NVIDIA VISION)", font=("Segoe UI", 20, "bold"),
+            btn_row, text="👁 SNAPSHOT & ANALYZE (NVIDIA VISION)", font=("Segoe UI", 8, "bold"),
             bg=pal["NVIDIA"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=self._run_screen_vision
         )
         self.vision_inspect_btn.pack(side="left", padx=(0, 6))
 
         tk.Button(
-            btn_row, text="🎯 FIND & CLICK BUTTON", font=("Segoe UI", 20, "bold"),
+            btn_row, text="🎯 FIND & CLICK BUTTON", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD"], fg=pal["CYAN"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=self._run_visual_click
         ).pack(side="left")
@@ -1234,10 +1284,10 @@ class AriaApp:
         res_card = tk.Frame(wrap, bg=pal["CARD"], padx=16, pady=12)
         res_card.pack(fill="both", expand=True, padx=24, pady=(0, 24))
         
-        tk.Label(res_card, text="PERCEPTION OUTPUT:", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w")
+        tk.Label(res_card, text="PERCEPTION OUTPUT:", font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w")
         
         self.vision_result_text = tk.Text(
-            res_card, font=("Segoe UI", 15), bg=pal["BG_MID"], fg=pal["WHITE"],
+            res_card, font=("Segoe UI", 9), bg=pal["BG_MID"], fg=pal["WHITE"],
             relief="flat", bd=0, height=12, wrap="word", padx=10, pady=10
         )
         self.vision_result_text.pack(fill="both", expand=True, pady=(6, 0))
@@ -1289,7 +1339,7 @@ class AriaApp:
 
         _, wrap = make_scrollable(p, pal["BG_DEEP"])
 
-        tk.Label(wrap, text="ACTIVE SUB-AGENT DIRECTORY", font=("Segoe UI", 12, "bold"), bg=pal["BG_DEEP"], fg=pal["GREY"]).pack(anchor="w", padx=24, pady=(16, 6))
+        tk.Label(wrap, text="ACTIVE SUB-AGENT DIRECTORY", font=("Segoe UI", 9, "bold"), bg=pal["BG_DEEP"], fg=pal["GREY"]).pack(anchor="w", padx=24, pady=(16, 6))
 
         agents = [
             ("🧠", "Reasoning Core", "DeepSeek-R1 & Nemotron-70B", "Multi-hop logic, task decomposition, reflective CoT planning.", pal["GLOW"], "ONLINE"),
@@ -1305,15 +1355,15 @@ class AriaApp:
 
             hdr = tk.Frame(card, bg=pal["CARD"])
             hdr.pack(fill="x")
-            tk.Label(hdr, text=icon, font=("Segoe UI", 15), bg=pal["CARD"], fg=col).pack(side="left")
-            tk.Label(hdr, text=f"  {title}", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(side="left")
-            tk.Label(hdr, text=f"  [{model}]", font=("Segoe UI", 11), bg=pal["CARD"], fg=pal["LAVENDER"]).pack(side="left")
+            tk.Label(hdr, text=icon, font=("Segoe UI", 13), bg=pal["CARD"], fg=col).pack(side="left")
+            tk.Label(hdr, text=f"  {title}", font=("Segoe UI", 10, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(side="left")
+            tk.Label(hdr, text=f"  [{model}]", font=("Segoe UI", 8), bg=pal["CARD"], fg=pal["LAVENDER"]).pack(side="left")
 
             badge = tk.Frame(hdr, bg=pal["CARD2"], padx=6, pady=2)
             badge.pack(side="right")
-            tk.Label(badge, text=f"● {status}", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=col).pack()
+            tk.Label(badge, text=f"● {status}", font=("Segoe UI", 7, "bold"), bg=pal["CARD2"], fg=col).pack()
 
-            tk.Label(card, text=desc, font=("Segoe UI", 11), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w", pady=(4, 0))
+            tk.Label(card, text=desc, font=("Segoe UI", 8), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w", pady=(4, 0))
 
     # ── DASHBOARD 5: NVIDIA NIM & 40 RPM RATE LIMITER HUB ─────────────────────
     def _pg_nvidia(self):
@@ -1327,30 +1377,30 @@ class AriaApp:
         rpm_card = tk.Frame(wrap, bg=pal["CARD2"], padx=20, pady=16)
         rpm_card.pack(fill="x", padx=24, pady=(16, 12))
 
-        tk.Label(rpm_card, text="⚡ LIVE 40 RPM RATE LIMITER STATUS", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["NVIDIA"]).pack(anchor="w")
+        tk.Label(rpm_card, text="⚡ LIVE 40 RPM RATE LIMITER STATUS", font=("Segoe UI", 11, "bold"), bg=pal["CARD2"], fg=pal["NVIDIA"]).pack(anchor="w")
         
-        self.rpm_large_lbl = tk.Label(rpm_card, text="0 / 40 Requests per Minute (100% Available)", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["WHITE"])
+        self.rpm_large_lbl = tk.Label(rpm_card, text="0 / 40 Requests per Minute (100% Available)", font=("Segoe UI", 14, "bold"), bg=pal["CARD2"], fg=pal["WHITE"])
         self.rpm_large_lbl.pack(anchor="w", pady=(6, 4))
 
         tk.Label(rpm_card, text="• Sliding Window: 60 Seconds  • Safe Ceiling: 38 RPM  • Exponential Jitter Backoff: Active  • LRU Response Cache: Enabled",
-                 font=("Segoe UI", 11), bg=pal["CARD2"], fg=pal["LAVENDER"]).pack(anchor="w")
+                 font=("Segoe UI", 8), bg=pal["CARD2"], fg=pal["LAVENDER"]).pack(anchor="w")
 
         # 2. Benchmark & Test Button
         btn_row = tk.Frame(wrap, bg=pal["BG_DEEP"])
         btn_row.pack(fill="x", padx=24, pady=(0, 12))
 
         self.nv_bench_btn = tk.Button(
-            btn_row, text="⚡ BENCHMARK NVIDIA NIM LATENCY", font=("Segoe UI", 20, "bold"),
+            btn_row, text="⚡ BENCHMARK NVIDIA NIM LATENCY", font=("Segoe UI", 8, "bold"),
             bg=pal["NVIDIA"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=14, pady=6, cursor="hand2",
             command=self._benchmark_nvidia
         )
         self.nv_bench_btn.pack(side="left")
 
-        self.nv_bench_lbl = tk.Label(btn_row, text="", font=("Segoe UI", 11), bg=pal["BG_DEEP"], fg=pal["GREY"])
+        self.nv_bench_lbl = tk.Label(btn_row, text="", font=("Segoe UI", 8), bg=pal["BG_DEEP"], fg=pal["GREY"])
         self.nv_bench_lbl.pack(side="left", padx=10)
 
         # 3. Model Catalog
-        tk.Label(wrap, text="SUPPORTED NVIDIA NIM MODEL CATALOG", font=("Segoe UI", 12, "bold"), bg=pal["BG_DEEP"], fg=pal["GREY"]).pack(anchor="w", padx=24, pady=(8, 6))
+        tk.Label(wrap, text="SUPPORTED NVIDIA NIM MODEL CATALOG", font=("Segoe UI", 9, "bold"), bg=pal["BG_DEEP"], fg=pal["GREY"]).pack(anchor="w", padx=24, pady=(8, 6))
 
         catalog = [
             ("Deep Reasoning", "deepseek-ai/deepseek-r1", "Frontier multi-hop reasoning & reflective chain of thought."),
@@ -1369,10 +1419,10 @@ class AriaApp:
 
             hdr = tk.Frame(row, bg=pal["CARD"])
             hdr.pack(fill="x")
-            tk.Label(hdr, text=category, font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["NVIDIA"]).pack(side="left")
-            tk.Label(hdr, text=f"  —  {m_name}", font=("Segoe UI", 12, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(side="left")
+            tk.Label(hdr, text=category, font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["NVIDIA"]).pack(side="left")
+            tk.Label(hdr, text=f"  —  {m_name}", font=("Segoe UI", 9, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(side="left")
 
-            tk.Label(row, text=m_desc, font=("Segoe UI", 11), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w", pady=(2, 0))
+            tk.Label(row, text=m_desc, font=("Segoe UI", 8), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w", pady=(2, 0))
 
     def _benchmark_nvidia(self):
         self.nv_bench_btn.config(text="Benchmarking...", state="disabled")
@@ -1412,69 +1462,69 @@ class AriaApp:
         ctrl_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
         ctrl_card.pack(fill="x", padx=24, pady=(16, 10))
 
-        tk.Label(ctrl_card, text="🛡️ BIG SISTER GAIA SUPERVISION CONTROLS", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w", pady=(0, 6))
+        tk.Label(ctrl_card, text="🛡️ BIG SISTER GAIA SUPERVISION CONTROLS", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w", pady=(0, 6))
 
         btn_row = tk.Frame(ctrl_card, bg=pal["CARD2"])
         btn_row.pack(fill="x", pady=4)
 
         self.gaia_curiosity_btn = tk.Button(
-            btn_row, text="✨ LAUNCH ARIA CURIOSITY", font=("Segoe UI", 20, "bold"),
+            btn_row, text="✨ LAUNCH ARIA CURIOSITY", font=("Segoe UI", 8, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=self._launch_gaia_curiosity
         )
         self.gaia_curiosity_btn.pack(side="left", padx=(0, 6))
 
         self.gaia_rollback_btn = tk.Button(
-            btn_row, text="⏪ ROLLBACK SNAPSHOT", font=("Segoe UI", 20, "bold"),
+            btn_row, text="⏪ ROLLBACK SNAPSHOT", font=("Segoe UI", 8, "bold"),
             bg=pal["AMBER"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=self._do_gaia_rollback
         )
         self.gaia_rollback_btn.pack(side="left", padx=(0, 6))
 
         self.gaia_safety_btn = tk.Button(
-            btn_row, text="🛡️ TEST SECURITY GUARD", font=("Segoe UI", 20, "bold"),
+            btn_row, text="🛡️ TEST SECURITY GUARD", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD"], fg=pal["CYAN"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=self._do_gaia_safety_test
         )
         self.gaia_safety_btn.pack(side="left", padx=(0, 6))
 
         self.gaia_heal_btn = tk.Button(
-            btn_row, text="🩺 TEST AUTO-HEALING", font=("Segoe UI", 20, "bold"),
+            btn_row, text="🩺 TEST AUTO-HEALING", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD"], fg=pal["PINK"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=self._do_gaia_heal_test
         )
         self.gaia_heal_btn.pack(side="left", padx=(0, 6))
 
         self.gaia_refresh_btn = tk.Button(
-            btn_row, text="🔄 REFRESH", font=("Segoe UI", 20, "bold"),
+            btn_row, text="🔄 REFRESH", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD"], fg=pal["GREY"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
             command=self._refresh_gaia_feed
         )
         self.gaia_refresh_btn.pack(side="left", padx=(0, 6))
 
         self.gaia_diff_btn = tk.Button(
-            btn_row, text="🔍 VIEW DIFF (C: vs E:)", font=("Segoe UI", 20, "bold"),
+            btn_row, text="🔍 VIEW DIFF (C: vs E:)", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD"], fg=pal["LAVENDER"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
             command=self._show_gaia_diff
         )
         self.gaia_diff_btn.pack(side="left", padx=(0, 6))
 
         self.gaia_promote_btn = tk.Button(
-            btn_row, text="🚀 MERGE TO C:\\", font=("Segoe UI", 20, "bold"),
+            btn_row, text="🚀 MERGE TO C:\\", font=("Segoe UI", 8, "bold"),
             bg=pal["NVIDIA"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
             command=self._do_promote_to_c
         )
         self.gaia_promote_btn.pack(side="left", padx=(0, 6))
 
         self.gaia_reset_btn = tk.Button(
-            btn_row, text="🔄 RESET E:\\", font=("Segoe UI", 20, "bold"),
+            btn_row, text="🔄 RESET E:\\", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD"], fg=pal["GREY"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
             command=self._do_reset_e
         )
         self.gaia_reset_btn.pack(side="left", padx=(0, 6))
 
         self.gaia_vault_btn = tk.Button(
-            btn_row, text="☁️ GCS VAULT SYNC", font=("Segoe UI", 20, "bold"),
+            btn_row, text="☁️ GCS VAULT SYNC", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD"], fg=pal["CYAN"], relief="flat", bd=0, padx=10, pady=6, cursor="hand2",
             command=self._do_gcs_vault_sync
         )
@@ -1487,7 +1537,7 @@ class AriaApp:
         self.gaia_status_lbl = tk.Label(
             stat_card,
             text="Status: WATCHING / IDLE • Security Guardrail: ACTIVE • Sandbox: E:\\MyAgent • Cloud Vault: gs://aria-gaia-vault-0421124464/ (CONNECTED)",
-            font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["NVIDIA"]
+            font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["NVIDIA"]
         )
         self.gaia_status_lbl.pack(anchor="w")
 
@@ -1495,10 +1545,10 @@ class AriaApp:
         feed_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
         feed_card.pack(fill="both", expand=True, padx=24, pady=(10, 6))
 
-        tk.Label(feed_card, text="📡 SISTER-TO-SISTER EVENT STREAM (Aria & GAIA Live Telemetry)", font=("Segoe UI", 12, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w", pady=(0, 6))
+        tk.Label(feed_card, text="📡 SISTER-TO-SISTER EVENT STREAM (Aria & GAIA Live Telemetry)", font=("Segoe UI", 9, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w", pady=(0, 6))
 
         self.gaia_feed_text = tk.Text(
-            feed_card, font=("Consolas", 12), bg=pal["BG_DEEP"], fg=pal["WHITE"],
+            feed_card, font=("Consolas", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"],
             relief="flat", bd=0, height=12, padx=8, pady=8
         )
         self.gaia_feed_text.pack(fill="both", expand=True)
@@ -1507,10 +1557,10 @@ class AriaApp:
         diff_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
         diff_card.pack(fill="both", expand=True, padx=24, pady=(6, 12))
 
-        tk.Label(diff_card, text="🔍 ARIA EVOLUTION DIFF (C:\\MyAgent\\agent.py vs E:\\MyAgent\\aria_evolved.py)", font=("Segoe UI", 12, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w", pady=(0, 6))
+        tk.Label(diff_card, text="🔍 ARIA EVOLUTION DIFF (C:\\MyAgent\\agent.py vs E:\\MyAgent\\aria_evolved.py)", font=("Segoe UI", 9, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w", pady=(0, 6))
 
         self.gaia_diff_text = tk.Text(
-            diff_card, font=("Consolas", 11), bg=pal["BG_DEEP"], fg=pal["WHITE"],
+            diff_card, font=("Consolas", 8), bg=pal["BG_DEEP"], fg=pal["WHITE"],
             relief="flat", bd=0, height=10, padx=8, pady=8
         )
         self.gaia_diff_text.pack(fill="both", expand=True)
@@ -1650,10 +1700,10 @@ class AriaApp:
         gen_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=12)
         gen_card.pack(fill="x", padx=24, pady=(16, 12))
 
-        tk.Label(gen_card, text="💻 NVIDIA CODER SCRIPT SYNTHESIS (Qwen 2.5 Coder)", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["NVIDIA"]).pack(anchor="w")
+        tk.Label(gen_card, text="💻 NVIDIA CODER SCRIPT SYNTHESIS (Qwen 2.5 Coder)", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["NVIDIA"]).pack(anchor="w")
 
         self.script_task_entry = tk.Entry(
-            gen_card, font=("Segoe UI", 15), bg=pal["BG_DEEP"], fg=pal["WHITE"],
+            gen_card, font=("Segoe UI", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"],
             insertbackground=pal["CYAN"], relief="flat", bd=0
         )
         self.script_task_entry.pack(fill="x", ipady=6, pady=(6, 8))
@@ -1663,14 +1713,14 @@ class AriaApp:
         s_btn_row.pack(fill="x")
 
         self.synth_btn = tk.Button(
-            s_btn_row, text="GENERATE SCRIPT", font=("Segoe UI", 20, "bold"),
+            s_btn_row, text="GENERATE SCRIPT", font=("Segoe UI", 8, "bold"),
             bg=pal["NVIDIA"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=lambda: self._generate_script(execute=False)
         )
         self.synth_btn.pack(side="left", padx=(0, 6))
 
         self.exec_script_btn = tk.Button(
-            s_btn_row, text="GENERATE & EXECUTE (WITH SAFETY GUARD)", font=("Segoe UI", 20, "bold"),
+            s_btn_row, text="GENERATE & EXECUTE (WITH SAFETY GUARD)", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD"], fg=pal["CYAN"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=lambda: self._generate_script(execute=True)
         )
@@ -1680,10 +1730,10 @@ class AriaApp:
         out_card = tk.Frame(wrap, bg=pal["CARD"], padx=16, pady=12)
         out_card.pack(fill="both", expand=True, padx=24, pady=(0, 24))
 
-        tk.Label(out_card, text="TERMINAL OUTPUT:", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w")
+        tk.Label(out_card, text="TERMINAL OUTPUT:", font=("Segoe UI", 8, "bold"), bg=pal["CARD"], fg=pal["GREY"]).pack(anchor="w")
 
         self.sys_term_text = tk.Text(
-            out_card, font=("Consolas", 12), bg=pal["BG_MID"], fg=pal["CYAN"],
+            out_card, font=("Consolas", 9), bg=pal["BG_MID"], fg=pal["CYAN"],
             relief="flat", bd=0, height=14, wrap="word", padx=10, pady=10
         )
         self.sys_term_text.pack(fill="both", expand=True, pady=(6, 0))
@@ -1720,16 +1770,16 @@ class AriaApp:
         tl_card = tk.Frame(wrap, bg=pal["CARD"], padx=16, pady=12)
         tl_card.pack(fill="x", padx=24, pady=(16, 12))
 
-        tk.Label(tl_card, text="📜 EPISODIC MEMORY TIMELINE", font=("Segoe UI", 20, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(anchor="w")
+        tk.Label(tl_card, text="📜 EPISODIC MEMORY TIMELINE", font=("Segoe UI", 10, "bold"), bg=pal["CARD"], fg=pal["WHITE"]).pack(anchor="w")
         
         self.mem_text = tk.Text(
-            tl_card, font=("Segoe UI", 15), bg=pal["BG_MID"], fg=pal["LAVENDER"],
+            tl_card, font=("Segoe UI", 9), bg=pal["BG_MID"], fg=pal["LAVENDER"],
             relief="flat", bd=0, height=10, wrap="word", padx=8, pady=8
         )
         self.mem_text.pack(fill="x", pady=(6, 8))
 
         tk.Button(
-            tl_card, text="🔄 REFRESH TIMELINE", font=("Segoe UI", 20, "bold"),
+            tl_card, text="🔄 REFRESH TIMELINE", font=("Segoe UI", 8, "bold"),
             bg=pal["CARD2"], fg=pal["CYAN"], relief="flat", bd=0, padx=10, pady=4, cursor="hand2",
             command=self._refresh_memory_timeline
         ).pack(side="left")
@@ -1757,17 +1807,17 @@ class AriaApp:
         card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=14)
         card.pack(fill="x", padx=24, pady=(16, 12))
 
-        tk.Label(card, text="🌐 WEB RESEARCH & LIVE AUTOMATION", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w")
+        tk.Label(card, text="🌐 WEB RESEARCH & LIVE AUTOMATION", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(anchor="w")
 
         self.web_url_entry = tk.Entry(
-            card, font=("Segoe UI", 15), bg=pal["BG_DEEP"], fg=pal["WHITE"],
+            card, font=("Segoe UI", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"],
             insertbackground=pal["CYAN"], relief="flat", bd=0
         )
         self.web_url_entry.pack(fill="x", ipady=6, pady=(6, 8))
         self.web_url_entry.insert(0, "https://news.ycombinator.com")
 
         tk.Button(
-            card, text="LAUNCH AUTOMATED CHROME", font=("Segoe UI", 20, "bold"),
+            card, text="LAUNCH AUTOMATED CHROME", font=("Segoe UI", 8, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
             command=lambda: webbrowser.open(self.web_url_entry.get().strip())
         ).pack(side="left")
@@ -1783,10 +1833,10 @@ class AriaApp:
         card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=14)
         card.pack(fill="x", padx=24, pady=(16, 12))
 
-        tk.Label(card, text="📊 COGNITIVE & WORKLOAD METRICS", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w")
+        tk.Label(card, text="📊 COGNITIVE & WORKLOAD METRICS", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w")
         
         self.analytics_text = tk.Text(
-            card, font=("Segoe UI", 15), bg=pal["BG_MID"], fg=pal["LAVENDER"],
+            card, font=("Segoe UI", 9), bg=pal["BG_MID"], fg=pal["LAVENDER"],
             relief="flat", bd=0, height=12, wrap="word", padx=8, pady=8
         )
         self.analytics_text.pack(fill="x", pady=(6, 8))
@@ -1814,14 +1864,14 @@ class AriaApp:
         key_card = tk.Frame(wrap, bg=pal["CARD2"], padx=16, pady=14)
         key_card.pack(fill="x", padx=24, pady=(16, 12))
 
-        tk.Label(key_card, text="🔑 MULTI-ENGINE CLOUD API KEYS", font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w", pady=(0, 8))
+        tk.Label(key_card, text="🔑 MULTI-ENGINE CLOUD API KEYS", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["WHITE"]).pack(anchor="w", pady=(0, 8))
 
         self.nv_key_var = self._make_key_row(key_card, "NVIDIA Key", "nvidia_api_key", pal["NVIDIA"])
         self.gem_key_var = self._make_key_row(key_card, "Gemini Key", "gemini_api_key", pal["CYAN"])
         self.groq_key_var = self._make_key_row(key_card, "Groq Key", "groq_api_key", pal["AMBER"])
 
         tk.Button(
-            key_card, text="💾 SAVE ALL API KEYS", font=("Segoe UI", 20, "bold"),
+            key_card, text="💾 SAVE ALL API KEYS", font=("Segoe UI", 8, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=14, pady=6, cursor="hand2",
             command=self._save_keys
         ).pack(anchor="w", pady=(8, 0))
@@ -1830,9 +1880,9 @@ class AriaApp:
         pal = self.pal
         row = tk.Frame(parent, bg=pal["CARD2"], pady=4)
         row.pack(fill="x")
-        tk.Label(row, text=label, font=("Segoe UI", 20, "bold"), bg=pal["CARD2"], fg=col, width=12, anchor="w").pack(side="left")
+        tk.Label(row, text=label, font=("Segoe UI", 8, "bold"), bg=pal["CARD2"], fg=col, width=12, anchor="w").pack(side="left")
         var = tk.StringVar(value=self.config.get(config_key, ""))
-        entry = tk.Entry(row, textvariable=var, font=("Segoe UI", 15), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, show="•")
+        entry = tk.Entry(row, textvariable=var, font=("Segoe UI", 9), bg=pal["BG_DEEP"], fg=pal["WHITE"], relief="flat", bd=0, show="•")
         entry.pack(side="left", fill="x", expand=True, ipady=4, padx=(0, 6))
 
         show_var = [False]
@@ -1840,7 +1890,7 @@ class AriaApp:
             show_var[0] = not show_var[0]
             entry.config(show="" if show_var[0] else "•")
 
-        tk.Button(row, text="👁", font=("Segoe UI", 11), bg=pal["BG_MID"], fg=pal["GREY"], relief="flat", bd=0, padx=6, command=_toggle).pack(side="left")
+        tk.Button(row, text="👁", font=("Segoe UI", 8), bg=pal["BG_MID"], fg=pal["GREY"], relief="flat", bd=0, padx=6, command=_toggle).pack(side="left")
         return var
 
     def _save_keys(self):
@@ -2046,10 +2096,6 @@ def main():
     except Exception:
         pass
     root = tk.Tk()
-    try:
-        root.tk.call('tk', 'scaling', 1.35)
-    except Exception:
-        pass
     app = AriaApp(root)
     root.mainloop()
 
