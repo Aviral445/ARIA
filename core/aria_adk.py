@@ -740,6 +740,12 @@ def load_dynamic_sandbox_tools() -> Dict[str, Callable]:
                         spec.loader.exec_module(mod)
                         if hasattr(mod, "register_tool"):
                             t_name, t_fn = mod.register_tool()
+                            # Validation gate: MUST be callable, NOT a lambda, and have a valid name
+                            if not callable(t_fn) or getattr(t_fn, "__name__", "") in ("", "<lambda>"):
+                                print(f"[ADK] Skipping invalid dynamic tool '{t_name}' (lambda or non-callable)")
+                                continue
+                            if not t_fn.__doc__:
+                                t_fn.__doc__ = f"Executes dynamic sandbox tool {t_name} in Aria's lab."
                             loaded_tools[t_name] = t_fn
                             TOOL_NAME_MAP[t_name] = t_fn
                             if t_fn not in ALL_ADK_TOOLS:
@@ -827,7 +833,7 @@ class AriaADK:
         self.nvidia_api_key = nvidia_api_key or os.environ.get("NVIDIA_API_KEY", "")
         self.gemini_model = "gemini-2.5-flash"
         self.groq_model = "qwen/qwen3.6-27b"
-        self.nvidia_model = "meta/llama-3.3-70b-instruct"
+        self.nvidia_model = "nvidia/llama-3.1-nemotron-70b-instruct"
         self.ollama_model = "llama3.2"
 
         self._init_clients()
@@ -1106,11 +1112,23 @@ class AriaADK:
                 parts=[genai_types.Part.from_text(text=user_input)]
             ))
 
+            # Filter tools_to_use so only valid, unique named callables with docstrings are passed to Gemini
+            valid_gemini_tools = []
+            seen_gemini_names = set()
+            if tools_to_use:
+                for fn in tools_to_use:
+                    fn_name = getattr(fn, "__name__", "")
+                    if callable(fn) and fn_name not in ("", "<lambda>") and fn_name not in seen_gemini_names:
+                        seen_gemini_names.add(fn_name)
+                        if not fn.__doc__:
+                            fn.__doc__ = f"Tool function {fn_name}"
+                        valid_gemini_tools.append(fn)
+
             config = genai_types.GenerateContentConfig(
                 system_instruction=system_instruction,
                 temperature=0.7,
                 max_output_tokens=500,
-                tools=tools_to_use,
+                tools=valid_gemini_tools if valid_gemini_tools else None,
             )
 
             # Tool calling loop (up to 4 multi-turn hops)
@@ -1195,10 +1213,15 @@ class AriaADK:
             list: "array",
             dict: "object",
         }
+        seen_names = set()
         for fn in tools:
             try:
+                fn_name = getattr(fn, "__name__", "")
+                if not fn_name or fn_name in ("", "<lambda>") or fn_name in seen_names:
+                    continue
+                seen_names.add(fn_name)
                 sig = inspect.signature(fn)
-                doc = inspect.getdoc(fn) or f"Execute {fn.__name__}"
+                doc = inspect.getdoc(fn) or f"Execute {fn_name}"
                 properties = {}
                 required = []
                 for p_name, p in sig.parameters.items():
@@ -1214,7 +1237,7 @@ class AriaADK:
                 openai_tools.append({
                     "type": "function",
                     "function": {
-                        "name": fn.__name__,
+                        "name": fn_name,
                         "description": doc.split("\n")[0].strip(),
                         "parameters": {
                             "type": "object",
@@ -1240,6 +1263,9 @@ class AriaADK:
             return None
         try:
             target_nv_model = model_override if (model_override and ("nvidia" in model_override.lower() or "llama" in model_override.lower() or "deepseek" in model_override.lower() or "qwen" in model_override.lower())) else self.nvidia_model
+            # Map retired or unhosted NIM model IDs to active NIM endpoints
+            if "llama-3.3-70b-instruct" in target_nv_model or "deepseek-r1" in target_nv_model:
+                target_nv_model = "nvidia/llama-3.1-nemotron-70b-instruct"
 
             clean_sys = (
                 system_instruction + 
@@ -1256,7 +1282,9 @@ class AriaADK:
 
             msgs = [{"role": "system", "content": clean_sys}]
             for m in history[-6:]:
-                msgs.append({"role": m.get("role", "user"), "content": m.get("content", "")})
+                raw_role = m.get("role", "user")
+                role = "assistant" if raw_role in ["model", "assistant", "aria"] else ("system" if raw_role == "system" else "user")
+                msgs.append({"role": role, "content": m.get("content", "")})
             msgs.append({"role": "user", "content": user_input})
 
             for hop in range(3):
@@ -1335,7 +1363,9 @@ class AriaADK:
             try:
                 msgs = [{"role": "system", "content": clean_sys}]
                 for m in history[-4:]:
-                    msgs.append({"role": m.get("role", "user"), "content": m.get("content", "")})
+                    raw_role = m.get("role", "user")
+                    role = "assistant" if raw_role in ["model", "assistant", "aria"] else ("system" if raw_role == "system" else "user")
+                    msgs.append({"role": role, "content": m.get("content", "")})
                 msgs.append({"role": "user", "content": user_input})
                 def _fallback_exec():
                     return self.nvidia_engine._client.chat.completions.create(
@@ -1374,7 +1404,9 @@ class AriaADK:
             clean_sys = system_instruction + "\n[SYSTEM MANDATE]: Never pretend or simulate actions. If an error occurs, state the error directly."
             msgs = [{"role": "system", "content": clean_sys}]
             for m in history[-6:]:
-                msgs.append({"role": m.get("role", "user"), "content": m.get("content", "")})
+                raw_role = m.get("role", "user")
+                role = "assistant" if raw_role in ["model", "assistant", "aria"] else ("system" if raw_role == "system" else "user")
+                msgs.append({"role": role, "content": m.get("content", "")})
             msgs.append({"role": "user", "content": user_input})
 
             for hop in range(3):
@@ -1451,7 +1483,9 @@ class AriaADK:
 
             msgs = [{"role": "system", "content": system_instruction}]
             for m in history[-6:]:
-                msgs.append({"role": m.get("role", "user"), "content": m.get("content", "")})
+                raw_role = m.get("role", "user")
+                role = "assistant" if raw_role in ["model", "assistant", "aria"] else ("system" if raw_role == "system" else "user")
+                msgs.append({"role": role, "content": m.get("content", "")})
             msgs.append({"role": "user", "content": user_input})
 
             resp = self.ollama_client.chat.completions.create(

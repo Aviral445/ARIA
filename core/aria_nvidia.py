@@ -45,11 +45,9 @@ NVIDIA_MODELS = {
     "reasoning": [
         "deepseek-ai/deepseek-r1",
         "nvidia/llama-3.1-nemotron-70b-instruct",
-        "meta/llama-3.3-70b-instruct",
         "mistralai/mistral-large-2-instruct"
     ],
     "general": [
-        "meta/llama-3.3-70b-instruct",
         "nvidia/llama-3.1-nemotron-70b-instruct",
         "mistralai/mistral-large-2-instruct",
         "deepseek-ai/deepseek-r1"
@@ -57,7 +55,7 @@ NVIDIA_MODELS = {
     "code": [
         "qwen/qwen2.5-coder-32b-instruct",
         "deepseek-ai/deepseek-coder-33b-instruct",
-        "meta/llama-3.3-70b-instruct"
+        "nvidia/llama-3.1-nemotron-70b-instruct"
     ],
     "vision": [
         "meta/llama-3.2-11b-vision-instruct",
