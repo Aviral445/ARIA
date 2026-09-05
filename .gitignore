@@ -83,7 +83,11 @@ desktop.ini
 # GAIA Runtime Events, Sandbox & Temp Audio
 gaia/events.json
 gaia/sandbox/
+gaia/data/
+data/notes/
+sandbox_notes/
 *.mp3
 *.wav
 snapshots/
 diffs/
+
