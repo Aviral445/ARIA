@@ -334,6 +334,34 @@ def aria_create_multifile_project(project_name: str, files: str = "", open_in_ed
         return f"Error scaffolding multi-file project: {e}"
 
 
+def aria_control_vscode(action: str = "type", text: str = "") -> str:
+    r"""Directly control, type into, or run in the live Visual Studio Code window:
+    Args:
+        action: 'type' (type/paste text into editor), 'terminal' (open terminal and run command),
+                'command_palette' (open Ctrl+Shift+P), 'run' (Ctrl+F5), 'save' (Ctrl+S), 'new_file' (Ctrl+N).
+        text: Code or command string to inject into the editor, terminal, or command palette."""
+    try:
+        import aria_extended
+        return aria_extended.focus_and_type_in_vscode(text=text, action=action)
+    except Exception as e:
+        return f"Error controlling VS Code: {e}"
+
+
+def aria_type_or_hotkey(text: str = "", hotkey: str = "", press_enter: bool = False) -> str:
+    r"""Type text or press keyboard shortcuts in whatever window currently has focus.
+    Args:
+        text: Text to type into the active window.
+        hotkey: Optional key combo (e.g. 'ctrl+s', 'ctrl+shift+p', 'ctrl+`', 'f5', 'alt+tab').
+        press_enter: Whether to press Enter after typing."""
+    try:
+        import aria_extended
+        if hotkey:
+            return aria_extended.press_keyboard_hotkey(hotkey)
+        return aria_extended.type_keyboard_text(text, press_enter=press_enter)
+    except Exception as e:
+        return f"Error with keyboard action: {e}"
+
+
 def execute_powershell_command(command: str) -> str:
     """Run an authorized PowerShell command on Windows to inspect or control the OS."""
     try:
@@ -686,6 +714,8 @@ ALL_ADK_TOOLS: List[Callable] = [
     aria_open_files_explorer,
     aria_open_in_vscode,
     aria_create_multifile_project,
+    aria_control_vscode,
+    aria_type_or_hotkey,
 ]
 
 TOOL_NAME_MAP: Dict[str, Callable] = {fn.__name__: fn for fn in ALL_ADK_TOOLS}
@@ -713,7 +743,7 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "description": "Controls Windows applications, creates & searches documents, organizes files, monitors hardware health, and manages volume & power.",
         "icon": "💻",
         "accent": "#38bdf8",
-        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
+        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "aria_control_vscode", "aria_type_or_hotkey", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
         "status": "READY"
     },
     "browser": {
