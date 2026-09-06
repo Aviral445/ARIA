@@ -151,14 +151,29 @@ def get_system_stats() -> dict:
     except Exception:
         return {}
 
-def get_system_context() -> dict:
-    """Build and return a full system context snapshot."""
+def get_system_context(force_refresh: bool = False) -> dict:
+    """Build and return a full system context snapshot, optimized with a 2.0s telemetry cache."""
+    try:
+        from core.aria_cache import cache_manager
+        telem_cache = cache_manager.telemetry_cache
+    except Exception:
+        try:
+            import aria_cache
+            telem_cache = aria_cache.cache_manager.telemetry_cache
+        except Exception:
+            telem_cache = None
+
+    if not force_refresh and telem_cache is not None:
+        cached = telem_cache.get("full_context")
+        if cached is not None:
+            return cached
+
     active_win = get_active_window()
     open_wins = get_open_windows_and_apps()
     stats = get_system_stats()
     cb = get_clipboard()
 
-    return {
+    ctx = {
         "timestamp": datetime.datetime.now().strftime("%A %B %d %Y, %I:%M %p"),
         "active_window": active_win,
         "open_windows": open_wins,
@@ -170,6 +185,11 @@ def get_system_context() -> dict:
         "ram_used_gb": stats.get("ram_used_gb", 0),
         "ram_total_gb": stats.get("ram_total_gb", 0),
     }
+
+    if telem_cache is not None:
+        telem_cache.set("full_context", ctx)
+
+    return ctx
 
 def format_context_for_prompt(ctx: dict) -> str:
     """

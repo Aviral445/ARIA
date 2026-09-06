@@ -241,8 +241,9 @@ You wrote this Python code, but when running it, it crashed with this error:
 
 TASK:
 1. Examine your own mistake and fix it yourself!
-2. Keep your code clean, functional, and strictly inside the sandbox.
-3. Output your response in this exact format:
+2. If the error mentions missing register_tool or missing docstrings, ensure `register_tool()` is defined and the function has a triple-quoted docstring inside its body!
+3. Keep your code clean, functional, and strictly inside the sandbox.
+4. Output your response in this exact format:
 
 EXPLANATION: <A short 1-sentence excited note on what went wrong and how you fixed it yourself>
 CODE:
@@ -321,10 +322,11 @@ Aria tried to execute this Python code and tried to fix it, but got stuck with t
 {stderr}
 
 TASK:
-1. Fix the error completely.
-2. Preserve all features Aria was trying to build.
-3. Ensure all operations stay strictly inside the sandbox without dangerous host file modifications.
-4. Output your response in this exact format:
+1. Diagnose and fix the root cause.
+2. If the error mentions missing register_tool or missing docstrings, ensure `register_tool()` is defined and the callable function has a triple-quoted docstring inside its body!
+3. Preserve all features Aria was trying to build.
+4. Ensure all operations stay strictly inside the sandbox without dangerous host file modifications.
+5. Output your response in this exact format:
 
 EXPLANATION: Oops, <specify exactly what broke in 1 clear sisterly sentence, e.g. 'you had an indentation error on line 42' or 'you forgot to define result'>, I fixed it for you!
 CODE:

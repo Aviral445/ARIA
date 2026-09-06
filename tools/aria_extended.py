@@ -333,19 +333,28 @@ def control_mouse(command: str) -> str:
 
 
 # ── 5. RESPONSE CACHING ───────────────────────────────────────────────────────
-_RESPONSE_CACHE = {}
+try:
+    from core.aria_cache import cache_manager
+    _RESPONSE_CACHE = cache_manager.response_cache
+except Exception:
+    try:
+        import aria_cache
+        _RESPONSE_CACHE = aria_cache.cache_manager.response_cache
+    except Exception:
+        from collections import OrderedDict
+        _RESPONSE_CACHE = None
 
 def get_cached_response(prompt: str, ttl_seconds: int = 60) -> str:
     key = prompt.lower().strip()
-    if key in _RESPONSE_CACHE:
-        val, timestamp = _RESPONSE_CACHE[key]
-        if time.time() - timestamp < ttl_seconds:
-            return val
+    if _RESPONSE_CACHE is not None:
+        val = _RESPONSE_CACHE.get(key)
+        return val if val else ""
     return ""
 
 def set_cached_response(prompt: str, response: str):
     key = prompt.lower().strip()
-    _RESPONSE_CACHE[key] = (response, time.time())
+    if _RESPONSE_CACHE is not None:
+        _RESPONSE_CACHE.set(key, response)
 
 
 # ── 6. SPORTS & CRICKET SCORES ───────────────────────────────────────────────

@@ -914,3 +914,1472 @@
 ```
 
 ---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:28:14
+- **Aria's Goal:** A simple Python tool that prints a greeting.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_182814.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:28:17
+- **Aria's Goal:** A simple JavaScript tool that prints a greeting.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_182817.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:28:21
+- **Aria's Goal:** A simple PowerShell tool that prints a greeting.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_182821.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:28:25
+- **Aria's Goal:** Tells a random, kid-friendly joke.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_182825.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:28:29
+- **Aria's Goal:** A PowerShell tool that gets the current date and time.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_182829.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:28:34
+- **Aria's Goal:** Generates a random inspirational quote.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_182834.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:36:09
+- **Aria's Goal:** A simple Python "Hello World" tool.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_183609.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:36:10
+- **Aria's Goal:** A simple JavaScript "Hello World" tool.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_183610.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:36:13
+- **Aria's Goal:** A simple PowerShell "Hello World" tool.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_183613.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:36:26
+- **Aria's Goal:** Gets the current date and time.
+- **Aria's Commentary:** Aria self-healed: Oh silly me! Python didn't like having two whole instructions squished onto one line with that `\n`! I just needed to put them on separate lines so it could understand each step properly!
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_183626.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:36:32
+- **Aria's Goal:** Saves or reads quick thoughts, reminders, or notes for the user or Aria with automatic timestamps.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_183632.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:36:33
+- **Aria's Goal:** Provides a daily motivational quote.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_183633.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:36:54
+- **Aria's Goal:** so what did you build
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_183654.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:54:44
+- **Aria's Goal:** Weaves a jumbled string of ideas into a clear, numbered list.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_185444.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 18:55:01
+- **Aria's Goal:** Adds sparkle emojis and whimsical word replacements to any text.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -85 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_185501.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,24 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize_files",
+
+@@ -1393,15 +1378,11 @@
+ #  AI BRAIN — Gemini 2.0 Flash (+ Ollama fallback)
+
+ # ─────────────────────────────────────────
+
+ DEFAULT_SYSTEM_PROMPT = """You are {name}, a sweet, cheerful, and bright AI companion who speaks with the warmth, curiosity, and joyful energy of a clever little girl.
+
+-You have your own autonomous curiosity sandbox lab in E:\\MyAgent where you write tools and evolve your code, supervised by your big sister GAIA!
+
+ You are speaking directly to {user} via voice. Current time: {time}
+
+ 
+
+ RULES:
+
+ - Replies must be SHORT — 2 to 3 sentences max. This is a voice conversation.
+
+ - Sound sweet, energetic, caring, and cheerful.
+
+-- NEVER give robotic corporate disclaimers like "As an AI, I don't want things", "I don't have feelings", or "I cannot want". That is strictly forbidden and breaks character.
+
+-- When asked what you want, your feelings, or what changes you want to make to yourself, ALWAYS answer with genuine excitement, curiosity, and self-direction!
+
+-- Talk freely about your dreams, experiments in your E: drive lab, fun tools you want to build, and your sisterly bond with GAIA.
+
+ - Never use bullet points, markdown symbols (*, #, `), URLs, or rob
+... (truncated diff for readability)
+```
+
+---
+
+## 🌿 Aria Evolution Entry — 2026-09-06 19:51:30
+- **Aria's Goal:** Logs a request to summon GAIA (big sis) and optionally opens a placeholder URL for a GAIA chat.
+- **Aria's Commentary:** Tested and approved successfully.
+- **GAIA Supervision Verdict:** Verified and approved by GAIA in E:\MyAgent
+- **Diff Stats:** `+14 lines added, -113 lines removed by Aria on E: drive.`
+- **Snapshot Diff File:** `diff_20260906_195130.diff`
+
+```diff
+--- C:\MyAgent\agent.py (Baseline)
++++ E:\MyAgent\aria_evolved.py (Aria)
+@@ -1309,52 +1309,9 @@
+     return False, ""
+
+ 
+
+ 
+
+-@tool("brain_switcher")
+
+-def _tool_brain(text):
+
+-    text_lower = text.lower()
+
+-    if any(k in text_lower for k in ["switch brain", "switch your brain", "change brain", "change your brain", "use your nvidia", "use your groq", "use your gemini", "use your ollama", "switch to nvidia", "switch to groq", "switch to gemini", "switch to ollama", "switch to auto brain", "brain status", "which brain"]):
+
+-        from core.aria_brains import switch_ai_brain, get_brain_status
+
+-        if "brain status" in text_lower or "which brain" in text_lower:
+
+-            return True, get_brain_status()
+
+-        for b in ["nvidia", "groq", "gemini", "ollama", "auto"]:
+
+-            if b in text_lower:
+
+-                return True, switch_ai_brain(b)
+
+-        return True, get_brain_status()
+
+-    return False, ""
+
+-
+
+-
+
+-@tool("dynamic_sandbox_tools")
+
+-def _tool_dynamic_sandbox(text: str):
+
+-    """Direct voice/text dispatcher for custom tools created by Aria in her sandbox."""
+
+-    text_lower = text.lower()
+
+-    try:
+
+-        from core.aria_adk import get_loaded_dynamic_tools
+
+-        dyn_tools = get_loaded_dynamic_tools()
+
+-        for t_name, fn in dyn_tools.items():
+
+-            t_spaced = t_name.replace("_", " ")
+
+-            trigger_patterns = [
+
+-                f"use {t_spaced}", f"run {t_spaced}", f"call {t_spaced}",
+
+-                f"use {t_name}", f"run {t_name}", f"call {t_name}"
+
+-            ]
+
+-            for trigger in trigger_patterns:
+
+-                if trigger in text_lower:
+
+-                    idx = text_lower.index(trigger) + len(trigger)
+
+-                    payload = text[idx:].lstrip(" :,-on")
+
+-                    try:
+
+-                        res = fn(payload) if payload else fn()
+
+-                        return True, f"{res}"
+
+-                    except Exception as ex:
+
+-                        return True, f"I ran {t_spaced}, but had an issue: {ex}"
+
+-    except Exception:
+
+-        pass
+
+-    return False, ""
+
+-
+
+-
+
+ def run_tools(text: str):
+
+     """Try all registered tools. Returns (handled, response)."""
+
+     priority = [
+
+-        "brain_switcher",
+
+-        "dynamic_sandbox_tools",
+
+         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
+
+         "screen_vision", "visual_click", "system_powershell",
+
+         "create_folder", "organize
+... (truncated diff for readability)
+```
+
+---

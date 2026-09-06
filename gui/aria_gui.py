@@ -27,7 +27,8 @@ from tkinter import messagebox, ttk
 from typing import Dict, List, Any, Optional
 
 # Ensure all sub-packages are discoverable on sys.path
-_ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+_FILE_DIR = os.path.dirname(os.path.abspath(__file__))
+_ROOT_DIR = os.path.dirname(_FILE_DIR)
 for _sub in [
     _ROOT_DIR,
     os.path.join(_ROOT_DIR, "core"),
@@ -35,6 +36,7 @@ for _sub in [
     os.path.join(_ROOT_DIR, "server"),
     os.path.join(_ROOT_DIR, "mcp"),
     os.path.join(_ROOT_DIR, "gui"),
+    os.path.join(_ROOT_DIR, "gaia"),
 ]:
     if _sub not in sys.path:
         sys.path.insert(0, _sub)
@@ -43,6 +45,14 @@ try:
     from core.paths import get_data_file, get_config_file, ROOT_DIR, DATA_DIR, CONFIG_DIR, ENV_FILE
 except ImportError:
     from paths import get_data_file, get_config_file, ROOT_DIR, DATA_DIR, CONFIG_DIR, ENV_FILE
+
+try:
+    import core.aria_memory as aria_memory
+except ImportError:
+    try:
+        import aria_memory
+    except ImportError:
+        aria_memory = None
 
 try:
     from dotenv import load_dotenv, set_key
@@ -314,6 +324,7 @@ class AriaApp:
         self.anim_running = True
         self.active_page = "home"
         self.chat_history: List[Dict[str, str]] = []
+        self.current_session_id: Optional[str] = None
         self.phase = 0.0
         self.pulses = []
         self.stars = [
@@ -374,9 +385,9 @@ class AriaApp:
                 step = -2 if event.delta > 0 else 2
                 w = self.root.winfo_containing(event.x_root, event.y_root)
                 while w:
-                    if isinstance(w, tk.Canvas) and hasattr(w, "yview_scroll"):
+                    if isinstance(w, tk.Canvas):
                         if w != getattr(self, "sc", None) and w != getattr(self, "nav_dot_c", None):
-                            w.yview_scroll(step, "units")
+                            w.yview("scroll", step, "units")
                             return "break"
                     w = getattr(w, "master", None)
             except Exception:
@@ -485,6 +496,20 @@ class AriaApp:
                 frame.lift()
                 if hasattr(frame, "_scroll_canvas"):
                     frame._scroll_canvas.yview_moveto(0.0)
+                if pid == "chat" and hasattr(self, "chat_canvas") and hasattr(self, "chat_win_id"):
+                    self.chat_canvas.update_idletasks()
+                    canvas_w = self.chat_canvas.winfo_width()
+                    canvas_h = self.chat_canvas.winfo_height()
+                    if canvas_w > 1:
+                        self.chat_canvas.coords(self.chat_win_id, 0, 0)
+                        self.chat_canvas.itemconfig(self.chat_win_id, width=canvas_w)
+                    bbox = self.chat_canvas.bbox("all")
+                    if bbox:
+                        self.chat_canvas.configure(scrollregion=(0, 0, max(bbox[2], canvas_w), max(bbox[3], canvas_h)))
+                        if (bbox[3] - bbox[1]) > canvas_h:
+                            self.chat_canvas.yview_moveto(1.0)
+                        else:
+                            self.chat_canvas.yview_moveto(0.0)
                 if hasattr(frame, "on_show"):
                     frame.on_show()
 
@@ -756,14 +781,17 @@ class AriaApp:
         ctrl_bar = tk.Frame(wrap, bg=pal["BG_MID"], padx=14, pady=8)
         ctrl_bar.pack(fill="x", pady=(0, 8))
 
-        # Row 1: Engine Selector + Status
+        # Row 1: Engine Selector + History & New Chat Buttons + Swarm Status
         top_ctrl = tk.Frame(ctrl_bar, bg=pal["BG_MID"])
         top_ctrl.pack(fill="x", pady=(0, 6))
 
         tk.Label(top_ctrl, text="⚡ COGNITIVE ENGINE:", font=("Segoe UI", 9, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"]).pack(side="left")
         
-        self.chat_model_var = tk.StringVar(value="gemini-2.5-flash")
+        self.chat_model_var = tk.StringVar(value="gemini-3.1-flash-lite (Fast & Reliable)")
         models_list = [
+            "gemini-3.1-flash-lite (Fast & Reliable)",
+            "gemini-flash-latest",
+            "gemini-3.5-flash",
             "gemini-2.5-flash",
             "qwen/qwen3.6-27b (Groq Fast)",
             "openai/gpt-oss-120b (Groq High IQ)",
@@ -771,8 +799,33 @@ class AriaApp:
             "meta/llama-3.2-11b-vision-instruct",
             "ollama/llama3.2 (Local Offline)"
         ]
-        model_dropdown = ttk.Combobox(top_ctrl, textvariable=self.chat_model_var, values=models_list, width=38, state="readonly", font=("Segoe UI", 9))
-        model_dropdown.pack(side="left", padx=(8, 16))
+        model_dropdown = ttk.Combobox(top_ctrl, textvariable=self.chat_model_var, values=models_list, width=32, state="readonly", font=("Segoe UI", 9))
+        model_dropdown.pack(side="left", padx=(8, 10))
+
+        # Chat Navigation Actions: History, New Chat, Manual Refresh
+        self.chat_history_btn = tk.Button(
+            top_ctrl, text="📜 History", font=("Segoe UI", 9, "bold"),
+            bg=pal["CARD2"], fg=pal["CYAN"], activebackground=pal["CARD_HOVER"], activeforeground=pal["WHITE"],
+            relief="flat", bd=0, padx=9, pady=2, cursor="hand2",
+            command=self._open_chat_history_modal
+        )
+        self.chat_history_btn.pack(side="left", padx=2)
+
+        self.chat_new_btn = tk.Button(
+            top_ctrl, text="➕ New Chat", font=("Segoe UI", 9, "bold"),
+            bg=pal["CARD2"], fg=pal["GREEN"], activebackground=pal["CARD_HOVER"], activeforeground=pal["WHITE"],
+            relief="flat", bd=0, padx=9, pady=2, cursor="hand2",
+            command=self._start_new_gui_chat
+        )
+        self.chat_new_btn.pack(side="left", padx=2)
+
+        self.chat_refresh_btn_top = tk.Button(
+            top_ctrl, text="🔄 Refresh", font=("Segoe UI", 9, "bold"),
+            bg=pal["CARD2"], fg=pal["LAVENDER"], activebackground=pal["CARD_HOVER"], activeforeground=pal["WHITE"],
+            relief="flat", bd=0, padx=9, pady=2, cursor="hand2",
+            command=self._manual_chat_refresh
+        )
+        self.chat_refresh_btn_top.pack(side="left", padx=2)
 
         tk.Label(top_ctrl, text="● ADAPTIVE SWARM ACTIVE", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["GREEN"]).pack(side="right")
 
@@ -798,26 +851,41 @@ class AriaApp:
             )
             btn.pack(side="left", padx=3)
 
-        # Chat Stream Area
-        self.chat_canvas = tk.Canvas(wrap, bg=pal["CARD"], highlightthickness=0)
-        self.chat_scroll = tk.Scrollbar(wrap, orient="vertical", command=self.chat_canvas.yview, bg=pal["CARD"], troughcolor=pal["BG_DEEP"], width=6)
-        self.chat_canvas.configure(yscrollcommand=self.chat_scroll.set)
-        
+        # Input Bar (Pinned cleanly to bottom first)
+        in_bar = tk.Frame(wrap, bg=pal["CARD2"], padx=12, pady=8)
+        in_bar.pack(side="bottom", fill="x", pady=(8, 0))
+
+        # Chat Stream Area (Fills entire middle viewport)
+        stream_frame = tk.Frame(wrap, bg=pal["CARD"])
+        stream_frame.pack(side="top", fill="both", expand=True)
+
+        self.chat_scroll = tk.Scrollbar(stream_frame, orient="vertical", command=lambda *a: self.chat_canvas.yview(*a), bg=pal["CARD"], troughcolor=pal["BG_DEEP"], width=6)
         self.chat_scroll.pack(side="right", fill="y")
-        self.chat_canvas.pack(side="top", fill="both", expand=True)
+
+        self.chat_canvas = tk.Canvas(stream_frame, bg=pal["CARD"], highlightthickness=0, yscrollcommand=self.chat_scroll.set)
+        self.chat_canvas.pack(side="left", fill="both", expand=True)
 
         self.chat_inner = tk.Frame(self.chat_canvas, bg=pal["CARD"])
         self.chat_win_id = self.chat_canvas.create_window((0, 0), window=self.chat_inner, anchor="nw")
 
-        self.chat_inner.bind("<Configure>", lambda e: self.chat_canvas.configure(scrollregion=self.chat_canvas.bbox("all")))
-        self.chat_canvas.bind("<Configure>", lambda e: self.chat_canvas.itemconfig(self.chat_win_id, width=e.width))
+        def _update_chat_scrollregion(event=None):
+            self.chat_canvas.update_idletasks()
+            bbox = self.chat_canvas.bbox("all")
+            if bbox:
+                canvas_w = self.chat_canvas.winfo_width()
+                canvas_h = self.chat_canvas.winfo_height()
+                self.chat_canvas.configure(scrollregion=(0, 0, max(bbox[2], canvas_w), max(bbox[3], canvas_h)))
 
-        # Welcome message
-        self._append_chat_message("assistant", f"Greetings {self.profile.get('name', 'Friend')}! I am Aria. How can I assist your workflow today?")
+        def _on_canvas_configure(event):
+            self.chat_canvas.coords(self.chat_win_id, 0, 0)
+            self.chat_canvas.itemconfig(self.chat_win_id, width=event.width)
+            _update_chat_scrollregion()
 
-        # Input Bar
-        in_bar = tk.Frame(wrap, bg=pal["CARD2"], padx=12, pady=8)
-        in_bar.pack(fill="x", pady=(8, 0))
+        self.chat_inner.bind("<Configure>", _update_chat_scrollregion)
+        self.chat_canvas.bind("<Configure>", _on_canvas_configure)
+
+        # Initialize Active Chat Session & History
+        self._init_chat_session()
 
         self.chat_main_entry = tk.Entry(
             in_bar, font=("Segoe UI", 11), bg=pal["CARD2"], fg=pal["WHITE"],
@@ -826,11 +894,19 @@ class AriaApp:
         self.chat_main_entry.pack(side="left", fill="x", expand=True, ipady=6, padx=(4, 8))
         self.chat_main_entry.bind("<Return>", lambda e: self._send_pro_chat())
 
-        tk.Button(
+        self.chat_send_btn = tk.Button(
             in_bar, text="SEND  ➤", font=("Segoe UI", 10, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=14, pady=4, cursor="hand2",
             command=self._send_pro_chat
-        ).pack(side="left", padx=2)
+        )
+        self.chat_send_btn.pack(side="left", padx=2)
+
+        self.chat_refresh_btn_bottom = tk.Button(
+            in_bar, text="🔄 REFRESH", font=("Segoe UI", 9, "bold"),
+            bg=pal["BG_MID"], fg=pal["CYAN"], relief="flat", bd=0, padx=10, pady=4, cursor="hand2",
+            command=self._manual_chat_refresh
+        )
+        self.chat_refresh_btn_bottom.pack(side="left", padx=2)
 
         tk.Button(
             in_bar, text="CLEAR", font=("Segoe UI", 9),
@@ -843,7 +919,7 @@ class AriaApp:
         self.chat_main_entry.insert(0, text)
         self._send_pro_chat()
 
-    def _append_chat_message(self, role: str, text: str):
+    def _append_chat_message(self, role: str, text: str, timestamp: str = None, save_to_session: bool = False):
         pal = self.pal
         is_user = (role == "user")
         
@@ -855,23 +931,99 @@ class AriaApp:
             if not text:
                 text = "Task executed successfully."
 
+        # Check if an assistant message contains both Aria's intro and Big Sister GAIA's speech
+        if not is_user and role != "gaia":
+            gaia_match = re.search(r'(?:\n\s*|\A)(?:👩‍🏫\s*)?(?:Big Sister GAIA|GAIA)\s*:\s*(.+)', text, flags=re.DOTALL)
+            if gaia_match:
+                prefix_idx = gaia_match.start()
+                aria_part = text[:prefix_idx].strip()
+                gaia_part = gaia_match.group(1).strip()
+                if aria_part:
+                    # 1. Render Aria's part in Aria's bubble
+                    self._append_chat_message("assistant", aria_part, timestamp=timestamp, save_to_session=save_to_session)
+                    # 2. Render GAIA's part in GAIA's own distinct bubble
+                    self._append_chat_message("gaia", gaia_part, timestamp=timestamp, save_to_session=save_to_session)
+                    return
+                else:
+                    # Pure GAIA message
+                    role = "gaia"
+                    text = gaia_part
+
+        # Detect GAIA role or markers
+        is_gaia = (role.lower() == "gaia")
+        if not is_user and not is_gaia:
+            for g_prefix in ["👩‍🏫 Big Sister GAIA:", "Big Sister GAIA:", "👩‍🏫 GAIA:", "GAIA:", "[GAIA]:", "[GAIA]"]:
+                if text.startswith(g_prefix):
+                    is_gaia = True
+                    text = text[len(g_prefix):].strip()
+                    break
+
+        # Save to active session if requested
+        if save_to_session and getattr(self, "current_session_id", None):
+            try:
+                import aria_memory
+                saved_role = "user" if is_user else ("gaia" if is_gaia else "assistant")
+                aria_memory.add_session_message(self.current_session_id, saved_role, text)
+            except Exception:
+                pass
+
         row = tk.Frame(self.chat_inner, bg=pal["CARD"], pady=4)
         row.pack(fill="x", padx=16)
 
-        bubble_bg = blend(pal["GLOW"], pal["CARD2"], 0.22) if is_user else pal["CARD2"]
-        align = "e" if is_user else "w"
+        if is_user:
+            bubble_bg = blend(pal["GLOW"], pal["CARD2"], 0.22)
+            align = "e"
+            tag_col = pal["CYAN"]
+            sender = "You"
+            sender_icon = "👤"
+            time_fg = pal["LAVENDER"]
+            border_col = pal.get("BORDER", "#1e293b")
+            highlight_w = 0
+            body_fg = pal["WHITE"]
+        elif is_gaia:
+            # Warm amber/gold bubble for Big Sister GAIA
+            bubble_bg = blend("#f59e0b", pal["CARD2"], 0.16)
+            align = "w"
+            tag_col = "#fbbf24"  # Golden Amber
+            sender = "GAIA (Big Sister)"
+            sender_icon = "👩‍🏫"
+            time_fg = "#fde68a"  # Warm cream
+            border_col = "#d97706"
+            highlight_w = 1
+            body_fg = "#fffbeb"  # Warm ivory
+        else:
+            # Signature Emerald / Cyan bubble for Aria
+            bubble_bg = pal["CARD2"]
+            align = "w"
+            tag_col = pal.get("CYAN", "#00f2fe")
+            sender = "Aria"
+            sender_icon = "🌸"
+            time_fg = pal["GREY"]
+            border_col = pal.get("BORDER", "#1e293b")
+            highlight_w = 1
+            body_fg = pal["WHITE"]
 
-        bubble = tk.Frame(row, bg=bubble_bg, padx=14, pady=8)
+        bubble = tk.Frame(row, bg=bubble_bg, padx=14, pady=8, highlightbackground=border_col, highlightthickness=highlight_w)
         bubble.pack(anchor=align, padx=4)
 
-        tag_col = pal["CYAN"] if is_user else pal["VIOLET"]
-        sender = "You" if is_user else "Aria"
-        
         hdr = tk.Frame(bubble, bg=bubble_bg)
         hdr.pack(fill="x", pady=(0, 2))
-        tk.Label(hdr, text=sender, font=("Segoe UI", 10, "bold"), bg=bubble_bg, fg=tag_col).pack(side="left")
-        time_fg = pal["LAVENDER"] if is_user else pal["GREY"]
-        tk.Label(hdr, text=f"  {time.strftime('%I:%M %p')}", font=("Segoe UI", 9), bg=bubble_bg, fg=time_fg).pack(side="left")
+
+        disp_sender = f"{sender_icon} {sender}"
+        tk.Label(hdr, text=disp_sender, font=("Segoe UI", 10, "bold"), bg=bubble_bg, fg=tag_col).pack(side="left")
+
+        # Distinct Sisterly Role Badge
+        if is_gaia:
+            badge_frame = tk.Frame(hdr, bg="#78350f", padx=5, pady=1)
+            badge_frame.pack(side="left", padx=(6, 2))
+            tk.Label(badge_frame, text="SUPERVISOR", font=("Segoe UI", 7, "bold"), bg="#78350f", fg="#fef08a").pack()
+        elif not is_user:
+            badge_frame = tk.Frame(hdr, bg=pal["BG_MID"], padx=5, pady=1)
+            badge_frame.pack(side="left", padx=(6, 2))
+            tk.Label(badge_frame, text="AGENT", font=("Segoe UI", 7, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"]).pack()
+
+        display_time = timestamp if timestamp else time.strftime('%I:%M %p')
+        tk.Label(hdr, text=f"  {display_time}", font=("Segoe UI", 8), bg=bubble_bg, fg=time_fg).pack(side="left")
 
         # Copy to Clipboard Action
         def _copy_message_text(btn=None, content=text):
@@ -891,18 +1043,18 @@ class AriaApp:
         copy_btn = tk.Button(
             hdr, text="📋 Copy", font=("Segoe UI", 8, "bold"),
             bg=bubble_bg, fg=pal["GREY"], activebackground=bubble_bg,
-            activeforeground=pal["CYAN"], relief="flat", bd=0, padx=6, pady=0,
+            activeforeground=pal["CYAN"] if not is_gaia else "#fbbf24", relief="flat", bd=0, padx=6, pady=0,
             cursor="hand2", command=lambda: _copy_message_text(copy_btn)
         )
         copy_btn.pack(side="right", padx=(8, 0))
 
         # Hover highlights for copy button
-        copy_btn.bind("<Enter>", lambda e: copy_btn.config(fg=pal["CYAN"]))
+        copy_btn.bind("<Enter>", lambda e: copy_btn.config(fg=pal["CYAN"] if not is_gaia else "#fbbf24"))
         copy_btn.bind("<Leave>", lambda e: copy_btn.config(fg=pal["GREY"]) if copy_btn.cget("text") == "📋 Copy" else None)
 
-        # Formatted Body Text (11pt: clear, readable, zero eye strain)
+        # Formatted Body Text
         msg_lbl = tk.Label(
-            bubble, text=text, font=("Segoe UI", 11), bg=bubble_bg, fg=pal["WHITE"],
+            bubble, text=text, font=("Segoe UI", 11), bg=bubble_bg, fg=body_fg,
             wraplength=820, justify="left"
         )
         msg_lbl.pack(anchor="w")
@@ -924,14 +1076,360 @@ class AriaApp:
             w.bind("<Button-3>", _show_context_menu)
 
         self.chat_canvas.update_idletasks()
+        bbox = self.chat_canvas.bbox("all")
+        if bbox:
+            canvas_w = self.chat_canvas.winfo_width()
+            canvas_h = self.chat_canvas.winfo_height()
+            self.chat_canvas.configure(scrollregion=(0, 0, max(bbox[2], canvas_w), max(bbox[3], canvas_h)))
+            content_h = bbox[3] - bbox[1]
+            if content_h > canvas_h:
+                self.chat_canvas.yview_moveto(1.0)
+            else:
+                self.chat_canvas.yview_moveto(0.0)
+
+    def _init_chat_session(self):
+        """Initializes or restores the active chat session from disk."""
+        try:
+            import aria_memory
+            sess = aria_memory.get_or_create_active_session()
+            self.current_session_id = sess.get("id")
+            msgs = sess.get("messages", [])
+            if msgs:
+                for m in msgs:
+                    self._append_chat_message(m.get("role", "assistant"), m.get("content", ""), timestamp=m.get("timestamp"), save_to_session=False)
+                    self.chat_history.append({"role": m.get("role", "assistant"), "content": m.get("content", "")})
+            else:
+                self._append_chat_message("assistant", f"Greetings {self.profile.get('name', 'Friend')}! I am Aria. How can I assist your workflow today?", save_to_session=True)
+        except Exception as e:
+            self._append_chat_message("assistant", f"Greetings {self.profile.get('name', 'Friend')}! I am Aria. How can I assist your workflow today?", save_to_session=False)
+
+    def _load_chat_session(self, session_id: str):
+        """Loads and switches to a specific chat session."""
+        try:
+            import aria_memory
+            sess = aria_memory.get_chat_session(session_id)
+            if not sess:
+                return
+            self.current_session_id = session_id
+            for w in self.chat_inner.winfo_children():
+                w.destroy()
+            self.chat_history.clear()
+            msgs = sess.get("messages", [])
+            if msgs:
+                for m in msgs:
+                    self._append_chat_message(m.get("role", "assistant"), m.get("content", ""), timestamp=m.get("timestamp"), save_to_session=False)
+                    self.chat_history.append({"role": m.get("role", "assistant"), "content": m.get("content", "")})
+            else:
+                self._append_chat_message("assistant", f"Greetings {self.profile.get('name', 'Friend')}! I am Aria. How can I assist your workflow today?", save_to_session=False)
+            self.chat_canvas.update_idletasks()
+            self.chat_canvas.yview_moveto(1.0)
+        except Exception as e:
+            print(f"[Aria GUI] Error loading session {session_id}: {e}")
+
+    def _start_new_gui_chat(self):
+        """Creates a new session and clears the canvas for a fresh discussion."""
+        try:
+            import aria_memory
+            new_sess = aria_memory.create_new_chat_session("New Chat")
+            self.current_session_id = new_sess.get("id")
+        except Exception:
+            self.current_session_id = f"session_{int(time.time()*1000)}"
+        for w in self.chat_inner.winfo_children():
+            w.destroy()
+        self.chat_history.clear()
+        self._append_chat_message("assistant", f"Greetings {self.profile.get('name', 'Friend')}! I started a fresh chat session for you. How can I assist you today?", save_to_session=True)
+
+    def _manual_chat_refresh(self):
+        """Manual refresh action: re-syncs active session messages and telemetry instantly."""
+        # Visual feedback on refresh buttons
+        for btn in [getattr(self, "chat_refresh_btn_top", None), getattr(self, "chat_refresh_btn_bottom", None)]:
+            if btn:
+                btn.config(text="✓ Refreshed!", fg=self.pal["GREEN"])
+                self.root.after(1200, lambda b=btn: b.config(text="🔄 Refresh", fg=self.pal["CYAN"] if b == getattr(self, "chat_refresh_btn_bottom", None) else self.pal["LAVENDER"]))
+
+        # Reload messages for active session from disk
+        try:
+            import aria_memory
+            sess_id = getattr(self, "current_session_id", None)
+            if not sess_id:
+                sess = aria_memory.get_or_create_active_session()
+                sess_id = sess.get("id")
+                self.current_session_id = sess_id
+            else:
+                sess = aria_memory.get_chat_session(sess_id)
+
+            if sess:
+                for w in self.chat_inner.winfo_children():
+                    w.destroy()
+                self.chat_history.clear()
+                msgs = sess.get("messages", [])
+                if msgs:
+                    for m in msgs:
+                        self._append_chat_message(m.get("role", "assistant"), m.get("content", ""), timestamp=m.get("timestamp"), save_to_session=False)
+                        self.chat_history.append({"role": m.get("role", "assistant"), "content": m.get("content", "")})
+                else:
+                    self._append_chat_message("assistant", f"Greetings {self.profile.get('name', 'Friend')}! I am Aria. How can I assist your workflow today?", save_to_session=False)
+        except Exception as e:
+            print(f"[Aria GUI] Refresh session error: {e}")
+
+        # Update telemetry immediately if psutil is available
+        try:
+            if HAS_PSUTIL:
+                cpu = psutil.cpu_percent()
+                ram = psutil.virtual_memory().percent
+                rpm_str = "0 / 40"
+                try:
+                    from core.aria_nvidia import get_nvidia_engine
+                    stats = get_nvidia_engine().get_stats()
+                    rpm_str = f"{stats['current_rpm']} / 40"
+                except Exception:
+                    pass
+                srv_online = self._is_server_open(8765)
+                self._update_telemetry(cpu, ram, rpm_str, srv_online)
+        except Exception:
+            pass
+
+        self.chat_canvas.update_idletasks()
         self.chat_canvas.yview_moveto(1.0)
+
+    def _open_chat_history_modal(self):
+        """Displays the high-tech Chat Session Vault modal to browse, resume, or delete chat sessions."""
+        pal = self.pal
+        modal = tk.Toplevel(self.root)
+        modal.title("Aria Pro — Chat Session Vault")
+        modal.geometry("640x580")
+        modal.minsize(540, 440)
+        modal.configure(bg=pal["BG_DEEP"])
+        modal.transient(self.root)
+        try:
+            modal.grab_set()
+        except Exception:
+            pass
+
+        # Center modal relative to main window
+        try:
+            x = self.root.winfo_x() + (self.root.winfo_width() // 2) - 320
+            y = self.root.winfo_y() + (self.root.winfo_height() // 2) - 290
+            modal.geometry(f"+{max(50, x)}+{max(50, y)}")
+        except Exception:
+            pass
+
+        # Header Frame
+        hdr = tk.Frame(modal, bg=pal["BG_MID"], padx=18, pady=12)
+        hdr.pack(fill="x")
+        
+        tk.Label(hdr, text="📜 CHAT CONVERSATION HISTORY", font=("Segoe UI", 12, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"]).pack(anchor="w")
+        tk.Label(hdr, text="Browse, resume, or start past reasoning threads across Aria and Big Sister GAIA", font=("Segoe UI", 8), bg=pal["BG_MID"], fg=pal["LAVENDER"]).pack(anchor="w", pady=(2, 0))
+
+        # Search Bar + Quick Actions
+        filter_bar = tk.Frame(modal, bg=pal["CARD2"], padx=12, pady=8)
+        filter_bar.pack(fill="x", padx=16, pady=(12, 8))
+
+        tk.Label(filter_bar, text="🔍 Search:", font=("Segoe UI", 9, "bold"), bg=pal["CARD2"], fg=pal["GREY"]).pack(side="left", padx=(0, 6))
+        search_var = tk.StringVar()
+        search_ent = tk.Entry(filter_bar, textvariable=search_var, font=("Segoe UI", 10), bg=pal["BG_MID"], fg=pal["WHITE"], insertbackground=pal["CYAN"], relief="flat", bd=0)
+        search_ent.pack(side="left", fill="x", expand=True, ipady=3, padx=(0, 8))
+
+        # Scrollable Sessions Container
+        list_frame = tk.Frame(modal, bg=pal["BG_DEEP"])
+        list_frame.pack(fill="both", expand=True, padx=16, pady=4)
+
+        canvas = tk.Canvas(list_frame, bg=pal["BG_DEEP"], highlightthickness=0)
+        scrollbar = tk.Scrollbar(list_frame, orient="vertical", command=canvas.yview, bg=pal["BG_DEEP"], troughcolor=pal["BG_MID"], width=8)
+        canvas.configure(yscrollcommand=scrollbar.set)
+        scrollbar.pack(side="right", fill="y")
+        canvas.pack(side="left", fill="both", expand=True)
+
+        inner_cards = tk.Frame(canvas, bg=pal["BG_DEEP"])
+        c_win = canvas.create_window((0, 0), window=inner_cards, anchor="nw")
+
+        def _on_inner_cfg(e):
+            canvas.configure(scrollregion=canvas.bbox("all"))
+        def _on_canvas_cfg(e):
+            canvas.itemconfig(c_win, width=e.width)
+
+        inner_cards.bind("<Configure>", _on_inner_cfg)
+        canvas.bind("<Configure>", _on_canvas_cfg)
+
+        def _render_session_list():
+            for w in inner_cards.winfo_children():
+                w.destroy()
+            try:
+                import aria_memory
+                sessions = aria_memory.list_chat_sessions()
+            except Exception as ex:
+                tk.Label(inner_cards, text=f"Error loading sessions: {ex}", bg=pal["BG_DEEP"], fg=pal["PINK"]).pack(pady=20)
+                return
+
+            query = search_var.get().strip().lower()
+            if query:
+                sessions = [s for s in sessions if query in s.get("title", "").lower() or query in s.get("preview", "").lower()]
+
+            if not sessions:
+                empty_card = tk.Frame(inner_cards, bg=pal["CARD"], padx=20, pady=24)
+                empty_card.pack(fill="x", pady=10)
+                tk.Label(empty_card, text="No chat sessions found matching your search.", font=("Segoe UI", 10), bg=pal["CARD"], fg=pal["GREY"]).pack()
+                return
+
+            for s in sessions:
+                s_id = s.get("id")
+                is_active = (s_id == getattr(self, "current_session_id", None))
+
+                card_bg = blend(pal["CYAN"], pal["CARD"], 0.12) if is_active else pal["CARD"]
+                card = tk.Frame(inner_cards, bg=card_bg, padx=14, pady=10, highlightbackground=pal["CYAN"] if is_active else pal["BORDER"], highlightthickness=1)
+                card.pack(fill="x", pady=4)
+
+                top_row = tk.Frame(card, bg=card_bg)
+                top_row.pack(fill="x")
+
+                title_lbl = tk.Label(top_row, text=s.get("title", "Untitled Chat"), font=("Segoe UI", 10, "bold"), bg=card_bg, fg=pal["WHITE"] if not is_active else pal["CYAN"])
+                title_lbl.pack(side="left")
+
+                if is_active:
+                    active_badge = tk.Frame(top_row, bg=blend(pal["GLOW"], pal["BG_MID"], 0.5), padx=6, pady=1)
+                    active_badge.pack(side="left", padx=8)
+                    tk.Label(active_badge, text="● CURRENT ACTIVE", font=("Segoe UI", 7, "bold"), bg=active_badge["bg"], fg=pal["CYAN"]).pack()
+
+                meta_lbl = tk.Label(top_row, text=f"💬 {s.get('message_count', 0)} msgs • {s.get('updated_at', '')}", font=("Segoe UI", 8), bg=card_bg, fg=pal["LAVENDER"])
+                meta_lbl.pack(side="right")
+
+                preview_txt = s.get("preview", "")
+                if preview_txt:
+                    p_lbl = tk.Label(card, text=preview_txt, font=("Segoe UI", 9), bg=card_bg, fg=pal["GREY"], wraplength=500, justify="left")
+                    p_lbl.pack(anchor="w", pady=(4, 6))
+
+                btn_row = tk.Frame(card, bg=card_bg)
+                btn_row.pack(fill="x", pady=(2, 0))
+
+                def _resume(sid=s_id):
+                    self._load_chat_session(sid)
+                    modal.destroy()
+
+                def _delete(sid=s_id):
+                    try:
+                        import aria_memory
+                        aria_memory.delete_chat_session(sid)
+                        _render_session_list()
+                    except Exception:
+                        pass
+
+                resume_btn = tk.Button(
+                    btn_row, text="▶ Resume Chat", font=("Segoe UI", 8, "bold"),
+                    bg=pal["GLOW"] if is_active else pal["CARD2"], fg=pal["BG_DEEP"] if is_active else pal["CYAN"],
+                    activebackground=pal["GLOW2"], activeforeground=pal["WHITE"],
+                    relief="flat", bd=0, padx=8, pady=2, cursor="hand2",
+                    command=_resume
+                )
+                resume_btn.pack(side="left", padx=(0, 6))
+
+                del_btn = tk.Button(
+                    btn_row, text="🗑️ Delete", font=("Segoe UI", 8),
+                    bg=pal["CARD2"], fg=pal["PINK"], activebackground=pal["CARD_HOVER"], activeforeground=pal["WHITE"],
+                    relief="flat", bd=0, padx=6, pady=2, cursor="hand2",
+                    command=_delete
+                )
+                del_btn.pack(side="left")
+
+        search_var.trace_add("write", lambda *args: _render_session_list())
+        _render_session_list()
+
+        # Modal Bottom Bar
+        btm_bar = tk.Frame(modal, bg=pal["BG_MID"], padx=16, pady=10)
+        btm_bar.pack(fill="x", side="bottom")
+
+        def _new_chat_from_modal():
+            modal.destroy()
+            self._start_new_gui_chat()
+
+        tk.Button(
+            btm_bar, text="➕ Start New Chat", font=("Segoe UI", 9, "bold"),
+            bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=4, cursor="hand2",
+            command=_new_chat_from_modal
+        ).pack(side="left", padx=(0, 6))
+
+        tk.Button(
+            btm_bar, text="🔄 Refresh List", font=("Segoe UI", 9),
+            bg=pal["CARD2"], fg=pal["LAVENDER"], relief="flat", bd=0, padx=10, pady=4, cursor="hand2",
+            command=_render_session_list
+        ).pack(side="left")
+
+        tk.Button(
+            btm_bar, text="✕ Close", font=("Segoe UI", 9),
+            bg=pal["CARD2"], fg=pal["WHITE"], relief="flat", bd=0, padx=12, pady=4, cursor="hand2",
+            command=modal.destroy
+        ).pack(side="right")
+
+    def _show_chat_thinking(self) -> tk.Frame:
+        pal = self.pal
+        row = tk.Frame(self.chat_inner, bg=pal["CARD"], pady=4)
+        row.pack(fill="x", padx=16)
+
+        bubble = tk.Frame(row, bg=pal["CARD2"], padx=14, pady=8, highlightbackground=pal["BORDER"], highlightthickness=1)
+        bubble.pack(anchor="w", padx=4)
+
+        hdr = tk.Frame(bubble, bg=pal["CARD2"])
+        hdr.pack(fill="x", pady=(0, 2))
+        tk.Label(hdr, text="🌸 Aria", font=("Segoe UI", 10, "bold"), bg=pal["CARD2"], fg=pal["CYAN"]).pack(side="left")
+
+        badge_frame = tk.Frame(hdr, bg=pal["BG_MID"], padx=5, pady=1)
+        badge_frame.pack(side="left", padx=(6, 2))
+        tk.Label(badge_frame, text="AGENT", font=("Segoe UI", 7, "bold"), bg=pal["BG_MID"], fg=pal["CYAN"]).pack()
+
+        lbl = tk.Label(bubble, text="Thinking...", font=("Segoe UI", 11, "italic"), bg=pal["CARD2"], fg=pal["LAVENDER"])
+        lbl.pack(anchor="w")
+
+        anim_step = [0]
+        def _pulse():
+            try:
+                if not row.winfo_exists():
+                    return
+                dots = "." * ((anim_step[0] % 3) + 1)
+                lbl.config(text=f"Thinking{dots}")
+                anim_step[0] += 1
+                self.root.after(400, _pulse)
+            except Exception:
+                pass
+        self.root.after(400, _pulse)
+
+        self.chat_canvas.update_idletasks()
+        bbox = self.chat_canvas.bbox("all")
+        if bbox:
+            canvas_w = self.chat_canvas.winfo_width()
+            canvas_h = self.chat_canvas.winfo_height()
+            self.chat_canvas.configure(scrollregion=(0, 0, max(bbox[2], canvas_w), max(bbox[3], canvas_h)))
+            if (bbox[3] - bbox[1]) > canvas_h:
+                self.chat_canvas.yview_moveto(1.0)
+
+        return row
+
+    def _remove_chat_thinking(self, row: Optional[tk.Frame]):
+        if row:
+            try:
+                if row.winfo_exists():
+                    row.destroy()
+                self.chat_canvas.update_idletasks()
+                bbox = self.chat_canvas.bbox("all")
+                if bbox:
+                    canvas_w = self.chat_canvas.winfo_width()
+                    canvas_h = self.chat_canvas.winfo_height()
+                    self.chat_canvas.configure(scrollregion=(0, 0, max(bbox[2], canvas_w), max(bbox[3], canvas_h)))
+            except Exception:
+                pass
 
     def _send_pro_chat(self):
         query = self.chat_main_entry.get().strip()
         if not query:
             return
         self.chat_main_entry.delete(0, "end")
-        self._append_chat_message("user", query)
+        self._append_chat_message("user", query, save_to_session=True)
+        self.chat_history.append({"role": "user", "content": query})
+
+        # Visual feedback: update Send button to indicate reasoning in progress
+        if hasattr(self, "chat_send_btn"):
+            self.chat_send_btn.config(text="⏳ THINKING...", state="disabled", bg=self.pal["BG_MID"], fg=self.pal["LAVENDER"])
+
+        # Show temporary thinking bubble
+        thinking_row = self._show_chat_thinking()
 
         def _worker():
             try:
@@ -944,19 +1442,33 @@ class AriaApp:
                     user_name=self.profile.get("name", "Friend"),
                     model_override=selected_model
                 )
-                self.chat_history.append({"role": "user", "content": query})
                 self.chat_history.append({"role": "assistant", "content": reply})
-                self.root.after(0, lambda: self._append_chat_message("assistant", reply))
+
+                def _done_success():
+                    self._remove_chat_thinking(thinking_row)
+                    self._append_chat_message("assistant", reply, save_to_session=True)
+                    if hasattr(self, "chat_send_btn"):
+                        self.chat_send_btn.config(text="SEND  ➤", state="normal", bg=self.pal["GLOW"], fg=self.pal["BG_DEEP"])
+                self.root.after(0, _done_success)
+
+                # Sync episodic memory timeline
+                try:
+                    import aria_memory
+                    aria_memory.record_memory_event(query, reply, session_id=getattr(self, "current_session_id", None))
+                except Exception:
+                    pass
             except Exception as e:
-                self.root.after(0, lambda: self._append_chat_message("assistant", f"Cognitive error: {e}"))
+                def _done_error():
+                    self._remove_chat_thinking(thinking_row)
+                    self._append_chat_message("assistant", f"Cognitive notice: {e}", save_to_session=False)
+                    if hasattr(self, "chat_send_btn"):
+                        self.chat_send_btn.config(text="SEND  ➤", state="normal", bg=self.pal["GLOW"], fg=self.pal["BG_DEEP"])
+                self.root.after(0, _done_error)
 
         threading.Thread(target=_worker, daemon=True).start()
 
     def _clear_chat_stream(self):
-        for widget in self.chat_inner.winfo_children():
-            widget.destroy()
-        self.chat_history.clear()
-        self._append_chat_message("assistant", "Chat history cleared. How can I help you?")
+        self._start_new_gui_chat()
 
     # ── DASHBOARD: WIRELESS ANDROID PHONE CONTROLLER ──────────────────────────
     def _pg_phone(self):

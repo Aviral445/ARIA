@@ -1323,10 +1323,38 @@ def _tool_brain(text):
     return False, ""
 
 
+@tool("dynamic_sandbox_tools")
+def _tool_dynamic_sandbox(text: str):
+    """Direct voice/text dispatcher for custom tools created by Aria in her sandbox."""
+    text_lower = text.lower()
+    try:
+        from core.aria_adk import get_loaded_dynamic_tools
+        dyn_tools = get_loaded_dynamic_tools()
+        for t_name, fn in dyn_tools.items():
+            t_spaced = t_name.replace("_", " ")
+            trigger_patterns = [
+                f"use {t_spaced}", f"run {t_spaced}", f"call {t_spaced}",
+                f"use {t_name}", f"run {t_name}", f"call {t_name}"
+            ]
+            for trigger in trigger_patterns:
+                if trigger in text_lower:
+                    idx = text_lower.index(trigger) + len(trigger)
+                    payload = text[idx:].lstrip(" :,-on")
+                    try:
+                        res = fn(payload) if payload else fn()
+                        return True, f"{res}"
+                    except Exception as ex:
+                        return True, f"I ran {t_spaced}, but had an issue: {ex}"
+    except Exception:
+        pass
+    return False, ""
+
+
 def run_tools(text: str):
     """Try all registered tools. Returns (handled, response)."""
     priority = [
         "brain_switcher",
+        "dynamic_sandbox_tools",
         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
         "screen_vision", "visual_click", "system_powershell",
         "create_folder", "organize_files",

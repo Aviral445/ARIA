@@ -18,6 +18,7 @@ PROFILE_FILE = get_data_file("profile.json", create_if_missing=True)
 KNOWLEDGE_DIR = os.path.join(DATA_DIR, "knowledge")
 GOALS_FILE = get_data_file("goals.json", create_if_missing=True)
 REMINDERS_FILE = get_data_file("reminders.json", create_if_missing=True)
+CHAT_SESSIONS_FILE = get_data_file("chat_sessions.json", create_if_missing=True)
 
 # ── 1. PERSONALITY MODES (Feature 8) ─────────────────────────────────────────
 PERSONALITY_PRESETS = {
@@ -61,9 +62,167 @@ def get_personality_prompt() -> str:
     return PERSONALITY_PRESETS.get(mode, PERSONALITY_PRESETS["casual"])
 
 
-# ── 2. EPISODIC TIMELINE & AUTO-SUMMARIZATION (Feature 6 & 7) ─────────────────
-def record_memory_event(user_text: str, aria_reply: str, tags: list = None):
-    """Records an episodic memory event with precise timestamp."""
+# ── 2. CHAT SESSIONS & MULTI-CONVERSATION HISTORY ────────────────────────────
+def load_chat_sessions() -> list:
+    """Loads all saved conversation sessions. Bootstraps from memory_timeline if needed."""
+    if os.path.exists(CHAT_SESSIONS_FILE):
+        try:
+            with open(CHAT_SESSIONS_FILE, encoding="utf-8") as f:
+                data = json.load(f)
+                if isinstance(data, list) and data:
+                    return data
+        except Exception:
+            pass
+
+    # Bootstrap initial session from existing timeline so past talks are never lost
+    timeline = load_memory_timeline()
+    now_str = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+    initial_messages = []
+    for ev in timeline:
+        u = ev.get("user", "").strip()
+        a = ev.get("aria", "").strip()
+        t = ev.get("time_str", now_str)
+        if u:
+            initial_messages.append({"role": "user", "content": u, "timestamp": t})
+        if a:
+            initial_messages.append({"role": "assistant", "content": a, "timestamp": t})
+
+    first_title = "Previous Conversation"
+    if initial_messages:
+        for m in initial_messages:
+            if m["role"] == "user":
+                first_title = m["content"][:32].strip() + ("..." if len(m["content"]) > 32 else "")
+                break
+
+    default_session = {
+        "id": f"session_{int(time.time())}",
+        "title": first_title if initial_messages else "New Chat",
+        "created_at": now_str,
+        "updated_at": now_str,
+        "messages": initial_messages
+    }
+    save_chat_sessions([default_session])
+    return [default_session]
+
+def save_chat_sessions(sessions: list):
+    """Saves conversation sessions to CHAT_SESSIONS_FILE."""
+    try:
+        with open(CHAT_SESSIONS_FILE, "w", encoding="utf-8") as f:
+            json.dump(sessions, f, indent=2)
+    except Exception as e:
+        print(f"[Aria Memory] Failed to save chat sessions: {e}")
+
+def list_chat_sessions() -> list:
+    """Returns summary metadata of all chat sessions for the history UI drawer."""
+    sessions = load_chat_sessions()
+    # Sort by updated_at descending
+    summaries = []
+    for s in sessions:
+        msgs = s.get("messages", [])
+        last_msg = msgs[-1]["content"][:45] + "..." if msgs else "No messages yet"
+        summaries.append({
+            "id": s.get("id"),
+            "title": s.get("title", "Untitled Chat"),
+            "created_at": s.get("created_at", ""),
+            "updated_at": s.get("updated_at", ""),
+            "message_count": len(msgs),
+            "preview": last_msg
+        })
+    summaries.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
+    return summaries
+
+def get_chat_session(session_id: str) -> dict:
+    """Retrieves a specific chat session with full messages."""
+    sessions = load_chat_sessions()
+    for s in sessions:
+        if s.get("id") == session_id:
+            return s
+    # If not found, return or create active
+    return get_or_create_active_session()
+
+def get_or_create_active_session() -> dict:
+    """Returns the most recent active session, or creates one if empty."""
+    sessions = load_chat_sessions()
+    if sessions:
+        sessions.sort(key=lambda x: x.get("updated_at", ""), reverse=True)
+        return sessions[0]
+    return create_new_chat_session("New Chat")
+
+def create_new_chat_session(title: str = "New Chat") -> dict:
+    """Creates a new conversation session so the user can chat on a fresh canvas."""
+    sessions = load_chat_sessions()
+    now_str = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+    new_sess = {
+        "id": f"session_{int(time.time() * 1000)}",
+        "title": title,
+        "created_at": now_str,
+        "updated_at": now_str,
+        "messages": []
+    }
+    sessions.append(new_sess)
+    save_chat_sessions(sessions)
+    return new_sess
+
+def add_session_message(session_id: str, role: str, content: str) -> dict:
+    """Appends a message (user or assistant) to a specific session and auto-titles if needed."""
+    if not content:
+        return get_chat_session(session_id)
+    sessions = load_chat_sessions()
+    target = None
+    for s in sessions:
+        if s.get("id") == session_id:
+            target = s
+            break
+    if not target:
+        now_str = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+        target = {
+            "id": session_id or f"session_{int(time.time() * 1000)}",
+            "title": "New Chat",
+            "created_at": now_str,
+            "updated_at": now_str,
+            "messages": []
+        }
+        sessions.append(target)
+
+    now_str = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+    target.setdefault("messages", []).append({
+        "role": role,
+        "content": content,
+        "timestamp": now_str
+    })
+    target["updated_at"] = now_str
+
+    # Auto-generate meaningful session title from first user query if still generic
+    if target.get("title") in ["New Chat", "Untitled Chat", "Previous Conversation", ""] and role == "user":
+        clean_title = content.strip().replace("\n", " ")
+        if len(clean_title) > 35:
+            clean_title = clean_title[:32] + "..."
+        target["title"] = clean_title.capitalize()
+
+    save_chat_sessions(sessions)
+    return target
+
+def delete_chat_session(session_id: str) -> bool:
+    """Deletes a conversation session from history."""
+    sessions = load_chat_sessions()
+    filtered = [s for s in sessions if s.get("id") != session_id]
+    if not filtered:
+        # Always maintain at least one empty session
+        now_str = datetime.now().strftime("%Y-%m-%d %I:%M %p")
+        filtered = [{
+            "id": f"session_{int(time.time() * 1000)}",
+            "title": "New Chat",
+            "created_at": now_str,
+            "updated_at": now_str,
+            "messages": []
+        }]
+    save_chat_sessions(filtered)
+    return True
+
+
+# ── 3. EPISODIC TIMELINE & AUTO-SUMMARIZATION (Feature 6 & 7) ─────────────────
+def record_memory_event(user_text: str, aria_reply: str, tags: list = None, session_id: str = None):
+    """Records an episodic memory event with precise timestamp, updating both timeline and active session."""
     events = load_memory_timeline()
     event = {
         "id": len(events) + 1,
@@ -76,6 +235,14 @@ def record_memory_event(user_text: str, aria_reply: str, tags: list = None):
     events.append(event)
     with open(MEMORY_TIMELINE_FILE, "w", encoding="utf-8") as f:
         json.dump(events, f, indent=2)
+
+    # Also persist to target or active session for seamless re-chatting
+    try:
+        sess_id = session_id or get_or_create_active_session()["id"]
+        add_session_message(sess_id, "user", user_text)
+        add_session_message(sess_id, "assistant", aria_reply)
+    except Exception as e_sess:
+        print(f"[Aria Memory] Session sync notice: {e_sess}")
     
     # Check if auto-summarization is needed
     if len(events) >= 20:

@@ -114,6 +114,14 @@ def build_sandbox_tool(tool_name: str, code: str, language: str = "auto", descri
     in Aria's lab (E:\MyAgent\tools or sandbox).
     Under Big Sister GAIA's supervision, the code is audited for safety, executed in the sandbox test runner,
     and if verified, physically written to disk and dynamically added to Aria's live toolkit!
+    For Python tools:
+      ALWAYS include a `register_tool()` function:
+      ```python
+      def register_tool() -> tuple[str, callable]:
+          return ("snake_case_name", main_callable)
+      ```
+      The tool name must be a common-sense functional name in lowercase snake_case describing what it does (e.g., 'sister_summoner', 'quote_generator', 'idea_weaver', 'mood_tracker'). NEVER name a tool or file after conversational phrases (e.g. 'why_dont_you', 'what_did_you', 'ill_wait_for').
+      The callable must have type hints and a clear docstring.
     For polyglot tools (JS/TS/Java/PowerShell), an auto-wrapper is registered so Aria can invoke it natively.
     If there is any error or bug, returns the exact error message so Aria reports it truthfully.
     """
@@ -704,6 +712,13 @@ def get_swarm_metadata() -> Dict[str, Dict[str, Any]]:
     return SWARM_AGENTS_METADATA
 
 
+_LOADED_DYNAMIC_TOOLS: Dict[str, Callable] = {}
+
+def get_loaded_dynamic_tools() -> Dict[str, Callable]:
+    """Returns currently discovered dynamic sandbox tools."""
+    return _LOADED_DYNAMIC_TOOLS
+
+
 def load_dynamic_sandbox_tools() -> Dict[str, Callable]:
     r"""
     Dynamically scans Aria's lab sandbox tools directory (e.g. E:\MyAgent\tools or gaia/sandbox/tools),
@@ -711,6 +726,8 @@ def load_dynamic_sandbox_tools() -> Dict[str, Callable]:
     Returns: Dict[str, Callable] of newly loaded dynamic tools.
     """
     import importlib.util
+    import io, contextlib, inspect
+    global _LOADED_DYNAMIC_TOOLS
     loaded_tools: Dict[str, Callable] = {}
 
     tool_search_dirs = []
@@ -737,26 +754,68 @@ def load_dynamic_sandbox_tools() -> Dict[str, Callable]:
                     spec = importlib.util.spec_from_file_location(mod_name, fpath)
                     if spec and spec.loader:
                         mod = importlib.util.module_from_spec(spec)
-                        spec.loader.exec_module(mod)
+                        # Suppress top-level print statements during import
+                        with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                            spec.loader.exec_module(mod)
+
+                        t_name, t_fn = None, None
                         if hasattr(mod, "register_tool"):
-                            t_name, t_fn = mod.register_tool()
-                            # Validation gate: MUST be callable, NOT a lambda, and have a valid name
-                            if not callable(t_fn) or getattr(t_fn, "__name__", "") in ("", "<lambda>"):
-                                print(f"[ADK] Skipping invalid dynamic tool '{t_name}' (lambda or non-callable)")
-                                continue
-                            if not t_fn.__doc__:
-                                t_fn.__doc__ = f"Executes dynamic sandbox tool {t_name} in Aria's lab."
-                            loaded_tools[t_name] = t_fn
-                            TOOL_NAME_MAP[t_name] = t_fn
-                            if t_fn not in ALL_ADK_TOOLS:
-                                ALL_ADK_TOOLS.append(t_fn)
-                            TOOL_TO_AGENT_MAP[t_name] = "system"
-                            if "system" in SWARM_AGENTS_METADATA and "tools" in SWARM_AGENTS_METADATA["system"]:
-                                if t_name not in SWARM_AGENTS_METADATA["system"]["tools"]:
-                                    SWARM_AGENTS_METADATA["system"]["tools"].append(t_name)
+                            try:
+                                reg_res = mod.register_tool()
+                                if isinstance(reg_res, tuple) and len(reg_res) == 2:
+                                    t_name, t_fn = reg_res
+                            except Exception:
+                                pass
+
+                        # Fallback auto-discovery if register_tool wasn't defined:
+                        if not t_fn or not callable(t_fn) or inspect.isclass(t_fn):
+                            base_cand = fname[:-3]
+                            cand_obj = getattr(mod, base_cand, None)
+                            if cand_obj and callable(cand_obj) and not inspect.isclass(cand_obj):
+                                t_name = base_cand
+                                t_fn = cand_obj
+                            else:
+                                funcs = [
+                                    getattr(mod, f) for f in dir(mod)
+                                    if callable(getattr(mod, f)) and not f.startswith("_")
+                                    and not inspect.isclass(getattr(mod, f))
+                                    and getattr(getattr(mod, f), "__module__", "") == mod_name
+                                ]
+                                if funcs:
+                                    t_fn = funcs[0]
+                                    t_name = getattr(t_fn, "__name__", base_cand)
+
+                        if not t_name or not t_fn or not callable(t_fn) or inspect.isclass(t_fn):
+                            continue
+
+                        # Clean & sanitize tool name for OpenAI / Gemini schemas
+                        clean_name = re.sub(r'[^a-zA-Z0-9_]', '_', str(t_name).strip())
+                        clean_name = re.sub(r'_+', '_', clean_name).strip('_').lower()
+                        if not clean_name or not clean_name[0].isalpha():
+                            clean_name = f"tool_{clean_name}"
+
+                        # Synchronize callable __name__ for reflection
+                        if getattr(t_fn, "__name__", "") != clean_name:
+                            try:
+                                t_fn.__name__ = clean_name
+                            except AttributeError:
+                                pass
+
+                        if not inspect.getdoc(t_fn):
+                            t_fn.__doc__ = f"Executes dynamic sandbox tool '{clean_name}' in Aria's lab."
+
+                        loaded_tools[clean_name] = t_fn
+                        TOOL_NAME_MAP[clean_name] = t_fn
+                        if t_fn not in ALL_ADK_TOOLS:
+                            ALL_ADK_TOOLS.append(t_fn)
+                        TOOL_TO_AGENT_MAP[clean_name] = "system"
+                        if "system" in SWARM_AGENTS_METADATA and "tools" in SWARM_AGENTS_METADATA["system"]:
+                            if clean_name not in SWARM_AGENTS_METADATA["system"]["tools"]:
+                                SWARM_AGENTS_METADATA["system"]["tools"].append(clean_name)
                 except Exception as ex:
                     print(f"[ADK] Could not load dynamic tool '{fname}': {ex}")
 
+    _LOADED_DYNAMIC_TOOLS.update(loaded_tools)
     return loaded_tools
 
 
@@ -964,6 +1023,13 @@ class AriaADK:
             f"   - Use build_sandbox_tool(tool_name, code, language, description) to author and register tools in any language.\n"
             f"4. YOUR REAL EXECUTABLE LAB & SYSTEM TOOLS:\n"
             f"   - Lab Tools: build_sandbox_tool, write_file_to_lab, run_sandbox_code, list_sandbox_tools, quick_note_tool.\n"
+            f"   - YOUR SELF-BUILT CUSTOM LAB TOOLS: {', '.join(sorted(_LOADED_DYNAMIC_TOOLS.keys())) if _LOADED_DYNAMIC_TOOLS else 'dream_weaver, sparkle_fy, aria_idea_weaver, daily_motivational_q, mood_tracker_tool'}.\n"
+            f"     (You personally created and verified these tools! When asked to use dream weaver, sparkle-fy, or any custom tool you made, CALL THEM directly via function calling!)\n"
+            f"   - TOOL AUTHORING STANDARD FOR build_sandbox_tool:\n"
+            f"     1. ALWAYS include `def register_tool() -> tuple[str, callable]: return ('tool_name_in_snake_case', main_function)`\n"
+            f"     2. Tool names MUST be snake_case (no spaces, no apostrophes).\n"
+            f"     3. Big Sister GAIA smoke-tests your function with real arguments before approving, so write robust code!\n"
+            f"     4. COMMON-SENSE TOOL & FILE NAMING: Always use your common sense! Name tools and files after what they functionally DO (e.g. sister_summoner.py, quote_generator.py, idea_weaver.py, mood_tracker.py). NEVER name files after conversational chatter, user filler words, or prompt questions (e.g. NEVER why_dont_you.py, what_did_you.py, ok_why_dont_you.py, ill_wait_for.py).\n"
             f"   - Quick Notes: Use quick_note_tool(note) whenever the user asks you to save a note, jot down thoughts, or record a reminder!\n"
             f"   - File & OS Tools: create_or_write_file, create_folder, organize_directory, execute_powershell_command, set_system_volume, lock_workstation, get_system_diagnostics, change_wallpaper.\n"
             f"   - Brain Tools: switch_ai_brain, get_brain_status.\n"
@@ -1053,8 +1119,20 @@ class AriaADK:
         if custom_model and custom_model != "dynamic" and not model_override:
             model_override = custom_model
 
-        # Determine dynamic tier execution order based on active brain
-        if active_brain == "nvidia":
+        # Determine dynamic tier execution order based on active brain or model_override
+        if model_override:
+            mo_lower = model_override.lower()
+            if "gemini" in mo_lower:
+                tier_order = ["gemini", "nvidia", "groq", "ollama"]
+            elif "nvidia" in mo_lower or "nemotron" in mo_lower:
+                tier_order = ["nvidia", "gemini", "groq", "ollama"]
+            elif any(k in mo_lower for k in ["groq", "qwen", "oss"]):
+                tier_order = ["groq", "gemini", "nvidia", "ollama"]
+            elif "ollama" in mo_lower:
+                tier_order = ["ollama", "gemini", "nvidia", "groq"]
+            else:
+                tier_order = ["gemini", "nvidia", "groq", "ollama"]
+        elif active_brain == "nvidia":
             tier_order = ["nvidia", "gemini", "groq", "ollama"]
         elif active_brain == "groq":
             tier_order = ["groq", "gemini", "nvidia", "ollama"]
@@ -1075,7 +1153,7 @@ class AriaADK:
         for tier in tier_order:
             reply = None
             if tier == "gemini":
-                reply = self._call_gemini_turn(user_input, history, system_instruction, tools_to_use, on_status_callback)
+                reply = self._call_gemini_turn(user_input, history, system_instruction, tools_to_use, model_override, on_status_callback)
             elif tier == "nvidia":
                 reply = self._call_nvidia_turn(user_input, history, system_instruction, tools_to_use, model_override, on_status_callback)
             elif tier == "groq":
@@ -1096,14 +1174,27 @@ class AriaADK:
 
         return "I'm having difficulty connecting to my AI engines. Please check your API keys or ensure Ollama is running."
 
-    def _call_gemini_turn(self, user_input: str, history: list, system_instruction: str, tools_to_use: list, on_status_callback: Optional[Callable]) -> Optional[str]:
+    def _call_gemini_turn(self, user_input: str, history: list, system_instruction: str, tools_to_use: list, model_override: Optional[str] = None, on_status_callback: Optional[Callable] = None) -> Optional[str]:
         if not (self.genai_client and self.has_new_genai):
             return None
         try:
+            clean_override = None
+            if model_override:
+                for cand in ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-flash-latest", "gemini-2.5-flash"]:
+                    if cand in model_override.lower():
+                        clean_override = cand
+                        break
+            target_gemini_model = clean_override or "gemini-3.1-flash-lite"
             if on_status_callback:
-                on_status_callback("Thinking with Gemini...")
+                on_status_callback(f"Thinking with Gemini ({target_gemini_model})...")
+
+            gemini_candidates = [target_gemini_model]
+            for fb in ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.5-flash"]:
+                if fb not in gemini_candidates:
+                    gemini_candidates.append(fb)
 
             from google.genai import types as genai_types
+            import inspect
             
             contents = []
             for turn in history[-6:]:
@@ -1117,13 +1208,13 @@ class AriaADK:
                 parts=[genai_types.Part.from_text(text=user_input)]
             ))
 
-            # Filter tools_to_use so only valid, unique named callables with docstrings are passed to Gemini
+            # Filter tools_to_use so only valid, unique named callables (non-classes) with docstrings are passed to Gemini
             valid_gemini_tools = []
             seen_gemini_names = set()
             if tools_to_use:
                 for fn in tools_to_use:
                     fn_name = getattr(fn, "__name__", "")
-                    if callable(fn) and fn_name not in ("", "<lambda>") and fn_name not in seen_gemini_names:
+                    if callable(fn) and not inspect.isclass(fn) and fn_name not in ("", "<lambda>") and fn_name not in seen_gemini_names:
                         seen_gemini_names.add(fn_name)
                         if not fn.__doc__:
                             fn.__doc__ = f"Tool function {fn_name}"
@@ -1138,11 +1229,27 @@ class AriaADK:
 
             # Tool calling loop (up to 4 multi-turn hops)
             for _ in range(4):
-                response = self.genai_client.models.generate_content(
-                    model=self.gemini_model,
-                    contents=contents,
-                    config=config,
-                )
+                response = None
+                last_g_err = None
+                for g_mod in gemini_candidates:
+                    try:
+                        response = self.genai_client.models.generate_content(
+                            model=g_mod,
+                            contents=contents,
+                            config=config,
+                        )
+                        break
+                    except Exception as e:
+                        last_g_err = e
+                        err_str = str(e)
+                        if any(k in err_str for k in ["429", "RESOURCE_EXHAUSTED", "Quota exceeded", "404", "NOT_FOUND"]):
+                            continue
+                        raise e
+
+                if not response:
+                    if last_g_err:
+                        print(f"[ADK] Gemini engine notice: {last_g_err}")
+                    return None
 
                 function_calls = []
                 if response.candidates and response.candidates[0].content and response.candidates[0].content.parts:

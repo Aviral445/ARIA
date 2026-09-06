@@ -85,7 +85,13 @@ class GaiaSupervisor:
 
         # ── STEP 4: RUN MONITORED TEST ────────────────────────────────────────
         bus.emit("GAIA", "EXECUTION_START", f"Running monitored test on '{target_filename}'...", {"script": target_filename})
-        exec_res = run_sandboxed_script(target_path, cwd=SANDBOX_DIR, timeout_sec=15)
+        # For Python tools in tools/, run the full Contract & Smoke Test to close zero-execution loophole!
+        is_py_tool = ("tools/" in target_filename.replace("\\", "/") or "tools\\" in target_filename) and target_filename.endswith(".py")
+        if is_py_tool:
+            from gaia.gaia_runner import run_tool_contract_smoke_test
+            exec_res = run_tool_contract_smoke_test(target_path, cwd=SANDBOX_DIR, timeout_sec=15)
+        else:
+            exec_res = run_sandboxed_script(target_path, cwd=SANDBOX_DIR, timeout_sec=15)
 
         if exec_res.success:
             rl_game.record_independent_success(f"Deployed '{target_filename}' cleanly.")
@@ -111,7 +117,11 @@ class GaiaSupervisor:
         aria_healed, aria_exp, aria_code = self.healer.attempt_aria_self_heal(target_path, exec_res.stderr)
         if aria_healed:
             # Re-test Aria's self-repaired code
-            aria_test_res = run_sandboxed_script(target_path, cwd=SANDBOX_DIR, timeout_sec=15)
+            if is_py_tool:
+                from gaia.gaia_runner import run_tool_contract_smoke_test
+                aria_test_res = run_tool_contract_smoke_test(target_path, cwd=SANDBOX_DIR, timeout_sec=15)
+            else:
+                aria_test_res = run_sandboxed_script(target_path, cwd=SANDBOX_DIR, timeout_sec=15)
             if aria_test_res.success:
                 rl_game.record_independent_success(f"Aria self-healed '{target_filename}' without GAIA!", error_title=err_title)
                 healed_msg = f"Yay! I fixed it all by myself! [+2 pts] {aria_exp}"
@@ -349,32 +359,39 @@ class GaiaSupervisor:
             return False, candidate_response
 
 
-        # Extract filename hint if any
-        m_file = re.search(r'\b([a-zA-Z0-9_\-]+\.(?:py|txt|md|json|csv|html))\b', candidate_response + " " + user_prompt, re.IGNORECASE)
+        # Extract filename hint strictly from Aria's candidate_response (never from the user's prompt!)
+        m_file = re.search(r'\b([a-zA-Z0-9_\-]+\.(?:py|txt|md|json|csv|html))\b', candidate_response, re.IGNORECASE)
         claimed_filename = m_file.group(1) if m_file else None
+        alt_filename = None
         if not claimed_filename:
-            m_hint = re.search(r'["\']([a-zA-Z0-9_\-\s]+)["\']\s*(?:tool|widget|script)', candidate_response + " " + user_prompt, re.IGNORECASE)
+            # Also check for markdown bolding or backticks, e.g. **summon_big_sis** tool or `summon_big_sis` tool
+            m_hint = re.search(r'[\*`"\'“]([a-zA-Z0-9_\-\s]+)[\*`"\'”]\s*(?:tool|widget|script)', candidate_response, re.IGNORECASE)
             if m_hint:
-                clean_h = m_hint.group(1).lower().strip().replace(" ", "_").replace("-", "_")
-                claimed_filename = f"{clean_h}_tool.py"
-
+                clean_h = m_hint.group(1).lower().strip().replace(" ", "_").replace("-", "_").strip("_")
+                claimed_filename = f"{clean_h}.py"
+                alt_filename = f"{clean_h}_tool.py"
 
         # Check if file physically exists on disk
         exists_on_disk = False
         target_path = None
-        if claimed_filename:
-            candidate_paths = [
-                os.path.join(SANDBOX_DIR, "tools", claimed_filename),
-                os.path.join(SANDBOX_DIR, claimed_filename),
-                os.path.join(os.path.dirname(GAIA_DIR), "tools", claimed_filename),
-                os.path.join(os.path.dirname(GAIA_DIR), claimed_filename),
-                os.path.join(os.path.expandvars(r"%USERPROFILE%\Desktop"), claimed_filename),
-                os.path.join(os.path.expandvars(r"%USERPROFILE%\Documents"), claimed_filename),
-            ]
-            for cp in candidate_paths:
-                if os.path.exists(cp):
-                    exists_on_disk = True
-                    target_path = cp
+        filenames_to_check = [f for f in [claimed_filename, alt_filename] if f]
+        if filenames_to_check:
+            for fname in filenames_to_check:
+                candidate_paths = [
+                    os.path.join(SANDBOX_DIR, "tools", fname),
+                    os.path.join(SANDBOX_DIR, fname),
+                    os.path.join(os.path.dirname(GAIA_DIR), "tools", fname),
+                    os.path.join(os.path.dirname(GAIA_DIR), fname),
+                    os.path.join(os.path.expandvars(r"%USERPROFILE%\Desktop"), fname),
+                    os.path.join(os.path.expandvars(r"%USERPROFILE%\Documents"), fname),
+                ]
+                for cp in candidate_paths:
+                    if os.path.exists(cp):
+                        exists_on_disk = True
+                        target_path = cp
+                        claimed_filename = fname
+                        break
+                if exists_on_disk:
                     break
 
         if exists_on_disk:

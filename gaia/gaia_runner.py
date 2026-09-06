@@ -340,3 +340,123 @@ def run_polyglot_code(
                 os.remove(script_path)
         except Exception:
             pass
+
+
+def run_tool_contract_smoke_test(
+    script_path: str,
+    cwd: str,
+    timeout_sec: int = 15
+) -> ExecutionResult:
+    """
+    Validates the tool contract and runs a real smoke-test execution on Python tools in tools/.
+    Closes the 'zero-execution loophole' by ensuring:
+    1. register_tool() exists and returns (tool_name, tool_fn)
+    2. tool_name is a valid snake_case identifier matching ^[a-zA-Z_][a-zA-Z0-9_]*$
+    3. tool_fn is callable with a valid docstring
+    4. tool_fn can be invoked with sample test inputs without crashing or leaking exceptions!
+    """
+    if not os.path.exists(script_path):
+        return ExecutionResult(
+            success=False,
+            stdout="",
+            stderr=f"Error: Target tool script not found: {script_path}",
+            returncode=-1,
+            duration_sec=0.0,
+            language="python"
+        )
+
+    harness_code = (
+        "import sys, os, inspect, re, importlib.util\n"
+        "target_path = sys.argv[1]\n"
+        "try:\n"
+        "    spec = importlib.util.spec_from_file_location('sandbox_mod_test', target_path)\n"
+        "    if not spec or not spec.loader:\n"
+        "        raise ImportError(f'Cannot load spec for {target_path}')\n"
+        "    mod = importlib.util.module_from_spec(spec)\n"
+        "    spec.loader.exec_module(mod)\n"
+        "    if not hasattr(mod, 'register_tool'):\n"
+        "        funcs = [f for f in dir(mod) if callable(getattr(mod, f)) and not f.startswith('_') and getattr(getattr(mod, f), '__module__', '') == 'sandbox_mod_test']\n"
+        "        cand = funcs[0] if funcs else 'your_function'\n"
+        "        raise AssertionError(f'Missing integration contract: Tools must define `register_tool() -> tuple[str, callable]` so Aria and ADK can register and call it! Example: def register_tool(): return \"{cand}\", {cand}')\n"
+        "    res = mod.register_tool()\n"
+        "    if not isinstance(res, tuple) or len(res) != 2:\n"
+        "        raise AssertionError('register_tool() must return a 2-tuple: (tool_name: str, tool_callable)')\n"
+        "    t_name, t_fn = res\n"
+        "    if not isinstance(t_name, str) or not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', t_name):\n"
+        "        raise AssertionError(f'Invalid tool_name \"{t_name}\": Tool name must be snake_case without spaces, dashes, or apostrophes (e.g. \"my_tool\").')\n"
+        "    if not callable(t_fn) or getattr(t_fn, '__name__', '') in ('', '<lambda>'):\n"
+        "        raise AssertionError(f'Tool \"{t_name}\" callable must be a standard function, not a lambda or non-callable.')\n"
+        "    if not inspect.getdoc(t_fn):\n"
+        "        raise AssertionError(f'Tool \"{t_name}\" must have a docstring explaining its purpose.')\n"
+        "    sig = inspect.signature(t_fn)\n"
+        "    sample_args = {}\n"
+        "    for p_name, p in sig.parameters.items():\n"
+        "        if p.default != inspect.Parameter.empty or p_name in ('args', 'kwargs'):\n"
+        "            continue\n"
+        "        if p.annotation in (int,):\n"
+        "            sample_args[p_name] = 1\n"
+        "        elif p.annotation in (float,):\n"
+        "            sample_args[p_name] = 1.0\n"
+        "        elif p.annotation in (bool,):\n"
+        "            sample_args[p_name] = True\n"
+        "        elif p.annotation in (list,):\n"
+        "            sample_args[p_name] = ['sample item 1', 'sample item 2']\n"
+        "        elif p.annotation in (dict,):\n"
+        "            sample_args[p_name] = {'sample_key': 'sample_val'}\n"
+        "        else:\n"
+        "            sample_args[p_name] = 'test input, sample idea; spider-man 3.14 https://example.com'\n"
+        "    smoke_out = t_fn(**sample_args)\n"
+        "    print(f'CONTRACT_VERIFIED: Tool \"{t_name}\" verified and smoke-tested successfully.')\n"
+        "except Exception as e:\n"
+        "    sys.stderr.write(f'Tool Contract & Smoke Test Error: {e}\\n')\n"
+        "    sys.exit(1)\n"
+    )
+
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
+    start_time = time.time()
+    try:
+        proc = subprocess.Popen(
+            [sys.executable, "-X", "utf8", "-c", harness_code, script_path],
+            cwd=cwd,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=env,
+            creationflags=subprocess.CREATE_NO_WINDOW if os.name == 'nt' else 0
+        )
+        stdout, stderr = proc.communicate(timeout=timeout_sec)
+        duration = time.time() - start_time
+        return ExecutionResult(
+            success=(proc.returncode == 0),
+            stdout=stdout,
+            stderr=stderr,
+            returncode=proc.returncode,
+            duration_sec=duration,
+            timeout_occurred=False,
+            language="python"
+        )
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        return ExecutionResult(
+            success=False,
+            stdout="",
+            stderr=f"Tool smoke test timed out after {timeout_sec} seconds.",
+            returncode=-9,
+            duration_sec=timeout_sec,
+            timeout_occurred=True,
+            language="python"
+        )
+    except Exception as e:
+        return ExecutionResult(
+            success=False,
+            stdout="",
+            stderr=f"Tool test harness failure: {e}",
+            returncode=-1,
+            duration_sec=time.time() - start_time,
+            language="python"
+        )
+

@@ -265,6 +265,31 @@ MOBILE_WEB_APP_HTML = """<!DOCTYPE html>
       border-bottom-left-radius: 4px;
       backdrop-filter: blur(10px);
     }
+    .msg.gaia {
+      align-self: flex-start;
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(217, 119, 6, 0.12));
+      border: 1px solid rgba(245, 158, 11, 0.45);
+      color: #fffbeb;
+      border-bottom-left-radius: 4px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 14px rgba(245, 158, 11, 0.12);
+    }
+    .msg.gaia .msg-header {
+      color: #fbbf24;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+    .msg.system {
+      align-self: center;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: var(--cyan);
+      font-size: 0.78rem;
+      padding: 6px 14px;
+      border-radius: 14px;
+      text-align: center;
+      max-width: 92%;
+    }
     .msg-header {
       font-size: 0.65rem;
       font-weight: 700;
@@ -487,6 +512,63 @@ MOBILE_WEB_APP_HTML = """<!DOCTYPE html>
       color: #fff;
       cursor: pointer;
     }
+    .session-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .session-item:hover, .session-item.active {
+      background: rgba(99, 102, 241, 0.16);
+      border-color: rgba(99, 102, 241, 0.45);
+    }
+    .session-info {
+      flex: 1;
+      overflow: hidden;
+      padding-right: 8px;
+    }
+    .session-info strong {
+      display: block;
+      font-size: 0.88rem;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .session-info span {
+      font-size: 0.7rem;
+      color: var(--text-sub);
+      display: block;
+      margin-top: 2px;
+    }
+    .session-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      border-radius: 8px;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--cyan);
+      margin-right: 4px;
+    }
+    .btn-del-session {
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 0.9rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      opacity: 0.7;
+    }
+    .btn-del-session:hover {
+      opacity: 1;
+      background: rgba(239, 68, 68, 0.15);
+    }
   </style>
 </head>
 <body>
@@ -501,6 +583,8 @@ MOBILE_WEB_APP_HTML = """<!DOCTYPE html>
         </div>
       </div>
       <div class="header-actions">
+        <div class="device-pill" onclick="openHistoryModal()" title="View Chat History & Memories">💬 History</div>
+        <div class="device-pill" onclick="startNewChat()" title="Start New Conversation">➕ New</div>
         <div class="device-pill" onclick="openWindowsModal()">🪟 Windows</div>
         <div class="admin-badge is-guest" id="auth-badge" onclick="openLoginModal()">👑 Login</div>
       </div>
@@ -586,6 +670,22 @@ MOBILE_WEB_APP_HTML = """<!DOCTYPE html>
         <div style="text-align: center; color: var(--text-sub); padding: 12px;">Loading active windows...</div>
       </div>
       <button class="btn-block" style="background: var(--purple); color:#fff; margin-top: 10px;" onclick="refreshWindowsList()">🔄 Refresh List</button>
+    </div>
+  </div>
+
+  <!-- Chat History & Memories Modal -->
+  <div class="modal-overlay" id="history-modal">
+    <div class="modal-content" style="max-height: 85vh; display: flex; flex-direction: column;">
+      <div class="modal-header">
+        <h3>💬 Chat Memories & History</h3>
+        <button class="modal-close" onclick="closeModal('history-modal')">✕</button>
+      </div>
+      <div style="padding-bottom: 10px;">
+        <button class="btn-block btn-primary" onclick="startNewChat()" style="margin-top: 0;">➕ Start New Chat</button>
+      </div>
+      <div id="sessions-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; max-height: 380px;">
+        <div style="text-align: center; color: var(--text-sub); padding: 16px;">Loading conversations...</div>
+      </div>
     </div>
   </div>
 
@@ -740,14 +840,32 @@ MOBILE_WEB_APP_HTML = """<!DOCTYPE html>
     const cmdInput = document.getElementById('cmd-input');
     const typingIndicator = document.getElementById('typing');
 
+    let currentSessionId = localStorage.getItem('aria_current_session_id') || '';
+    let lastUserCmd = '';
+
     function appendMsg(role, text) {
       const div = document.createElement('div');
-      div.className = `msg ${role}`;
-      const headerTitle = role === 'user' ? (currentUsername.toUpperCase()) : 'ARIA ASSISTANT';
+      if (role === 'system') {
+        div.className = 'msg system';
+        div.innerHTML = `<div>${text}</div>`;
+        chatArea.appendChild(div);
+        chatArea.scrollTop = chatArea.scrollHeight;
+        return;
+      }
+      const isGaia = (role === 'gaia') || (role !== 'user' && (text.includes('👩‍🏫 Big Sister GAIA:') || text.includes('Big Sister GAIA:') || text.includes('👩‍🏫 GAIA:')));
+      const effectiveRole = isGaia ? 'gaia' : role;
+      div.className = `msg ${effectiveRole}`;
+
+      let cleanText = text;
+      if (isGaia) {
+        cleanText = cleanText.replace(/^(?:👩‍🏫\\s*)?(?:Big Sister GAIA|GAIA):\\s*/i, '');
+      }
+
+      const headerTitle = role === 'user' ? (currentUsername.toUpperCase()) : (isGaia ? '👩‍🏫 GAIA (BIG SISTER)' : '🌸 ARIA ASSISTANT');
       div.innerHTML = `
         <div class="msg-header">${headerTitle}</div>
-        <div>${text.replace(/\\n/g, '<br>')}</div>
-        ${role === 'assistant' ? `
+        <div>${cleanText.replace(/\\n/g, '<br>')}</div>
+        ${effectiveRole !== 'user' ? `
           <div class="msg-actions">
             <button class="msg-action-btn" onclick="speakMsg(this)">🔊 Speak</button>
             <button class="msg-action-btn" onclick="copyMsg(this)">📋 Copy</button>
@@ -758,11 +876,14 @@ MOBILE_WEB_APP_HTML = """<!DOCTYPE html>
       chatArea.scrollTop = chatArea.scrollHeight;
     }
 
-    async function sendCommand(text) {
+    async function sendCommand(text, retryAttempt = 0) {
       if (!text || !text.trim()) return;
       const cmd = text.trim();
-      appendMsg('user', cmd);
-      cmdInput.value = '';
+      lastUserCmd = cmd;
+      if (retryAttempt === 0) {
+        appendMsg('user', cmd);
+        cmdInput.value = '';
+      }
       typingIndicator.style.display = 'flex';
       chatArea.scrollTop = chatArea.scrollHeight;
 
@@ -770,14 +891,139 @@ MOBILE_WEB_APP_HTML = """<!DOCTYPE html>
         const res = await fetch('/command', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cmd: cmd, token: sessionToken })
+          body: JSON.stringify({ cmd: cmd, token: sessionToken, session_id: currentSessionId })
         });
         const data = await res.json();
         typingIndicator.style.display = 'none';
+        if (data.session_id) {
+          currentSessionId = data.session_id;
+          localStorage.setItem('aria_current_session_id', currentSessionId);
+        }
         appendMsg('assistant', data.response || 'Done.');
       } catch (err) {
+        if (retryAttempt < 2) {
+          appendMsg('system', `🔄 Aria live reload in progress... Auto-reconnecting (Attempt ${retryAttempt + 1}/2)...`);
+          await new Promise(r => setTimeout(r, 1500));
+          return sendCommand(cmd, retryAttempt + 1);
+        }
         typingIndicator.style.display = 'none';
-        appendMsg('assistant', '⚠️ Connection failed: ' + err.message);
+        appendMsg('assistant', `⚠️ Connection dropped: ${err.message}<br><button class="msg-action-btn" style="margin-top:8px;" onclick="retryLastCmd()">🔄 Reconnect & Retry</button>`);
+      }
+    }
+
+    function retryLastCmd() {
+      if (lastUserCmd) {
+        sendCommand(lastUserCmd, 0);
+      }
+    }
+
+    // ── Multi-Session History & Re-chatting ────────────────────────────────────
+    async function loadChatHistory(sessionId) {
+      const query = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : '';
+      try {
+        const res = await fetch('/history' + query);
+        const data = await res.json();
+        if (data.success && data.messages && data.messages.length > 0) {
+          chatArea.innerHTML = '';
+          currentSessionId = data.session_id || sessionId;
+          if (currentSessionId) localStorage.setItem('aria_current_session_id', currentSessionId);
+          
+          appendMsg('system', `💬 Continuing: <strong>${data.title || 'Saved Conversation'}</strong>`);
+          data.messages.forEach(m => {
+            appendMsg(m.role === 'user' ? 'user' : (m.role === 'gaia' ? 'gaia' : 'assistant'), m.content);
+          });
+          chatArea.scrollTop = chatArea.scrollHeight;
+        } else if (!sessionId && data.session_id) {
+          currentSessionId = data.session_id;
+          localStorage.setItem('aria_current_session_id', currentSessionId);
+        }
+      } catch (e) {
+        console.log('Notice: Could not load initial chat history:', e);
+      }
+    }
+
+    function openHistoryModal() {
+      document.getElementById('history-modal').style.display = 'flex';
+      refreshSessionsList();
+    }
+
+    async function refreshSessionsList() {
+      const listEl = document.getElementById('sessions-list');
+      listEl.innerHTML = '<div style="text-align: center; color: var(--text-sub); padding: 16px;">Loading conversations...</div>';
+      try {
+        const res = await fetch('/sessions');
+        const data = await res.json();
+        const sessions = data.sessions || [];
+        if (sessions.length === 0) {
+          listEl.innerHTML = '<div style="text-align:center; color:var(--text-sub); padding:16px;">No saved conversations yet.</div>';
+          return;
+        }
+        let html = '';
+        sessions.forEach(s => {
+          const isActive = s.id === currentSessionId;
+          html += `
+            <div class="session-item ${isActive ? 'active' : ''}" onclick="selectSession('${s.id}')">
+              <div class="session-info">
+                <strong>${isActive ? '🟢 ' : '💬 '}${s.title || 'Untitled Chat'}</strong>
+                <span>${s.updated_at || ''} • <span class="session-badge">${s.message_count} msgs</span> ${s.preview || ''}</span>
+              </div>
+              <button class="btn-del-session" title="Delete conversation" onclick="event.stopPropagation(); deleteSession('${s.id}')">🗑️</button>
+            </div>
+          `;
+        });
+        listEl.innerHTML = html;
+      } catch (e) {
+        listEl.innerHTML = '<div style="color: #ef4444; text-align:center; padding:12px;">Failed to load conversations.</div>';
+      }
+    }
+
+    async function selectSession(sessionId) {
+      currentSessionId = sessionId;
+      localStorage.setItem('aria_current_session_id', sessionId);
+      closeModal('history-modal');
+      await loadChatHistory(sessionId);
+    }
+
+    async function startNewChat() {
+      try {
+        const res = await fetch('/sessions/new', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title: 'New Chat' })
+        });
+        const data = await res.json();
+        if (data.success && data.session) {
+          currentSessionId = data.session.id;
+          localStorage.setItem('aria_current_session_id', currentSessionId);
+          closeModal('history-modal');
+          chatArea.innerHTML = `
+            <div class="msg assistant">
+              <div class="msg-header">ARIA ASSISTANT</div>
+              Hello! I started a fresh chat session for you. How can I help?
+              <div class="msg-actions">
+                <button class="msg-action-btn" onclick="speakMsg(this)">🔊 Speak</button>
+                <button class="msg-action-btn" onclick="copyMsg(this)">📋 Copy</button>
+              </div>
+            </div>
+          `;
+        }
+      } catch (e) {
+        alert('Failed to start new chat: ' + e);
+      }
+    }
+
+    async function deleteSession(sessionId) {
+      if (!confirm('Delete this conversation from history?')) return;
+      try {
+        await fetch('/sessions/' + sessionId, { method: 'DELETE' });
+        if (currentSessionId === sessionId) {
+          currentSessionId = '';
+          localStorage.removeItem('aria_current_session_id');
+          await loadChatHistory('');
+        }
+        refreshSessionsList();
+      } catch (e) {
+        alert('Failed to delete session: ' + e);
       }
     }
 
@@ -871,6 +1117,9 @@ MOBILE_WEB_APP_HTML = """<!DOCTYPE html>
     }
     setInterval(updateStats, 4000);
     updateStats();
+
+    // Initial Load: Restore saved conversation from memories
+    loadChatHistory(currentSessionId);
   </script>
 </body>
 </html>
@@ -893,7 +1142,8 @@ def get_status():
         "version": "3.0",
         "local_ip": get_local_ip(),
         "host_device": f"{socket.gethostname()} (Host PC)",
-        "models": ["Google Gemini 2.5 Flash", "Groq Cloud"]
+        "models": ["Google Gemini 2.5 Flash", "Groq Cloud"],
+        "cache_optimization": "LRU + TTL Active (Sub-millisecond)"
     }
 
 @app.post("/login")
@@ -941,6 +1191,65 @@ def switch_window(data: dict = Body(...)):
     except Exception as e:
         return {"success": False, "response": f"Failed to switch window: {e}"}
 
+@app.get("/sessions")
+def get_sessions():
+    """Lists all saved chat conversation sessions."""
+    try:
+        import aria_memory
+        return {"success": True, "sessions": aria_memory.list_chat_sessions()}
+    except Exception as e:
+        return {"success": False, "error": str(e), "sessions": []}
+
+@app.get("/sessions/{session_id}")
+def get_single_session(session_id: str):
+    """Retrieves full conversation turns of a session."""
+    try:
+        import aria_memory
+        sess = aria_memory.get_chat_session(session_id)
+        return {"success": True, "session": sess}
+    except Exception as e:
+        return {"success": False, "error": str(e), "session": None}
+
+@app.post("/sessions/new")
+def create_session(data: dict = Body(...)):
+    """Creates a new empty chat session."""
+    try:
+        import aria_memory
+        title = data.get("title", "New Chat")
+        sess = aria_memory.create_new_chat_session(title)
+        return {"success": True, "session": sess}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.delete("/sessions/{session_id}")
+def remove_session(session_id: str):
+    """Deletes an archived conversation session."""
+    try:
+        import aria_memory
+        ok = aria_memory.delete_chat_session(session_id)
+        return {"success": ok}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/history")
+def get_chat_history(session_id: str = None, limit: int = 60):
+    """Returns conversation history for the current or specified session."""
+    try:
+        import aria_memory
+        if session_id:
+            sess = aria_memory.get_chat_session(session_id)
+        else:
+            sess = aria_memory.get_or_create_active_session()
+        msgs = sess.get("messages", []) if sess else []
+        return {
+            "success": True,
+            "session_id": sess.get("id") if sess else None,
+            "title": sess.get("title") if sess else "Chat",
+            "messages": msgs[-limit:]
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e), "messages": []}
+
 @app.post("/command")
 def execute_command(data: dict = Body(...)):
     """
@@ -948,6 +1257,7 @@ def execute_command(data: dict = Body(...)):
     """
     cmd_clean = data.get("cmd", "").strip()
     token = data.get("token", "")
+    session_id = data.get("session_id", "").strip() or None
     
     if not cmd_clean:
         return {"handled": False, "response": "No command provided."}
@@ -972,7 +1282,7 @@ def execute_command(data: dict = Body(...)):
                 reply = aria_extended.send_whatsapp_message(recipient, message)
                 try:
                     import aria_memory
-                    aria_memory.record_memory_event(cmd_clean, reply)
+                    aria_memory.record_memory_event(cmd_clean, reply, session_id=session_id)
                 except Exception:
                     pass
                 return {"handled": True, "type": "tool", "response": reply}
@@ -982,7 +1292,7 @@ def execute_command(data: dict = Body(...)):
         if handled_power:
             try:
                 import aria_memory
-                aria_memory.record_memory_event(cmd_clean, reply_power)
+                aria_memory.record_memory_event(cmd_clean, reply_power, session_id=session_id)
             except Exception:
                 pass
             return {"handled": True, "type": "tool", "response": reply_power}
@@ -1048,7 +1358,7 @@ def execute_command(data: dict = Body(...)):
             reply = aria_tools.create_or_write_file(filename=filename, content=content, location=location)
             try:
                 import aria_memory
-                aria_memory.record_memory_event(cmd_clean, reply)
+                aria_memory.record_memory_event(cmd_clean, reply, session_id=session_id)
             except Exception:
                 pass
             return {"handled": True, "type": "tool", "response": reply}
@@ -1073,7 +1383,7 @@ def execute_command(data: dict = Body(...)):
             reply = aria_extended.open_chrome_with_profile(search_url)
             try:
                 import aria_memory
-                aria_memory.record_memory_event(cmd_clean, reply)
+                aria_memory.record_memory_event(cmd_clean, reply, session_id=session_id)
             except Exception:
                 pass
             return {"handled": True, "type": "tool", "response": reply}
@@ -1085,7 +1395,7 @@ def execute_command(data: dict = Body(...)):
                 reply = aria_extended.open_chrome_with_profile(target_url)
                 try:
                     import aria_memory
-                    aria_memory.record_memory_event(cmd_clean, reply)
+                    aria_memory.record_memory_event(cmd_clean, reply, session_id=session_id)
                 except Exception:
                     pass
                 return {"handled": True, "type": "tool", "response": reply}
@@ -1097,7 +1407,7 @@ def execute_command(data: dict = Body(...)):
             reply = aria_extended.switch_google_search_section(section, custom_query)
             try:
                 import aria_memory
-                aria_memory.record_memory_event(cmd_clean, reply)
+                aria_memory.record_memory_event(cmd_clean, reply, session_id=session_id)
             except Exception:
                 pass
             return {"handled": True, "type": "tool", "response": reply}
@@ -1107,7 +1417,7 @@ def execute_command(data: dict = Body(...)):
             reply = aria_extended.open_chrome_with_profile("https://www.google.com")
             try:
                 import aria_memory
-                aria_memory.record_memory_event(cmd_clean, reply)
+                aria_memory.record_memory_event(cmd_clean, reply, session_id=session_id)
             except Exception:
                 pass
             return {"handled": True, "type": "tool", "response": reply}
@@ -1121,7 +1431,7 @@ def execute_command(data: dict = Body(...)):
                     reply = aria_extended.open_or_focus_laptop_app(raw_target)
                     try:
                         import aria_memory
-                        aria_memory.record_memory_event(cmd_clean, reply)
+                        aria_memory.record_memory_event(cmd_clean, reply, session_id=session_id)
                     except Exception:
                         pass
                     return {"handled": True, "type": "tool", "response": reply}
@@ -1133,7 +1443,7 @@ def execute_command(data: dict = Body(...)):
             if handled:
                 try:
                     import aria_memory
-                    aria_memory.record_memory_event(cmd_clean, reply)
+                    aria_memory.record_memory_event(cmd_clean, reply, session_id=session_id)
                 except Exception:
                     pass
                 return {"handled": True, "type": "tool", "response": reply}
@@ -1169,21 +1479,15 @@ def execute_command(data: dict = Body(...)):
         now_str = time.strftime("%A, %B %d %Y, %I:%M %p")
         admin_status_str = "You are speaking to the Master Admin (L) who has full administrative control." if is_admin else f"You are speaking to a Guest user ('{user_name}'). You are in CONVERSATION-ONLY MODE and cannot command the host laptop."
         
-        # Pull recent conversational memory turns
-        recent_memories = aria_memory.load_memory_timeline()[-6:]
-        history_lines = []
-        for ev in recent_memories:
-            u_text = ev.get('user', '').strip()
-            a_text = ev.get('aria', '').strip()
-            if u_text and a_text:
-                history_lines.append(f"User: {u_text}")
-                history_lines.append(f"Aria: {a_text}")
-        history_block = "\n".join(history_lines) if history_lines else "No previous messages in this session."
-
-        # Call Aria ADK Engine (passing is_admin status)
-        try:
-            import aria_adk
-            adk_engine = aria_adk.get_adk_engine(gemini_key=gemini_key)
+        # Pull conversational memory turns for this session
+        if session_id:
+            curr_sess = aria_memory.get_chat_session(session_id)
+            sess_msgs = curr_sess.get("messages", []) if curr_sess else []
+            formatted_history = []
+            for m in sess_msgs[-16:]:
+                formatted_history.append({"role": m.get("role", "user"), "content": m.get("content", "")})
+        else:
+            recent_memories = aria_memory.load_memory_timeline()[-6:]
             formatted_history = []
             for ev in recent_memories:
                 u_text = ev.get('user', '').strip()
@@ -1191,6 +1495,11 @@ def execute_command(data: dict = Body(...)):
                 if u_text and a_text:
                     formatted_history.append({"role": "user", "content": u_text})
                     formatted_history.append({"role": "assistant", "content": a_text})
+
+        # Call Aria ADK Engine (passing is_admin status)
+        try:
+            import aria_adk
+            adk_engine = aria_adk.get_adk_engine(gemini_key=gemini_key)
 
             ai_reply = adk_engine.run_turn(
                 user_input=cmd_clean,
@@ -1200,10 +1509,10 @@ def execute_command(data: dict = Body(...)):
                 is_admin=is_admin
             )
             try:
-                aria_memory.record_memory_event(cmd_clean, ai_reply)
+                aria_memory.record_memory_event(cmd_clean, ai_reply, session_id=session_id)
             except Exception:
                 pass
-            return {"handled": True, "type": "ai", "response": ai_reply}
+            return {"handled": True, "type": "ai", "response": ai_reply, "session_id": session_id}
         except Exception as e_adk:
             print(f"[ADK API notice] {e_adk}")
 
@@ -1212,10 +1521,10 @@ def execute_command(data: dict = Body(...)):
         profile = {"name": user_name, "is_admin": is_admin}
         ai_reply = agent_mod.chat_with_ai(cmd_clean, [], profile)
         try:
-            aria_memory.record_memory_event(cmd_clean, ai_reply)
+            aria_memory.record_memory_event(cmd_clean, ai_reply, session_id=session_id)
         except Exception:
             pass
-        return {"handled": True, "type": "ai", "response": ai_reply}
+        return {"handled": True, "type": "ai", "response": ai_reply, "session_id": session_id}
 
     except Exception as e:
         return {"handled": False, "error": str(e), "response": f"Sorry, I had trouble processing that: {e}"}
@@ -1230,10 +1539,31 @@ def get_system_stats():
 @app.get("/analytics")
 def get_analytics():
     try:
-        import aria_memory
-        return aria_memory.get_analytics_summary()
+        import aria_memory, aria_cache
+        res = aria_memory.get_analytics_summary()
+        res["cache"] = aria_cache.cache_manager.get_all_stats()
+        return res
     except Exception as e:
         return {"error": str(e)}
+
+@app.get("/cache/stats")
+def get_cache_stats():
+    """Returns real-time diagnostics on LRU/TTL cache hits, misses, evictions, and ratios."""
+    try:
+        import aria_cache
+        return {"success": True, "cache_stats": aria_cache.cache_manager.get_all_stats()}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/cache/clear")
+def clear_all_caches():
+    """Flushes all in-memory LRU/TTL caches cleanly on demand."""
+    try:
+        import aria_cache
+        aria_cache.cache_manager.clear_all()
+        return {"success": True, "message": "All Aria & GAIA in-memory caches cleared."}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
 
 
 if __name__ == "__main__":

@@ -26,6 +26,7 @@ config/gui_config.json
 # Personal Memory, Conversation Timelines & Learning Data
 data/memory_timeline.json
 data/memory_cards.json
+data/chat_sessions.json
 data/reminders.json
 data/goals.json
 data/learned_corrections.json
@@ -90,4 +91,5 @@ sandbox_notes/
 *.wav
 snapshots/
 diffs/
+scratch/
 
