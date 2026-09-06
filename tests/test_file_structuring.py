@@ -12,6 +12,7 @@ Tests:
 """
 
 import os
+from unittest.mock import patch, MagicMock
 import pytest
 from core.aria_file_structuring import (
     create_structured_folder,
@@ -20,6 +21,8 @@ from core.aria_file_structuring import (
     list_structured_tree,
     manage_structured_path,
     search_structured_files,
+    open_in_vscode,
+    create_multifile_project,
     _resolve_safe_path,
     ARIA_FILES_DIR
 )
@@ -30,6 +33,9 @@ from core.aria_adk import (
     aria_read_file,
     aria_list_files_tree,
     aria_manage_file,
+    aria_open_files_explorer,
+    aria_open_in_vscode,
+    aria_create_multifile_project,
     ALL_ADK_TOOLS
 )
 
@@ -141,3 +147,82 @@ class TestFileStructuringSkill:
         # Call via ADK wrapper
         res = aria_create_folder(main_folder=self.test_main, subfolder="ADK_Test")
         assert "Created structured folder" in res or "already exists" in res
+
+    def test_adk_vscode_tools_registered(self):
+        """Verify aria_open_in_vscode and aria_create_multifile_project are registered in ALL_ADK_TOOLS."""
+        adk_names = [fn.__name__ for fn in ALL_ADK_TOOLS]
+        assert "aria_open_in_vscode" in adk_names
+        assert "aria_create_multifile_project" in adk_names
+
+    @patch("subprocess.Popen")
+    def test_open_in_vscode(self, mock_popen):
+        """Verify open_in_vscode invokes code command with target path."""
+        res = open_in_vscode("Projects/AI_Chat")
+        assert "Opened" in res
+        assert "Visual Studio Code" in res
+        assert mock_popen.called
+
+    @patch("subprocess.Popen")
+    def test_create_multifile_project_scaffolding(self, mock_popen):
+        """Verify create_multifile_project creates structured files and .vscode configuration."""
+        proj_name = "Test_Weather_Bot"
+        proj_path = os.path.join(ARIA_FILES_DIR, "Projects", proj_name)
+        if os.path.exists(proj_path):
+            import shutil
+            shutil.rmtree(proj_path, ignore_errors=True)
+
+        try:
+            res = create_multifile_project(
+                project_name=proj_name,
+                files={
+                    "main.py": "print('Weather Bot Active')",
+                    "config.json": '{"city": "Tokyo"}',
+                    "utils/helpers.py": "def get_temp(): return 22"
+                },
+                open_editor=True
+            )
+            assert "Created multi-file project" in res
+            assert "main.py" in res
+            assert "config.json" in res
+            assert "utils/helpers.py" in res
+
+            # Verify physical files exist
+            assert os.path.exists(os.path.join(proj_path, "main.py"))
+            assert os.path.exists(os.path.join(proj_path, "config.json"))
+            assert os.path.exists(os.path.join(proj_path, "utils", "helpers.py"))
+            assert mock_popen.called
+        finally:
+            if os.path.exists(proj_path):
+                import shutil
+                shutil.rmtree(proj_path, ignore_errors=True)
+
+    @patch("subprocess.Popen")
+    def test_tools_wrapper_vscode_and_scaffold(self, mock_popen):
+        """Verify file_structuring_tool handles vscode and scaffold actions."""
+        res_code = file_structuring_tool(action="vscode")
+        assert "Opened" in res_code
+        assert "Visual Studio Code" in res_code
+
+        res_scaffold = file_structuring_tool(action="scaffold", subfolder="Quick_App", content="")
+        assert "Created multi-file project" in res_scaffold
+        # Clean up
+        quick_app_dir = os.path.join(ARIA_FILES_DIR, "Projects", "Quick_App")
+        if os.path.exists(quick_app_dir):
+            import shutil
+            shutil.rmtree(quick_app_dir, ignore_errors=True)
+
+    @patch("subprocess.Popen")
+    def test_agent_deterministic_vscode_routing(self, mock_popen):
+        """Verify agent.py _tool_aria_file_structuring handles VS Code user queries."""
+        from agent import _tool_aria_file_structuring
+
+        # 1. Open E:\ARIA FILES in VS Code
+        handled, msg = _tool_aria_file_structuring("open e: ARIA FILES in vs code")
+        assert handled is True
+        assert "Visual Studio Code" in msg
+
+        # 2. Open project in VS Code
+        handled, msg = _tool_aria_file_structuring("open vs code in aria files")
+        assert handled is True
+        assert "Visual Studio Code" in msg
+

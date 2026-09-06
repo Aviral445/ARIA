@@ -12,9 +12,10 @@ Strict Boundary Sandbox (Jail):
 
 import os
 import re
+import json
 import shutil
 import subprocess
-from typing import Optional, List, Dict, Tuple, Any
+from typing import Optional, List, Dict, Tuple, Any, Union
 
 try:
     from .paths import ARIA_FILES_DIR
@@ -379,3 +380,74 @@ def open_aria_files_folder() -> str:
         return f"📂 Opened E:\\ARIA FILES in Windows File Explorer!"
     except Exception as e:
         return f"Could not open explorer: {e}"
+
+
+def open_in_vscode(target_path: str = "", new_window: bool = False) -> str:
+    r"""Opens E:\ARIA FILES (or a specific project/file inside it) in Visual Studio Code."""
+    try:
+        os.makedirs(ARIA_FILES_DIR, exist_ok=True)
+        safe_path = _resolve_safe_path(target_path) if target_path else ARIA_FILES_DIR
+        
+        # Locate code.cmd / code executable
+        code_cmd = shutil.which("code") or shutil.which("code.cmd") or os.path.expandvars(r"%LOCALAPPDATA%\Programs\Microsoft VS Code\bin\code.cmd")
+        
+        cmd = [code_cmd]
+        if new_window:
+            cmd.append("-n")
+        cmd.append(safe_path)
+        
+        subprocess.Popen(cmd, shell=True)
+        rel = os.path.relpath(safe_path, ARIA_FILES_DIR)
+        display = f"E:\\ARIA FILES\\{rel}" if rel != "." else "E:\\ARIA FILES"
+        return f"💻 Opened '{display}' in Visual Studio Code!"
+    except Exception as e:
+        return f"Could not open in VS Code: {e}"
+
+
+def create_multifile_project(project_name: str, files: Any = None, open_editor: bool = True) -> str:
+    r"""Creates a multi-file project inside E:\ARIA FILES\Projects\<project_name> and optionally opens it in VS Code."""
+    if not project_name or not project_name.strip():
+        return "Error: Please specify a project name."
+
+    clean_proj = _sanitize_name(project_name.strip())
+    proj_dir = os.path.join(ARIA_FILES_DIR, "Projects", clean_proj)
+    os.makedirs(proj_dir, exist_ok=True)
+
+    # Parse files argument
+    files_map = {}
+    if isinstance(files, str) and files.strip():
+        try:
+            parsed = json.loads(files)
+            if isinstance(parsed, dict):
+                files_map = parsed
+        except Exception:
+            # Treat as single main.py content
+            files_map = {"main.py": files}
+    elif isinstance(files, dict):
+        files_map = files
+
+    # Default scaffold if empty
+    if not files_map:
+        files_map = {
+            "main.py": f'"""\n{clean_proj} — Main Entry Point\nCreated by Aria in E:\\ARIA FILES\\Projects\\{clean_proj}\n"""\n\ndef main():\n    print("✨ Welcome to {clean_proj}! Powered by Aria & VS Code.")\n\nif __name__ == "__main__":\n    main()\n',
+            "README.md": f"# {clean_proj}\n\nAutomated multi-file project created by **Aria** in `E:\\ARIA FILES\\Projects\\{clean_proj}`.\n\n## Structure\n- `main.py`: Main application entry point\n- `.vscode/settings.json`: VS Code workspace preferences\n",
+            "requirements.txt": "# Project dependencies\n",
+            ".vscode/settings.json": '{\n    "python.analysis.typeCheckingMode": "basic",\n    "files.encoding": "utf8",\n    "terminal.integrated.defaultProfile.windows": "PowerShell"\n}\n'
+        }
+
+    created_files = []
+    for rel_path, content in files_map.items():
+        clean_rel = os.path.normpath(str(rel_path).strip().lstrip("/\\")).replace("\\", "/")
+        full_path = os.path.join(proj_dir, os.path.normpath(clean_rel))
+        os.makedirs(os.path.dirname(full_path), exist_ok=True)
+        with open(full_path, "w", encoding="utf-8") as f:
+            f.write(str(content))
+        created_files.append(clean_rel)
+
+    summary = f"✨ Created multi-file project 'Projects/{clean_proj}' with {len(created_files)} files:\n" + "\n".join([f"  • {f}" for f in created_files])
+
+    if open_editor:
+        vscode_msg = open_in_vscode(f"Projects/{clean_proj}")
+        summary += f"\n{vscode_msg}"
+
+    return summary

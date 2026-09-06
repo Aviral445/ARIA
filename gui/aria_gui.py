@@ -835,6 +835,14 @@ class AriaApp:
         )
         self.chat_files_btn.pack(side="left", padx=2)
 
+        self.chat_vscode_btn = tk.Button(
+            top_ctrl, text="💻 VS CODE", font=("Segoe UI", 9, "bold"),
+            bg=pal["CARD2"], fg=pal["CYAN"], activebackground=pal["CARD_HOVER"], activeforeground=pal["WHITE"],
+            relief="flat", bd=0, padx=9, pady=2, cursor="hand2",
+            command=self._open_aria_vscode
+        )
+        self.chat_vscode_btn.pack(side="left", padx=2)
+
         tk.Label(top_ctrl, text="● ADAPTIVE SWARM ACTIVE", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["GREEN"]).pack(side="right")
 
         # Row 2: Action Chips with Icons and Proper Spacing
@@ -844,6 +852,7 @@ class AriaApp:
         tk.Label(chip_bar, text="QUICK ACTIONS:", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["GREY"]).pack(side="left", padx=(0, 6))
 
         chip_items = [
+            ("💻 VS Code", "Aria, open my ARIA FILES in VS Code"),
             ("📁 File Structure", "Aria, show my file structure in E:\\ARIA FILES"),
             ("👁 Screen Vision", "Inspect Screen"),
             ("🪟 Windows", "List Open Windows"),
@@ -1212,6 +1221,20 @@ class AriaApp:
                 os.startfile(r"E:\ARIA FILES")
             except Exception as ex:
                 messagebox.showerror("Aria Files", f"Could not open ARIA FILES: {ex}")
+
+    def _open_aria_vscode(self):
+        """Opens Aria's dedicated E:\\ARIA FILES workspace in Visual Studio Code."""
+        try:
+            from core.aria_file_structuring import open_in_vscode
+            res = open_in_vscode()
+            self._log(f"💻 VS Code: {res}", "cyan")
+        except Exception as e:
+            try:
+                import subprocess, shutil, os
+                code_cmd = shutil.which("code") or shutil.which("code.cmd") or os.path.expandvars(r"%LOCALAPPDATA%\Programs\Microsoft VS Code\bin\code.cmd")
+                subprocess.Popen([code_cmd, r"E:\ARIA FILES"], shell=True)
+            except Exception as ex:
+                messagebox.showerror("VS Code", f"Could not open VS Code in E:\\ARIA FILES: {ex}")
 
     def _open_chat_history_modal(self):
         """Displays the high-tech Chat Session Vault modal to browse, resume, or delete chat sessions."""

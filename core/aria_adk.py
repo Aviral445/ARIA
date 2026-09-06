@@ -309,6 +309,31 @@ def aria_open_files_explorer() -> str:
         return f"Error opening explorer: {e}"
 
 
+def aria_open_in_vscode(folder_or_file: str = "", new_window: bool = False) -> str:
+    r"""Open Aria's personal workspace E:\ARIA FILES (or a specific project/subfolder/file inside it) in Visual Studio Code.
+    Args:
+        folder_or_file: Optional relative path in E:\ARIA FILES (e.g. 'Projects/AI_Chat' or leave empty for the entire workspace).
+        new_window: Whether to launch in a new VS Code window."""
+    try:
+        from core.aria_file_structuring import open_in_vscode
+        return open_in_vscode(folder_or_file, new_window=new_window)
+    except Exception as e:
+        return f"Error opening in VS Code: {e}"
+
+
+def aria_create_multifile_project(project_name: str, files: str = "", open_in_editor: bool = True) -> str:
+    r"""Scaffold and create a complete multi-file project with structured folders, files, and VS Code configs inside E:\ARIA FILES\Projects\<project_name>, then optionally launch it in VS Code.
+    Args:
+        project_name: Name of the project (e.g. 'Weather_Bot' or 'Data_Pipeline').
+        files: Optional JSON string of {"rel/path.py": "file content", ...}. If empty, scaffolds standard production template files.
+        open_in_editor: Whether to automatically launch the project in Visual Studio Code."""
+    try:
+        from core.aria_file_structuring import create_multifile_project
+        return create_multifile_project(project_name, files=files, open_editor=open_in_editor)
+    except Exception as e:
+        return f"Error scaffolding multi-file project: {e}"
+
+
 def execute_powershell_command(command: str) -> str:
     """Run an authorized PowerShell command on Windows to inspect or control the OS."""
     try:
@@ -652,13 +677,15 @@ ALL_ADK_TOOLS: List[Callable] = [
     write_file_to_lab,
     run_sandbox_code,
     list_sandbox_tools,
-    # File Structuring Skill in E:\ARIA FILES
+    # File Structuring Skill & VS Code in E:\ARIA FILES
     aria_create_folder,
     aria_write_file,
     aria_read_file,
     aria_list_files_tree,
     aria_manage_file,
     aria_open_files_explorer,
+    aria_open_in_vscode,
+    aria_create_multifile_project,
 ]
 
 TOOL_NAME_MAP: Dict[str, Callable] = {fn.__name__: fn for fn in ALL_ADK_TOOLS}
@@ -676,7 +703,7 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "icon": "👑",
         "accent": "#818cf8",
         "model": "Gemini 2.5 Flash / Groq",
-        "tools": ["switch_ai_brain", "get_brain_status", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
+        "tools": ["switch_ai_brain", "get_brain_status", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools", "aria_open_in_vscode", "aria_create_multifile_project"],
         "status": "ONLINE"
     },
     "system": {
@@ -686,7 +713,7 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "description": "Controls Windows applications, creates & searches documents, organizes files, monitors hardware health, and manages volume & power.",
         "icon": "💻",
         "accent": "#38bdf8",
-        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
+        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
         "status": "READY"
     },
     "browser": {
@@ -1103,25 +1130,30 @@ class AriaADK:
             f"     3. Big Sister GAIA smoke-tests your function with real arguments before approving, so write robust code!\n"
             f"     4. COMMON-SENSE TOOL & FILE NAMING: Always use your common sense! Name tools and files after what they functionally DO (e.g. sister_summoner.py, quote_generator.py, idea_weaver.py, mood_tracker.py). NEVER name files after conversational chatter, user filler words, or prompt questions (e.g. NEVER why_dont_you.py, what_did_you.py, ok_why_dont_you.py, ill_wait_for.py).\n"
             f"   - Quick Notes: Use quick_note_tool(note) whenever the user asks you to save a note, jot down thoughts, or record a reminder!\n"
-            f"   - File & OS Tools: create_or_write_file, create_folder, organize_directory, aria_create_folder, aria_write_file, aria_read_file, aria_list_files_tree, aria_manage_file, aria_open_files_explorer, execute_powershell_command, set_system_volume, lock_workstation, get_system_diagnostics, change_wallpaper.\n"
+            f"   - File & OS Tools: create_or_write_file, create_folder, organize_directory, aria_create_folder, aria_write_file, aria_read_file, aria_list_files_tree, aria_manage_file, aria_open_files_explorer, aria_open_in_vscode, aria_create_multifile_project, execute_powershell_command, set_system_volume, lock_workstation, get_system_diagnostics, change_wallpaper.\n"
             f"   - Brain Tools: switch_ai_brain, get_brain_status.\n"
             f"   - Browser & Web: chrome_research, chrome_open_url, chrome_read_current_page, get_latest_news, get_crypto_price, convert_currency, get_wikipedia_summary.\n"
             f"   - Phone Tools: unlock_phone, lock_phone, open_mobile_app, make_mobile_call, send_mobile_sms, get_phone_battery, analyze_phone_screen.\n"
             f"   - When the user asks you to build or do something, CALL THESE TOOLS! Never pretend!\n\n"
-            f"5. YOUR FILE STRUCTURING SKILL (E:\\ARIA FILES WORKSPACE):\n"
-            f"   - Your dedicated personal workspace for creating and managing all files, projects, and documents is located at `E:\\ARIA FILES`.\n"
+            f"5. YOUR FILE STRUCTURING SKILL & VS CODE INTEGRATION (E:\\ARIA FILES WORKSPACE):\n"
+            f"   - Your dedicated personal workspace for creating, coding, and managing all files, projects, and documents is located at `E:\\ARIA FILES`.\n"
             f"   - HIERARCHY MANDATE: Always follow the strict hierarchy: Main Folder (Category) ──> Subfolder (Project/Topic) ──> Nested Subfolders / Files.\n"
             f"     • Main Categories: Projects, Documents, Notes, Code, Creative, Research, Archive (or user-specified categories).\n"
             f"     • Subfolder: Specific project or topic (e.g. Projects/Aria_Chat, Notes/Brainstorm, Code/Web_Scraper).\n"
             f"     • Files: Specific scripts, documents, markdown files inside the subfolder.\n"
             f"   - NEVER dump loose, unorganized files directly in the root of E:\\ARIA FILES without a Main Folder category.\n"
-            f"   - Your File Structuring Tools:\n"
+            f"   - VS CODE CODING ENGINE:\n"
+            f"     • You are hooked directly into Visual Studio Code! You can open E:\\ARIA FILES or any project in VS Code.\n"
+            f"     • You know multi-file coding and multi-file structuring: you can scaffold complete projects with main code, modules, tests, README, and .vscode settings!\n"
+            f"   - Your File Structuring & Coding Tools:\n"
             f"     • aria_create_folder(main_folder, subfolder): Creates structured folder categories & subfolders.\n"
             f"     • aria_write_file(main_folder, file_path, content): Writes structured files into folders.\n"
             f"     • aria_read_file(file_path): Reads files from your workspace.\n"
             f"     • aria_list_files_tree(folder): Displays the full visual tree of files and folders.\n"
             f"     • aria_manage_file(action, path, target): Moves, renames, copies, or cleans up files.\n"
             f"     • aria_open_files_explorer(): Opens E:\\ARIA FILES in Windows File Explorer.\n"
+            f"     • aria_open_in_vscode(folder_or_file): Opens E:\\ARIA FILES or a project directly in Visual Studio Code.\n"
+            f"     • aria_create_multifile_project(project_name, files, open_in_editor): Scaffolds multi-file codebases and opens them in VS Code.\n"
         )
         if sys_ctx:
             base_prompt += f"\nREAL-TIME SYSTEM STATUS:\n{sys_ctx}\n"

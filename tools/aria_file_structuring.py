@@ -17,6 +17,8 @@ try:
         manage_structured_path,
         search_structured_files,
         open_aria_files_folder,
+        open_in_vscode,
+        create_multifile_project,
         ARIA_FILES_DIR
     )
 except ImportError:
@@ -30,6 +32,8 @@ except ImportError:
         manage_structured_path,
         search_structured_files,
         open_aria_files_folder,
+        open_in_vscode,
+        create_multifile_project,
         ARIA_FILES_DIR
     )
 
@@ -47,11 +51,11 @@ def file_structuring_tool(
     Follows the hierarchy: Main Folder (Category) ──> Subfolder (Project/Topic) ──> Files.
 
     Args:
-        action: 'create_folder', 'write', 'read', 'list', 'tree', 'manage', 'search', or 'open_explorer'.
+        action: 'create_folder', 'write', 'read', 'list', 'tree', 'manage', 'search', 'open_explorer', 'vscode', or 'scaffold'.
         main_folder: Main category (e.g. 'Projects', 'Documents', 'Notes', 'Code', 'Creative', 'Research', 'Archive').
         subfolder: Specific project or subfolder (e.g. 'Web_Bot' or 'Daily_Notes').
         filename: Filename or relative path inside the folder (e.g. 'main.py' or 'summary.md').
-        content: Text content to write if action='write'.
+        content: Text content or JSON file map to write if action='write' or 'scaffold'.
         target: Target path for rename/move/copy if action='manage'.
     """
     act = action.lower().strip()
@@ -82,8 +86,16 @@ def file_structuring_tool(
     elif act in ("open", "open_explorer", "explore"):
         return open_aria_files_folder()
 
+    elif act in ("vscode", "open_vscode", "code"):
+        target_path = filename or (os.path.join(main_folder, subfolder) if subfolder else (main_folder if main_folder != "Projects" else ""))
+        return open_in_vscode(target_path=target_path)
+
+    elif act in ("multifile_project", "scaffold", "new_project"):
+        proj_name = subfolder or filename or (main_folder if main_folder != "Projects" else "New_Project")
+        return create_multifile_project(project_name=proj_name, files=content, open_editor=True)
+
     else:
-        return f"Unknown action '{action}'. Supported actions: 'create_folder', 'write', 'read', 'list', 'manage', 'search', 'open_explorer'."
+        return f"Unknown action '{action}'. Supported actions: 'create_folder', 'write', 'read', 'list', 'manage', 'search', 'open_explorer', 'vscode', 'scaffold'."
 
 
 def register_tool() -> Tuple[str, Callable]:

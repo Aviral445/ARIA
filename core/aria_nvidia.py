@@ -28,6 +28,18 @@ from collections import deque
 from io import BytesIO
 
 try:
+    from dotenv import load_dotenv
+    load_dotenv()
+    try:
+        from .paths import ENV_FILE
+        if os.path.exists(ENV_FILE):
+            load_dotenv(ENV_FILE, override=False)
+    except Exception:
+        pass
+except Exception:
+    pass
+
+try:
     from PIL import Image
 except ImportError:
     Image = None
