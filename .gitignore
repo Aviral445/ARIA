@@ -33,6 +33,10 @@ data/learned_corrections.json
 data/profiles/
 data/profile.json
 data/smart_home.json
+data/session_checkpoint.json
+data/big_bro_bridge.json
+data/big_bro_budget.json
+tools/mood_log.txt
 smart_home.json
 !smart_home.example.json
 

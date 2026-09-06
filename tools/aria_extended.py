@@ -15,7 +15,7 @@ Implements:
 - YouTube Audio Mode (Feature 28)
 """
 
-import os, sys, json, time, re, shutil, subprocess, urllib.request, urllib.parse, threading
+import os, sys, json, time, re, subprocess, urllib.request, urllib.parse, threading
 
 # ── 1. SILENCE / DND MODE ────────────────────────────────────────────────────
 _DND_MODE = False
@@ -73,9 +73,8 @@ def open_or_focus_laptop_app(app_keyword: str) -> str:
     elif "spotify" in target:
         subprocess.Popen(["powershell", "-c", "Start-Process spotify: -ErrorAction SilentlyContinue"])
         return "Opening Spotify on your laptop!"
-    elif "chrome" in target or "browser" in target or "google" in target or "gmail" in target or "email" in target:
-        url = "https://mail.google.com" if any(k in target for k in ["gmail", "email", "mail"]) else ""
-        return open_chrome_with_profile(url=url)
+    elif "chrome" in target or "browser" in target or "google" in target:
+        return open_chrome_with_profile()
     elif "antigravity" in target or "ide" in target or "code editor" in target:
         try:
             import pygetwindow as gw
@@ -104,64 +103,20 @@ def open_or_focus_laptop_app(app_keyword: str) -> str:
         subprocess.Popen(["powershell", "-c", f"Start-Process '{target}' -ErrorAction SilentlyContinue"])
         return f"Opening '{target}' on your laptop!"
 
-def get_primary_chrome_profile() -> str:
-    """Dynamically resolves the exact Chrome profile directory name for the primary user account."""
-    target_pattern = os.environ.get("CHROME_USER_EMAIL", "aviirrll").lower()
+def open_chrome_with_profile(url: str = "", profile_name: str = "Profile 7") -> str:
+    """Launches Google Chrome directly on the user desktop using the aviirrll@gmail.com profile (Profile 7)."""
     try:
-        import json
-        local_state_path = os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data\Local State")
-        if os.path.exists(local_state_path):
-            with open(local_state_path, "r", encoding="utf-8", errors="ignore") as f:
-                data = json.load(f)
-            profiles = data.get("profile", {}).get("info_cache", {})
-            for prof_dir, prof_info in profiles.items():
-                user_email = str(prof_info.get("user_name", "")).lower()
-                name = str(prof_info.get("name", "")).lower()
-                gaia_name = str(prof_info.get("gaia_name", "")).lower()
-                if target_pattern in user_email or target_pattern in name or target_pattern in gaia_name:
-                    return prof_dir
-    except Exception:
-        pass
-    return os.environ.get("CHROME_PROFILE_NAME", "Profile 7")
-
-# Backward-compatibility alias
-get_aviirrll_chrome_profile = get_primary_chrome_profile
-
-
-def open_chrome_with_profile(url: str = "", profile_name: str = "") -> str:
-    """Launches Google Chrome directly on the user desktop using the primary user profile (Profile 7)."""
-    if not profile_name:
-        profile_name = get_primary_chrome_profile()
-
-    target_url = url.strip() if url else "https://www.google.com"
-    if target_url and not target_url.startswith(("http://", "https://")):
-        target_url = "https://" + target_url
-
-    chrome_bin = None
-    for cand in [
-        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
-        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
-        os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
-        shutil.which("chrome"),
-        shutil.which("chrome.exe")
-    ]:
-        if cand and os.path.exists(cand):
-            chrome_bin = cand
-            break
-
-    try:
-        if chrome_bin:
-            cmd = [chrome_bin, f"--profile-directory={profile_name}", target_url]
-            subprocess.Popen(cmd)
+        if url:
+            if not url.startswith(("http://", "https://")):
+                url = "https://" + url
+            os.system(f'start chrome.exe --profile-directory="{profile_name}" "{url}"')
+            return f"Opening {url} in Google Chrome (aviirrll@gmail.com) on your laptop!"
         else:
-            os.system(f'start "" chrome.exe --profile-directory="{profile_name}" "{target_url}"')
-        return f"Opening Google Chrome with primary profile ({profile_name}) on your laptop!"
+            os.system(f'start chrome.exe --profile-directory="{profile_name}" "https://www.google.com"')
+            return "Opening Google Chrome with profile 'aviirrll@gmail.com' on your laptop!"
     except Exception:
-        try:
-            subprocess.Popen(["powershell", "-c", f"Start-Process chrome -ArgumentList '--profile-directory=\"{profile_name}\"', '{target_url}' -ErrorAction SilentlyContinue"])
-            return f"Opening Google Chrome with primary profile ({profile_name}) on your laptop!"
-        except Exception as ex:
-            return f"Error opening Chrome: {ex}"
+        subprocess.Popen(["powershell", "-c", f"Start-Process chrome -ArgumentList '--profile-directory=\"{profile_name}\"', '{url or 'https://www.google.com'}' -ErrorAction SilentlyContinue"])
+        return "Opening Google Chrome with profile 'aviirrll@gmail.com' on your laptop!"
 
 
 def switch_google_search_section(section_name: str, query: str = "") -> str:
@@ -377,122 +332,20 @@ def control_mouse(command: str) -> str:
         return f"Mouse control error: {e}"
 
 
-# ── 4B. KEYBOARD & VS CODE AUTOMATION (pyautogui + pyperclip) ──────────────────
-def type_keyboard_text(text: str, press_enter: bool = False) -> str:
-    """Types text using the keyboard into the currently active/focused window."""
-    try:
-        import pyautogui, pyperclip
-        pyperclip.copy(text)
-        pyautogui.hotkey('ctrl', 'v')
-        if press_enter:
-            pyautogui.press('enter')
-        return f"Typed text into active window ({len(text)} chars)."
-    except Exception as e:
-        return f"Typing error: {e}"
-
-
-def press_keyboard_hotkey(keys: str) -> str:
-    """Presses a hotkey combination (e.g. 'ctrl+s', 'ctrl+shift+p', 'ctrl+`', 'f5', 'enter', 'escape')."""
-    try:
-        import pyautogui
-        key_list = [k.strip().lower() for k in keys.split('+') if k.strip()]
-        key_map = {
-            'ctrl': 'ctrl', 'control': 'ctrl', 'alt': 'alt', 'shift': 'shift',
-            'enter': 'enter', 'return': 'enter', 'esc': 'escape', 'escape': 'escape',
-            'tab': 'tab', 'grave': '`', 'backquote': '`'
-        }
-        norm_keys = [key_map.get(k, k) for k in key_list]
-        pyautogui.hotkey(*norm_keys)
-        return f"Pressed hotkey: {' + '.join(norm_keys)}"
-    except Exception as e:
-        return f"Hotkey error: {e}"
-
-
-def focus_and_type_in_vscode(text: str = "", action: str = "type") -> str:
-    """Focuses Visual Studio Code and executes an interactive GUI action:
-    - 'type': types or pastes text into the active editor tab.
-    - 'terminal': opens/toggles the integrated terminal (Ctrl+`) and optionally executes a command.
-    - 'command_palette': opens the VS Code command palette (Ctrl+Shift+P) and types an action.
-    - 'run': triggers Run without debugging (Ctrl+F5) or debugging (F5).
-    - 'save': saves the active document (Ctrl+S).
-    - 'new_file': creates a new file tab (Ctrl+N).
-    """
-    try:
-        import time, pyautogui, pyperclip
-        # 1. Focus VS Code
-        open_or_focus_laptop_app("code")
-        time.sleep(0.4)
-
-        act = action.lower().strip()
-        if act in ("terminal", "term", "run_terminal"):
-            # Toggle terminal with Ctrl + `
-            pyautogui.hotkey('ctrl', '`')
-            time.sleep(0.3)
-            if text:
-                pyperclip.copy(text)
-                pyautogui.hotkey('ctrl', 'v')
-                pyautogui.press('enter')
-                return f"💻 Injected and ran command in VS Code integrated terminal: '{text}'"
-            return "💻 Focused/Toggled VS Code integrated terminal."
-
-        elif act in ("command_palette", "palette", "menu"):
-            pyautogui.hotkey('ctrl', 'shift', 'p')
-            time.sleep(0.3)
-            if text:
-                pyautogui.write(text, interval=0.02)
-                pyautogui.press('enter')
-                return f"💻 Executed Command Palette action: '{text}'"
-            return "💻 Opened VS Code Command Palette."
-
-        elif act in ("run", "execute", "start"):
-            pyautogui.hotkey('ctrl', 'f5')
-            return "💻 Triggered Run in VS Code (Ctrl+F5)."
-
-        elif act in ("save", "save_file"):
-            pyautogui.hotkey('ctrl', 's')
-            return "💻 Saved active file in VS Code (Ctrl+S)."
-
-        elif act in ("new_file", "new_tab"):
-            pyautogui.hotkey('ctrl', 'n')
-            time.sleep(0.2)
-            if text:
-                pyperclip.copy(text)
-                pyautogui.hotkey('ctrl', 'v')
-            return "💻 Created new file tab in VS Code."
-
-        else: # type
-            if text:
-                pyperclip.copy(text)
-                pyautogui.hotkey('ctrl', 'v')
-                return f"💻 Typed code/text into active VS Code editor ({len(text)} characters)."
-            return "💻 Focused VS Code editor."
-    except Exception as e:
-        return f"VS Code interaction error: {e}"
-
-
 # ── 5. RESPONSE CACHING ───────────────────────────────────────────────────────
-try:
-    from core.aria_cache import cache_manager
-    _RESPONSE_CACHE = cache_manager.response_cache
-except Exception:
-    try:
-        import aria_cache
-        _RESPONSE_CACHE = aria_cache.cache_manager.response_cache
-    except Exception:
-        from collections import OrderedDict
-        _RESPONSE_CACHE = None
+_RESPONSE_CACHE = {}
 
 def get_cached_response(prompt: str, ttl_seconds: int = 60) -> str:
     key = prompt.lower().strip()
-    if _RESPONSE_CACHE is not None:
-        val = _RESPONSE_CACHE.get(key)
-        return val if val else ""
+    if key in _RESPONSE_CACHE:
+        val, timestamp = _RESPONSE_CACHE[key]
+        if time.time() - timestamp < ttl_seconds:
+            return val
     return ""
 
 def set_cached_response(prompt: str, response: str):
     key = prompt.lower().strip()
-    if _RESPONSE_CACHE is not None:
-        _RESPONSE_CACHE.set(key, response)
+    _RESPONSE_CACHE[key] = (response, time.time())
 
 
 # ── 6. SPORTS & CRICKET SCORES ───────────────────────────────────────────────

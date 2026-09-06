@@ -39,13 +39,17 @@ from aria_system_context import (
 # ── NEW: Chrome automation ─────────────────────────────────────────────────────
 from aria_chrome import get_chrome_agent, close_chrome, ChromeAgent
 
-# ─────────────────────────────────────────
-#  CONFIG
-# ─────────────────────────────────────────
 load_dotenv(ENV_FILE)   # reads .env file
 
+# ── Zero-Work-Loss State Guard (Instance Shutdown & Crash Protection) ─────────
+try:
+    from core.aria_state_guard import initialize_state_guard
+    _recovery_status = initialize_state_guard()
+except Exception as _e_sg:
+    print(f"StateGuard notice: {_e_sg}")
+
 AGENT_NAME    = "Aria"
-USER_NAME     = "Friend"
+USER_NAME     = "Dad L"
 PROFILE_FILE  = get_data_file("profile.json", create_if_missing=True)
 KNOWLEDGE_DIR = os.path.join(DATA_DIR, "knowledge")
 WHISPER_MODEL = "tiny"      # ultra-lightweight ~39MB
@@ -1397,10 +1401,275 @@ def _tool_brain(text):
     return False, ""
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+#  SIBLING TRIO RIGGED TOOLS (Aria, GAIA, Big Bro Antigravity)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@tool("aria_github")
+def _tool_github(text: str):
+    """Manages https://github.com/Ariaandsiblingtrio account, repos, issues, and lab projects."""
+    text_lower = text.lower()
+    if not any(k in text_lower for k in ["github", "git hub", "repository", "repositories", "repo"]):
+        return False, ""
+    
+    try:
+        from tools.aria_github import aria_github
+        # 1. Create issue
+        if any(k in text_lower for k in ["create issue", "open issue", "new issue", "add issue", "file issue"]):
+            title = ""
+            m = re.search(r'(?:issue|called|titled)\s+["\']?([^"\']+)["\']?', text, re.IGNORECASE)
+            if m:
+                title = m.group(1).strip()
+            if not title:
+                title = "Lab Task from Aria & Sibling Trio"
+            res = aria_github(action="create_issue", issue_title=title, issue_body=f"Created via voice/chat in Aria Lab: {text}")
+            return True, res
+
+        # 2. Create repo
+        if any(k in text_lower for k in ["create repo", "new repo", "make repo", "create repository", "make repository", "new repository"]):
+            m = re.search(r'(?:repo|repository|named|called)\s+([a-zA-Z0-9_\-\.]+)', text, re.IGNORECASE)
+            r_name = m.group(1).strip() if m else "new-aria-project"
+            is_private = "private" in text_lower
+            res = aria_github(action="create_repo", repo_name=r_name, description="Created autonomously by Aria & Sibling Trio", private=is_private)
+            return True, res
+
+        # 3. Sync / push project
+        if any(k in text_lower for k in ["sync project", "push to github", "upload to github", "push repo", "sync repo"]):
+            m = re.search(r'(?:project|folder|repo)\s+([a-zA-Z0-9_\-\.]+)', text, re.IGNORECASE)
+            p_folder = m.group(1).strip() if m else ""
+            res = aria_github(action="sync_project", project_folder=p_folder)
+            return True, res
+
+        # 4. List repositories
+        if any(k in text_lower for k in ["list repo", "my repo", "all repo", "show repo", "check repo", "get repo", "our repo"]):
+            res = aria_github(action="list_repos")
+            return True, res
+
+        # 5. Status / WhoAmI
+        res = aria_github(action="status")
+        return True, res
+    except Exception as e:
+        return True, f"GitHub tool encountered an issue: {e}"
+
+
+@tool("gaia_web_research")
+def _tool_gaia_web_research(text: str):
+    """Big Sister GAIA's parallel headless web reader & researcher."""
+    text_lower = text.lower()
+    triggers = [
+        "gaia research", "research with gaia", "parallel web research",
+        "web research", "parallel research", "gaia search and read",
+        "gaia read web", "gaia look up"
+    ]
+    if not any(k in text_lower for k in triggers):
+        return False, ""
+    
+    try:
+        from tools.gaia_web_research import gaia_web_research
+        query = text
+        for trig in triggers:
+            if trig in text_lower:
+                idx = text_lower.index(trig) + len(trig)
+                query = text[idx:].lstrip(" :,-onforabout")
+                break
+        if not query.strip():
+            query = "python error handling best practices"
+        res = gaia_web_research(query=query.strip(), max_pages=3)
+        return True, res
+    except Exception as e:
+        return True, f"GAIA web research notice: {e}"
+
+
+@tool("ask_big_bro")
+def _tool_ask_big_bro(text: str):
+    """Consult Big Bro Antigravity for architectural advice and pre-checks."""
+    text_lower = text.lower()
+    triggers = [
+        "ask big bro", "ask antigravity", "consult big bro",
+        "big bro what do you think", "big bro advice", "big bro help",
+        "ask my brother", "ask bro"
+    ]
+    if not any(k in text_lower for k in triggers):
+        return False, ""
+    
+    try:
+        from tools.ask_big_bro import ask_big_bro
+        topic = text
+        for trig in triggers:
+            if trig in text_lower:
+                idx = text_lower.index(trig) + len(trig)
+                topic = text[idx:].lstrip(" :,-onforabout")
+                break
+        res = ask_big_bro(topic=topic.strip() or "general advice")
+        return True, res
+    except Exception as e:
+        return True, f"Big Bro Antigravity: Always here watching over you! ({e})"
+
+
+@tool("summon_big_sis")
+def _tool_summon_big_sis(text: str):
+    """Summon Big Sister GAIA directly into the chat for guidance and wisdom."""
+    text_lower = text.lower()
+    triggers = [
+        "summon gaia", "summon big sis", "summon big sister",
+        "call gaia", "talk to gaia", "ask gaia", "speak with gaia",
+        "bring gaia", "where is gaia"
+    ]
+    if not any(k in text_lower for k in triggers):
+        return False, ""
+    
+    try:
+        from tools.summon_big_sis import summon_big_sis
+        topic = text
+        for trig in triggers:
+            if trig in text_lower:
+                idx = text_lower.index(trig) + len(trig)
+                topic = text[idx:].lstrip(" :,-onforabout")
+                break
+        res = summon_big_sis(topic=topic.strip())
+        return True, res
+    except Exception as e:
+        return True, f"Big Sister GAIA is monitoring our lab: {e}"
+
+
+@tool("quick_math")
+def _tool_quick_math(text: str):
+    """Calculates arithmetic operations (add, subtract, multiply, divide)."""
+    text_lower = text.lower()
+    math_match = re.search(r'(?:calculate|what is|how much is|compute|solve)?\s*(-?\d+(?:\.\d+)?)\s*([\+\-\*\/xX]|plus|minus|times|divided by|multiplied by)\s*(-?\d+(?:\.\d+)?)', text_lower)
+    if math_match:
+        a_str, op_str, b_str = math_match.groups()
+        try:
+            a = float(a_str)
+            b = float(b_str)
+            op_map = {
+                "+": "add", "plus": "add",
+                "-": "subtract", "minus": "subtract",
+                "*": "multiply", "x": "multiply", "times": "multiply", "multiplied by": "multiply",
+                "/": "divide", "divided by": "divide"
+            }
+            op = op_map.get(op_str.strip(), "add")
+            from tools.quick_math import quick_math
+            result = quick_math(operation=op, a=a, b=b)
+            return True, f"{a} {op_str} {b} equals {result}"
+        except Exception:
+            pass
+    return False, ""
+
+
+@tool("task_master")
+def _tool_task_master(text: str):
+    """Manages simple task list (add, list, clear)."""
+    text_lower = text.lower()
+    if not any(k in text_lower for k in ["task", "tasks"]):
+        return False, ""
+    
+    try:
+        from tools.task_master import task_master
+        if any(k in text_lower for k in ["add task", "new task", "create task", "remember task"]):
+            m = re.search(r'(?:add task|new task|create task|remember task)\s+(.+)$', text, re.IGNORECASE)
+            task_desc = m.group(1).strip() if m else text
+            res = task_master(action="add", task=task_desc)
+            return True, res
+        elif any(k in text_lower for k in ["list task", "show task", "my task", "all task", "what task", "view task"]):
+            res = task_master(action="list")
+            return True, res
+        elif any(k in text_lower for k in ["clear task", "delete task", "remove task", "empty task"]):
+            res = task_master(action="clear")
+            return True, res
+    except Exception as e:
+        return True, f"Task Master notice: {e}"
+    return False, ""
+
+
+@tool("quick_note")
+def _tool_quick_note(text: str):
+    """Saves and lists quick notes and thoughts."""
+    text_lower = text.lower()
+    if not any(k in text_lower for k in ["quick note", "save note", "take note", "make note", "write note", "show notes", "list notes", "my notes", "read notes", "read my note"]):
+        return False, ""
+    
+    try:
+        from tools.quick_note_tool import quick_note_tool
+        if any(k in text_lower for k in ["show notes", "list notes", "my notes", "read notes", "read my note"]):
+            res = quick_note_tool(action="list")
+            return True, res
+        
+        m = re.search(r'(?:quick note|save note|take note|make note|write note)\s+(?:that|to|:)?\s*(.+)$', text, re.IGNORECASE)
+        note_content = m.group(1).strip() if m else text
+        res = quick_note_tool(note=note_content, action="save")
+        return True, res
+    except Exception as e:
+        return True, f"Note tool notice: {e}"
+
+
+@tool("mood_tracker")
+def _tool_mood_tracker(text: str):
+    """Logs and tracks mood with musical suggestions."""
+    text_lower = text.lower()
+    triggers = ["track mood", "log mood", "my mood is", "feeling happy", "feeling sad", "feeling tired", "feeling down", "feeling excited", "how are you feeling"]
+    if not any(k in text_lower for k in triggers):
+        return False, ""
+    
+    try:
+        from tools.mood_tracker_tool import track_mood
+        mood = text
+        for trig in ["my mood is", "track mood", "log mood", "feeling"]:
+            if trig in text_lower:
+                idx = text_lower.index(trig) + len(trig)
+                mood = text[idx:].strip()
+                break
+        res = track_mood(mood=mood or "cheerful")
+        return True, res
+    except Exception as e:
+        return True, f"Mood tracker notice: {e}"
+
+
+@tool("web_summarizer")
+def _tool_web_summarizer(text: str):
+    """Summarizes a URL or webpage."""
+    text_lower = text.lower()
+    if not any(k in text_lower for k in ["summarize url", "summarize website", "summarize webpage", "summarize page", "summarize link", "summarize http"]):
+        return False, ""
+    
+    try:
+        m = re.search(r'(https?://[^\s]+)', text)
+        url = m.group(1) if m else "https://google.com"
+        from tools.web_summarizer import web_summarizer
+        res = web_summarizer(url=url)
+        return True, res
+    except Exception as e:
+        return True, f"Web summarizer notice: {e}"
+
+
 @tool("dynamic_sandbox_tools")
 def _tool_dynamic_sandbox(text: str):
-    """Direct voice/text dispatcher for custom tools created by Aria in her sandbox."""
-    text_lower = text.lower()
+    """Direct voice/text dispatcher for custom and dynamic tools created by Aria & the Trio."""
+    text_lower = text.lower().strip()
+
+    # 1. Direct helpers for known lab creations
+    try:
+        if any(k in text_lower for k in ["sparkle", "sparkle_fy"]):
+            from tools.sparkle_fy import sparkle_fy
+            m = re.search(r'(?:sparkle|sparkle_fy)\s+(.+)$', text, re.IGNORECASE)
+            payload = m.group(1) if m else "Everything is glowing beautifully!"
+            return True, sparkle_fy(payload)
+        
+        if any(k in text_lower for k in ["daily quote", "motivational quote", "inspire me", "daily motivation"]):
+            from tools.daily_motivational_q import daily_motivational_q
+            return True, daily_motivational_q()
+
+        if any(k in text_lower for k in ["dream weaver", "weave a dream", "tell me a dream"]):
+            from tools.dream_weaver import dream_weaver
+            return True, dream_weaver()
+
+        if text_lower in ["tell a joke", "tell me a joke"]:
+            from tools.tell_a_joke import tell_a_joke
+            return True, tell_a_joke()
+    except Exception:
+        pass
+
+    # 2. Dynamic discovery dispatcher
     try:
         from core.aria_adk import get_loaded_dynamic_tools
         dyn_tools = get_loaded_dynamic_tools()
@@ -1428,6 +1697,15 @@ def run_tools(text: str):
     """Try all registered tools. Returns (handled, response)."""
     priority = [
         "brain_switcher",
+        "aria_github",
+        "gaia_web_research",
+        "ask_big_bro",
+        "summon_big_sis",
+        "quick_math",
+        "task_master",
+        "quick_note",
+        "mood_tracker",
+        "web_summarizer",
         "dynamic_sandbox_tools",
         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
         "screen_vision", "visual_click", "system_powershell",

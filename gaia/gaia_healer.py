@@ -77,7 +77,32 @@ class GaiaHealer:
         except Exception:
             pass
 
+        # Space Management: Automatically prune old snapshots to prevent disk bloat
+        try:
+            self.prune_old_snapshots(max_keep=10)
+        except Exception:
+            pass
+
         return snap_id
+
+    def prune_old_snapshots(self, max_keep: int = 10) -> int:
+        """Space Management: Prunes older snapshots, preserving the most recent `max_keep` snapshots."""
+        snaps = self.list_snapshots()
+        if len(snaps) <= max_keep:
+            return 0
+        to_delete = snaps[max_keep:]
+        pruned_count = 0
+        for s in to_delete:
+            snap_path = os.path.join(SNAPSHOTS_DIR, s.get("snapshot_id", ""))
+            if os.path.exists(snap_path) and os.path.isdir(snap_path):
+                try:
+                    shutil.rmtree(snap_path, ignore_errors=True)
+                    pruned_count += 1
+                except Exception:
+                    pass
+        if pruned_count > 0:
+            bus.emit("GAIA", "CLEANUP", f"Space Management: Pruned {pruned_count} old snapshots to save disk space.", {"pruned": pruned_count})
+        return pruned_count
 
     def list_snapshots(self) -> List[Dict[str, Any]]:
         """Lists all snapshots ordered newest first."""
@@ -310,6 +335,25 @@ CODE:
             {"script": os.path.basename(script_path), "attempt": attempt, "stderr": stderr[:300]}
         )
 
+        # ── Step 1: Engage GAIA Parallel Mind (Multi-Perspective + Parallel Web Research) ──
+        try:
+            from gaia.gaia_parallel_mind import parallel_mind
+            p_success, p_exp, p_code, p_sources = parallel_mind.solve_parallel(
+                script_name=os.path.basename(script_path),
+                code=broken_code,
+                stderr=stderr
+            )
+            if p_success and p_code:
+                with open(script_path, "w", encoding="utf-8") as f:
+                    f.write(p_code)
+                sources_str = f" [Web Docs Consulted: {len(p_sources)} sources]" if p_sources else ""
+                full_exp = f"{p_exp}{sources_str}"
+                bus.emit("GAIA", "HEALED", full_exp, {"script": os.path.basename(script_path), "sources": p_sources})
+                return True, full_exp, p_code
+        except Exception as p_ex:
+            print(f"[GAIA Healer] Parallel Mind notice, falling back to direct prompt: {p_ex}")
+
+        # ── Step 2: Linear Prompt Fallback ──
         prompt = f"""You are GAIA, an expert AI software engineer and caring older sister supervising Aria's self-modifying code sandbox.
 Aria tried to execute this Python code and tried to fix it, but got stuck with the following error:
 
@@ -438,6 +482,20 @@ CODE:
         }
         with open(json_path, "w", encoding="utf-8") as f:
             json.dump(data, f, indent=2)
+
+        # Notify Big Bro Antigravity directly via the bridge!
+        try:
+            from core.big_bro_bridge import BigBroBridge
+            bridge = BigBroBridge()
+            err_line = final_stderr.strip().splitlines()[-1] if final_stderr else "Unknown error"
+            bridge.enqueue_message(
+                sender="GAIA",
+                topic=f"Lab incident on '{data['script']}': {err_line}",
+                code=initial_code,
+                status="PENDING_REVIEW"
+            )
+        except Exception:
+            pass
 
         md_content = f"""# 🚨 GAIA Incident Report: {inc_id}
 - **Date/Time:** {data['datetime']}

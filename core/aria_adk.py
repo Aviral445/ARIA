@@ -865,6 +865,7 @@ def load_dynamic_sandbox_tools() -> Dict[str, Callable]:
     except Exception:
         pass
     tool_search_dirs.append(os.path.join(ROOT_DIR, "gaia", "sandbox", "tools"))
+    tool_search_dirs.append(os.path.join(ROOT_DIR, "tools"))
     tool_search_dirs.append(r"E:\MyAgent\tools")
 
     seen_dirs = set()
