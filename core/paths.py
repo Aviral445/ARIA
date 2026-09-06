@@ -25,6 +25,13 @@ ARIA_EVOLVED_DIR = r"E:\MyAgent" if os.path.exists(r"E:\MyAgent") else os.path.j
 ARIA_BASELINE_FILE = os.path.join(ROOT_DIR, "agent.py")
 ARIA_EVOLVED_FILE = os.path.join(ARIA_EVOLVED_DIR, "aria_evolved.py")
 
+# Dedicated Personal Files Workspace for Aria (E:\ARIA FILES)
+ARIA_FILES_DIR = r"E:\ARIA FILES" if (os.path.exists(r"E:\ARIA FILES") or os.path.exists("E:\\")) else os.path.join(ROOT_DIR, "data", "aria_files")
+try:
+    os.makedirs(ARIA_FILES_DIR, exist_ok=True)
+except Exception:
+    pass
+
 # Environment
 ENV_FILE   = os.path.join(ROOT_DIR, ".env")
 

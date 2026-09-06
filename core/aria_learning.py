@@ -24,6 +24,7 @@ def _load_corrections() -> dict:
             "When user asks for a document, PDF, or file, use file search instead of open_app.",
             "User profile name is a proper name, never treat it as a dark mode command.",
             "When user specifies recipient and message in WhatsApp, automate typing and sending.",
+            "SKILL - FILE STRUCTURING (E:\\ARIA FILES): Organize all created, saved, or personal files under E:\\ARIA FILES strictly following: Main Folder (Category: Projects, Documents, Notes, Code, Creative, Research, Archive) ──> Subfolder (Project/Topic) ──> Files or Nested Folders. Never dump loose files directly in the root of E:\\ARIA FILES.",
         ],
         "custom_mappings": {},
         "history": []

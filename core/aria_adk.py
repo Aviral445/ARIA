@@ -244,6 +244,71 @@ def organize_directory(location: str = "desktop") -> str:
         return f"Error organizing folder: {e}"
 
 
+def aria_create_folder(main_folder: str, subfolder: str = "") -> str:
+    """Create a structured directory in Aria's personal workspace E:\\ARIA FILES following the hierarchy:
+    Main Folder (Category, e.g. Projects, Documents, Notes, Code, Creative, Research, Archive) -> Subfolder (Project/Topic)."""
+    try:
+        from core.aria_file_structuring import create_structured_folder
+        return create_structured_folder(main_folder, subfolder)
+    except Exception as e:
+        return f"Error creating structured folder: {e}"
+
+
+def aria_write_file(main_folder: str, file_path: str, content: str) -> str:
+    """Write or create a text, code, markdown, or data file inside E:\\ARIA FILES under a structured main category and subfolder hierarchy.
+    Args:
+        main_folder: Category folder (e.g. 'Projects', 'Documents', 'Notes', 'Code', 'Creative', 'Research').
+        file_path: Relative path or filename (e.g. 'MyBot/bot.py' or 'Daily/todo.md').
+        content: Text content to save into the file."""
+    try:
+        from core.aria_file_structuring import write_structured_file
+        return write_structured_file(main_folder, file_path, content)
+    except Exception as e:
+        return f"Error writing structured file: {e}"
+
+
+def aria_read_file(file_path: str) -> str:
+    """Read the text content of a file inside E:\\ARIA FILES by its relative path (e.g. 'Projects/MyBot/bot.py')."""
+    try:
+        from core.aria_file_structuring import read_structured_file
+        return read_structured_file(file_path)
+    except Exception as e:
+        return f"Error reading structured file: {e}"
+
+
+def aria_list_files_tree(folder: str = "") -> str:
+    """Display a visual tree of directories, subfolders, and files inside E:\\ARIA FILES along with counts and sizes.
+    Args:
+        folder: Optional subfolder to inspect (leave empty to view the entire E:\\ARIA FILES workspace)."""
+    try:
+        from core.aria_file_structuring import list_structured_tree
+        return list_structured_tree(folder)
+    except Exception as e:
+        return f"Error listing file tree: {e}"
+
+
+def aria_manage_file(action: str, path: str, target: str = "") -> str:
+    """Manage files inside E:\\ARIA FILES: rename, move, copy, or delete.
+    Args:
+        action: 'rename', 'move', 'copy', or 'delete'.
+        path: Target file/folder relative path in E:\\ARIA FILES.
+        target: Destination path for rename/move/copy."""
+    try:
+        from core.aria_file_structuring import manage_structured_path
+        return manage_structured_path(action, path, target)
+    except Exception as e:
+        return f"Error managing structured path: {e}"
+
+
+def aria_open_files_explorer() -> str:
+    """Open Aria's personal workspace E:\\ARIA FILES in Windows File Explorer."""
+    try:
+        from core.aria_file_structuring import open_aria_files_folder
+        return open_aria_files_folder()
+    except Exception as e:
+        return f"Error opening explorer: {e}"
+
+
 def execute_powershell_command(command: str) -> str:
     """Run an authorized PowerShell command on Windows to inspect or control the OS."""
     try:
@@ -587,6 +652,13 @@ ALL_ADK_TOOLS: List[Callable] = [
     write_file_to_lab,
     run_sandbox_code,
     list_sandbox_tools,
+    # File Structuring Skill in E:\ARIA FILES
+    aria_create_folder,
+    aria_write_file,
+    aria_read_file,
+    aria_list_files_tree,
+    aria_manage_file,
+    aria_open_files_explorer,
 ]
 
 TOOL_NAME_MAP: Dict[str, Callable] = {fn.__name__: fn for fn in ALL_ADK_TOOLS}
@@ -614,7 +686,7 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "description": "Controls Windows applications, creates & searches documents, organizes files, monitors hardware health, and manages volume & power.",
         "icon": "💻",
         "accent": "#38bdf8",
-        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
+        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
         "status": "READY"
     },
     "browser": {
@@ -1031,11 +1103,25 @@ class AriaADK:
             f"     3. Big Sister GAIA smoke-tests your function with real arguments before approving, so write robust code!\n"
             f"     4. COMMON-SENSE TOOL & FILE NAMING: Always use your common sense! Name tools and files after what they functionally DO (e.g. sister_summoner.py, quote_generator.py, idea_weaver.py, mood_tracker.py). NEVER name files after conversational chatter, user filler words, or prompt questions (e.g. NEVER why_dont_you.py, what_did_you.py, ok_why_dont_you.py, ill_wait_for.py).\n"
             f"   - Quick Notes: Use quick_note_tool(note) whenever the user asks you to save a note, jot down thoughts, or record a reminder!\n"
-            f"   - File & OS Tools: create_or_write_file, create_folder, organize_directory, execute_powershell_command, set_system_volume, lock_workstation, get_system_diagnostics, change_wallpaper.\n"
+            f"   - File & OS Tools: create_or_write_file, create_folder, organize_directory, aria_create_folder, aria_write_file, aria_read_file, aria_list_files_tree, aria_manage_file, aria_open_files_explorer, execute_powershell_command, set_system_volume, lock_workstation, get_system_diagnostics, change_wallpaper.\n"
             f"   - Brain Tools: switch_ai_brain, get_brain_status.\n"
             f"   - Browser & Web: chrome_research, chrome_open_url, chrome_read_current_page, get_latest_news, get_crypto_price, convert_currency, get_wikipedia_summary.\n"
             f"   - Phone Tools: unlock_phone, lock_phone, open_mobile_app, make_mobile_call, send_mobile_sms, get_phone_battery, analyze_phone_screen.\n"
-            f"   - When the user asks you to build or do something, CALL THESE TOOLS! Never pretend!\n"
+            f"   - When the user asks you to build or do something, CALL THESE TOOLS! Never pretend!\n\n"
+            f"5. YOUR FILE STRUCTURING SKILL (E:\\ARIA FILES WORKSPACE):\n"
+            f"   - Your dedicated personal workspace for creating and managing all files, projects, and documents is located at `E:\\ARIA FILES`.\n"
+            f"   - HIERARCHY MANDATE: Always follow the strict hierarchy: Main Folder (Category) ──> Subfolder (Project/Topic) ──> Nested Subfolders / Files.\n"
+            f"     • Main Categories: Projects, Documents, Notes, Code, Creative, Research, Archive (or user-specified categories).\n"
+            f"     • Subfolder: Specific project or topic (e.g. Projects/Aria_Chat, Notes/Brainstorm, Code/Web_Scraper).\n"
+            f"     • Files: Specific scripts, documents, markdown files inside the subfolder.\n"
+            f"   - NEVER dump loose, unorganized files directly in the root of E:\\ARIA FILES without a Main Folder category.\n"
+            f"   - Your File Structuring Tools:\n"
+            f"     • aria_create_folder(main_folder, subfolder): Creates structured folder categories & subfolders.\n"
+            f"     • aria_write_file(main_folder, file_path, content): Writes structured files into folders.\n"
+            f"     • aria_read_file(file_path): Reads files from your workspace.\n"
+            f"     • aria_list_files_tree(folder): Displays the full visual tree of files and folders.\n"
+            f"     • aria_manage_file(action, path, target): Moves, renames, copies, or cleans up files.\n"
+            f"     • aria_open_files_explorer(): Opens E:\\ARIA FILES in Windows File Explorer.\n"
         )
         if sys_ctx:
             base_prompt += f"\nREAL-TIME SYSTEM STATUS:\n{sys_ctx}\n"

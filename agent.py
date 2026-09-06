@@ -827,6 +827,56 @@ def _tool_organize_files(text):
     return False, ""
 
 
+@tool("aria_file_structuring")
+def _tool_aria_file_structuring(text: str):
+    text_lower = text.lower()
+    
+    # Trigger check for aria files or file structuring
+    if not any(k in text_lower for k in ["aria file", "aria files", "file structure", "file structuring", "e:\\aria files"]):
+        return False, ""
+
+    from core.aria_file_structuring import (
+        create_structured_folder,
+        write_structured_file,
+        read_structured_file,
+        list_structured_tree,
+        open_aria_files_folder
+    )
+
+    # 1. Open Explorer
+    if any(k in text_lower for k in ["open explorer", "show in explorer", "view in explorer", "launch explorer"]):
+        return True, open_aria_files_folder()
+
+    # 2. Create folder
+    m_folder = re.search(r"(?:create|make|new)\s+(?:a\s+)?(?:structured\s+)?folder\s+(?:named|called)?\s*['\"]?([a-zA-Z0-9_\- /]+?)['\"]?\s*(?:in|under)?\s*(?:aria files)?$", text, re.IGNORECASE)
+    if m_folder:
+        folder = m_folder.group(1).strip()
+        parts = [p.strip() for p in re.split(r'[/\\]', folder) if p.strip()]
+        if len(parts) >= 2:
+            return True, create_structured_folder(main_folder=parts[0], subfolder="/".join(parts[1:]))
+        return True, create_structured_folder(main_folder=folder)
+
+    # 3. Write file
+    m_write = re.search(r"(?:write|save|create)\s+(?:a\s+)?file\s+['\"]?(.+?)['\"]?\s+(?:in|under)\s+['\"]?([a-zA-Z0-9_\- ]+?)['\"]?\s*(?:with content\s+['\"]?(.+?)['\"]?)?$", text, re.IGNORECASE)
+    if m_write:
+        fn = m_write.group(1).strip()
+        cat = m_write.group(2).strip()
+        cnt = m_write.group(3) or "# Created by Aria"
+        return True, write_structured_file(main_folder=cat, relative_path=fn, content=cnt)
+
+    # 4. Read file
+    m_read = re.search(r"(?:read|cat)\s+(?:the\s+)?file\s+['\"]?(.+?)['\"]?\s*(?:from|in)?\s*(?:aria files)?$", text, re.IGNORECASE)
+    if m_read:
+        fp = m_read.group(1).strip()
+        return True, read_structured_file(fp)
+
+    # 5. List / Tree / Show Structure
+    if any(k in text_lower for k in ["list", "tree", "show structure", "view structure", "what files", "file structure"]):
+        return True, list_structured_tree()
+
+    return False, ""
+
+
 @tool("screen_vision")
 def _tool_screen_vision(text):
     text_lower = text.lower()
@@ -1357,7 +1407,7 @@ def run_tools(text: str):
         "dynamic_sandbox_tools",
         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
         "screen_vision", "visual_click", "system_powershell",
-        "create_folder", "organize_files",
+        "aria_file_structuring", "create_folder", "organize_files",
         "learning_feedback", "file_search", "whatsapp_messaging", "typing_automation", "wallpaper",
         "extended_pc_and_media", "reminders", "news", "crypto", "currency", "wikipedia", "network",
         "jokes_and_fun", "goals", "macros", "local_music",

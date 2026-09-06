@@ -827,6 +827,14 @@ class AriaApp:
         )
         self.chat_refresh_btn_top.pack(side="left", padx=2)
 
+        self.chat_files_btn = tk.Button(
+            top_ctrl, text="📁 ARIA FILES", font=("Segoe UI", 9, "bold"),
+            bg=pal["CARD2"], fg=pal["CYAN"], activebackground=pal["CARD_HOVER"], activeforeground=pal["WHITE"],
+            relief="flat", bd=0, padx=9, pady=2, cursor="hand2",
+            command=self._open_aria_files_explorer
+        )
+        self.chat_files_btn.pack(side="left", padx=2)
+
         tk.Label(top_ctrl, text="● ADAPTIVE SWARM ACTIVE", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["GREEN"]).pack(side="right")
 
         # Row 2: Action Chips with Icons and Proper Spacing
@@ -836,6 +844,7 @@ class AriaApp:
         tk.Label(chip_bar, text="QUICK ACTIONS:", font=("Segoe UI", 8, "bold"), bg=pal["BG_MID"], fg=pal["GREY"]).pack(side="left", padx=(0, 6))
 
         chip_items = [
+            ("📁 File Structure", "Aria, show my file structure in E:\\ARIA FILES"),
             ("👁 Screen Vision", "Inspect Screen"),
             ("🪟 Windows", "List Open Windows"),
             ("⚡ NVIDIA RPM", "NVIDIA RPM Stats"),
@@ -1191,6 +1200,18 @@ class AriaApp:
 
         self.chat_canvas.update_idletasks()
         self.chat_canvas.yview_moveto(1.0)
+
+    def _open_aria_files_explorer(self):
+        """Opens Aria's dedicated E:\\ARIA FILES workspace in Windows File Explorer."""
+        try:
+            from core.aria_file_structuring import open_aria_files_folder
+            open_aria_files_folder()
+        except Exception as e:
+            try:
+                import os
+                os.startfile(r"E:\ARIA FILES")
+            except Exception as ex:
+                messagebox.showerror("Aria Files", f"Could not open ARIA FILES: {ex}")
 
     def _open_chat_history_modal(self):
         """Displays the high-tech Chat Session Vault modal to browse, resume, or delete chat sessions."""
