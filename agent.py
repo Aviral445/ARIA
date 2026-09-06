@@ -985,7 +985,7 @@ def _tool_web_search(text):
         import aria_extended
         search_url = f"https://www.google.com/search?q={urllib.parse.quote_plus(clean_query)}"
         aria_extended.open_chrome_with_profile(search_url)
-        return True, f"Searching Google for '{clean_query}' in Chrome (aviirrll@gmail.com)!"
+        return True, f"Searching Google for '{clean_query}' in Chrome (Primary Profile)!"
     return False, ""
 
 
@@ -1023,7 +1023,7 @@ def _tool_youtube(text):
                if query else "https://www.youtube.com")
         import aria_extended
         aria_extended.open_chrome_with_profile(url)
-        return True, f"Opening YouTube" + (f" — {query}" if query else "") + " in Chrome (aviirrll@gmail.com)!"
+        return True, f"Opening YouTube" + (f" — {query}" if query else "") + " in Chrome (Primary Profile)!"
     return False, ""
 
 

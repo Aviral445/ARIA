@@ -443,11 +443,10 @@ def chrome_research(query: str) -> str:
 
 
 def chrome_open_url(url: str) -> str:
-    """Navigate to a specific URL in Google Chrome."""
+    """Navigate to a specific URL in Google Chrome using the user's primary profile."""
     try:
-        from aria_chrome import get_chrome_agent
-        agent = get_chrome_agent()
-        return agent.open_url(url)
+        import aria_extended
+        return aria_extended.open_chrome_with_profile(url)
     except Exception as e:
         return f"Failed to open URL: {e}"
 

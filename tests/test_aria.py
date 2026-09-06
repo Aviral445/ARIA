@@ -117,6 +117,22 @@ class TestAriaModules(unittest.TestCase):
         prompt_txt = aria_system_context.format_context_for_prompt(ctx)
         self.assertIn("LIVE SYSTEM CONTEXT", prompt_txt)
 
+    def test_primary_chrome_profile_resolution(self):
+        import aria_extended
+        from unittest.mock import patch
+        # Verify dynamic resolver identifies Profile 7 for primary profile
+        prof = aria_extended.get_primary_chrome_profile()
+        self.assertEqual(prof, "Profile 7")
+
+        with patch("subprocess.Popen") as mock_popen:
+            res = aria_extended.open_chrome_with_profile("https://example.com")
+            self.assertIn("Profile 7", res)
+            self.assertTrue(mock_popen.called)
+            called_cmd = mock_popen.call_args[0][0]
+            self.assertIn("--profile-directory=Profile 7", called_cmd)
+            self.assertIn("https://example.com", called_cmd)
+
 if __name__ == "__main__":
     unittest.main()
+
 

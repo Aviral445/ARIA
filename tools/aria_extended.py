@@ -15,7 +15,7 @@ Implements:
 - YouTube Audio Mode (Feature 28)
 """
 
-import os, sys, json, time, re, subprocess, urllib.request, urllib.parse, threading
+import os, sys, json, time, re, shutil, subprocess, urllib.request, urllib.parse, threading
 
 # ── 1. SILENCE / DND MODE ────────────────────────────────────────────────────
 _DND_MODE = False
@@ -73,8 +73,9 @@ def open_or_focus_laptop_app(app_keyword: str) -> str:
     elif "spotify" in target:
         subprocess.Popen(["powershell", "-c", "Start-Process spotify: -ErrorAction SilentlyContinue"])
         return "Opening Spotify on your laptop!"
-    elif "chrome" in target or "browser" in target or "google" in target:
-        return open_chrome_with_profile()
+    elif "chrome" in target or "browser" in target or "google" in target or "gmail" in target or "email" in target:
+        url = "https://mail.google.com" if any(k in target for k in ["gmail", "email", "mail"]) else ""
+        return open_chrome_with_profile(url=url)
     elif "antigravity" in target or "ide" in target or "code editor" in target:
         try:
             import pygetwindow as gw
@@ -103,20 +104,64 @@ def open_or_focus_laptop_app(app_keyword: str) -> str:
         subprocess.Popen(["powershell", "-c", f"Start-Process '{target}' -ErrorAction SilentlyContinue"])
         return f"Opening '{target}' on your laptop!"
 
-def open_chrome_with_profile(url: str = "", profile_name: str = "Profile 7") -> str:
-    """Launches Google Chrome directly on the user desktop using the aviirrll@gmail.com profile (Profile 7)."""
+def get_primary_chrome_profile() -> str:
+    """Dynamically resolves the exact Chrome profile directory name for the primary user account."""
+    target_pattern = os.environ.get("CHROME_USER_EMAIL", "aviirrll").lower()
     try:
-        if url:
-            if not url.startswith(("http://", "https://")):
-                url = "https://" + url
-            os.system(f'start chrome.exe --profile-directory="{profile_name}" "{url}"')
-            return f"Opening {url} in Google Chrome (aviirrll@gmail.com) on your laptop!"
-        else:
-            os.system(f'start chrome.exe --profile-directory="{profile_name}" "https://www.google.com"')
-            return "Opening Google Chrome with profile 'aviirrll@gmail.com' on your laptop!"
+        import json
+        local_state_path = os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\User Data\Local State")
+        if os.path.exists(local_state_path):
+            with open(local_state_path, "r", encoding="utf-8", errors="ignore") as f:
+                data = json.load(f)
+            profiles = data.get("profile", {}).get("info_cache", {})
+            for prof_dir, prof_info in profiles.items():
+                user_email = str(prof_info.get("user_name", "")).lower()
+                name = str(prof_info.get("name", "")).lower()
+                gaia_name = str(prof_info.get("gaia_name", "")).lower()
+                if target_pattern in user_email or target_pattern in name or target_pattern in gaia_name:
+                    return prof_dir
     except Exception:
-        subprocess.Popen(["powershell", "-c", f"Start-Process chrome -ArgumentList '--profile-directory=\"{profile_name}\"', '{url or 'https://www.google.com'}' -ErrorAction SilentlyContinue"])
-        return "Opening Google Chrome with profile 'aviirrll@gmail.com' on your laptop!"
+        pass
+    return os.environ.get("CHROME_PROFILE_NAME", "Profile 7")
+
+# Backward-compatibility alias
+get_aviirrll_chrome_profile = get_primary_chrome_profile
+
+
+def open_chrome_with_profile(url: str = "", profile_name: str = "") -> str:
+    """Launches Google Chrome directly on the user desktop using the primary user profile (Profile 7)."""
+    if not profile_name:
+        profile_name = get_primary_chrome_profile()
+
+    target_url = url.strip() if url else "https://www.google.com"
+    if target_url and not target_url.startswith(("http://", "https://")):
+        target_url = "https://" + target_url
+
+    chrome_bin = None
+    for cand in [
+        r"C:\Program Files\Google\Chrome\Application\chrome.exe",
+        r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",
+        os.path.expandvars(r"%LOCALAPPDATA%\Google\Chrome\Application\chrome.exe"),
+        shutil.which("chrome"),
+        shutil.which("chrome.exe")
+    ]:
+        if cand and os.path.exists(cand):
+            chrome_bin = cand
+            break
+
+    try:
+        if chrome_bin:
+            cmd = [chrome_bin, f"--profile-directory={profile_name}", target_url]
+            subprocess.Popen(cmd)
+        else:
+            os.system(f'start "" chrome.exe --profile-directory="{profile_name}" "{target_url}"')
+        return f"Opening Google Chrome with primary profile ({profile_name}) on your laptop!"
+    except Exception:
+        try:
+            subprocess.Popen(["powershell", "-c", f"Start-Process chrome -ArgumentList '--profile-directory=\"{profile_name}\"', '{target_url}' -ErrorAction SilentlyContinue"])
+            return f"Opening Google Chrome with primary profile ({profile_name}) on your laptop!"
+        except Exception as ex:
+            return f"Error opening Chrome: {ex}"
 
 
 def switch_google_search_section(section_name: str, query: str = "") -> str:

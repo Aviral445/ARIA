@@ -2418,8 +2418,22 @@ class AriaApp:
         tk.Button(
             card, text="LAUNCH AUTOMATED CHROME", font=("Segoe UI", 8, "bold"),
             bg=pal["GLOW"], fg=pal["BG_DEEP"], relief="flat", bd=0, padx=12, pady=6, cursor="hand2",
-            command=lambda: webbrowser.open(self.web_url_entry.get().strip())
+            command=lambda: self._gui_open_chrome_profile(self.web_url_entry.get().strip())
         ).pack(side="left")
+
+    def _gui_open_chrome_profile(self, url: str = ""):
+        """Opens Chrome on desktop directly using the primary user profile."""
+        try:
+            from tools.aria_extended import open_chrome_with_profile
+            res = open_chrome_with_profile(url)
+            self._log(f"🌐 Chrome (Primary Profile): {res}", "cyan")
+        except Exception as e:
+            try:
+                import os
+                target = url or "https://www.google.com"
+                os.system(f'start "" chrome.exe --profile-directory="Profile 7" "{target}"')
+            except Exception as ex:
+                messagebox.showerror("Chrome", f"Could not launch Chrome: {ex}")
 
     # ── DASHBOARD 9: ANALYTICS & TELEMETRY ────────────────────────────────────
     def _pg_analytics(self):
