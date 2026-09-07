@@ -12,8 +12,8 @@ import os, sys, time, socket, json, threading, re
 
 # Ensure all sub-packages are discoverable on sys.path
 _CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-_ROOT_DIR = os.path.dirname(_CURRENT_DIR) if os.path.basename(_CURRENT_DIR) == "server" else _CURRENT_DIR
-for _sub in [_ROOT_DIR, os.path.join(_ROOT_DIR, "core"), os.path.join(_ROOT_DIR, "tools"), os.path.join(_ROOT_DIR, "server"), os.path.join(_ROOT_DIR, "mcp"), os.path.join(_ROOT_DIR, "gui")]:
+_ROOT_DIR = os.path.dirname(_CURRENT_DIR) if os.path.basename(_CURRENT_DIR) in ("server", "core") else _CURRENT_DIR
+for _sub in [_ROOT_DIR, os.path.join(_ROOT_DIR, "core"), os.path.join(_ROOT_DIR, "system_tools"), os.path.join(_ROOT_DIR, "core", "mcp")]:
     if _sub not in sys.path:
         sys.path.insert(0, _sub)
 

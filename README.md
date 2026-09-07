@@ -99,62 +99,71 @@ flowchart TB
 
 ```
 c:\MyAgent\
-├── core/                        # Cognitive Core & Agent Orchestration
-│   ├── aria_adk.py              # Agent Development Kit (34+ tools, Swarm routing, Turn execution)
-│   ├── aria_brains.py           # Multi-Brain Switching Engine & Telemetry
-│   ├── aria_nvidia.py           # NVIDIA NIM Cloud Engine, GAIA Dedicated Key & 40 RPM Rate Limiter
-│   ├── aria_memory.py           # ChromaDB Semantic Vector Store & Persistent Profiles
-│   ├── aria_learning.py         # Continuous Learning & RL Prompt Injection
-│   ├── aria_scheduler.py        # Proactive Alarms, Reminders & Timer Tasks
-│   ├── aria_system_context.py   # Screen OCR, Active Window Tracking & System Telemetry
-│   └── paths.py                 # Centralized Workspace & Dynamic Lab Path Resolution
+├── .env.example                 # Environment configuration template
+├── .gitignore                   # Version control exclusions
+├── requirements.txt             # Python dependencies
+├── README.md                    # System architecture & documentation
 │
-├── gaia/                        # Big Sister GAIA Autonomous Supervisor
-│   ├── gaia_supervisor.py       # Turn Reality Check, Code Supervision & Zero-Acting Mandate
+├── config/                      # System Credentials & Configurations
+│   ├── aria_mcp_config.json     # MCP configuration
+│   ├── google_credentials.json  # OAuth credentials
+│   └── ...
+│
+├── core/                        # IMMUTABLE: System Runners & Base Cognitive Logic
+│   ├── agent.py                 # Core Voice/Text CLI Agent Runner
+│   ├── aria_api.py              # FastAPI Mobile & Web Companion Server
+│   ├── aria_gui.py              # Desktop Workstation GUI (CustomTkinter)
+│   ├── aria_system_tray.py      # System Tray Icon Manager
+│   ├── run.py                   # Master Unified Multi-Subsystem Launcher
+│   ├── agent_core.py            # Agent Orchestration Loop & Tool Dispatch
+│   ├── aria_adk.py              # Agent Development Kit (Tools, Swarm Routing)
+│   ├── aria_brains.py           # Multi-Brain Switching Engine
+│   ├── aria_nvidia.py           # NVIDIA NIM Cloud Engine & Rate Limiter
+│   ├── aria_memory.py           # Semantic Vector Store & Persistent Memory
+│   ├── paths.py                 # Centralized Absolute Path Resolver
+│   ├── mcp/                     # Model Context Protocol Client & Server
+│   └── scripts/                 # Standalone Headless Daemons
+│
+├── gaia/                        # PROTECTED: Big Sister GAIA Autonomous Supervisor
+│   ├── gaia_supervisor.py       # Turn Reality Check & Zero-Acting Mandate
 │   ├── gaia_safety.py           # Polyglot AST & Pattern Security Guardrail
-│   ├── gaia_runner.py           # Multi-Language Subprocess Execution Engine (PY/JS/TS/JAVA/PS/BAT)
-│   ├── gaia_healer.py           # Self-Repair, Code Patching & Snapshot Rollback
-│   ├── gaia_rl.py               # Sisterly Reinforcement Learning Gamification Engine
-│   ├── gaia_voice.py            # Sisterly Audio Feedback Loop
-│   ├── gaia_bus.py              # Event Telemetry Bus
-│   ├── gaia_cli.py              # Big Sister GAIA Interactive Terminal Inspector
-│   └── sandbox/                 # Autonomous Lab Workspace (E:\MyAgent fallback)
-│       └── tools/               # Dynamic User & Agent Created Tools
+│   ├── gaia_runner.py           # Multi-Language Runner (PY/JS/TS/JAVA/PS/BAT)
+│   ├── gaia_healer.py           # Self-Repair & Snapshot Rollback
+│   ├── gaia_rl.py               # Sisterly RL Gamification Engine
+│   └── gaia_cli.py              # Supervisor Terminal Inspector
 │
-├── inner_mind/                  # Aria's Cognitive Telemetry & Secret Diary
-│   ├── thought_recorder.py      # Pre-Sanitization Thought Interceptor & Persistence
-│   ├── gaia_thought_analyzer.py # GAIA Cognitive & Emotional Classifier (good/bad/fun/curious/etc.)
-│   ├── thought_cli.py           # Inner Mind CLI Inspector (--last, --filter, --stats)
-│   ├── aria_thoughts.jsonl      # Machine-Readable Thought Event Stream
-│   ├── aria_diary.md            # Human-Readable Markdown Secret Diary
-│   └── inner_mind_stats.json    # Emotional Telemetry & Curiosity Counters
-│
-├── tools/                       # Extended Tool Suites & Integrations
-│   ├── aria_android.py          # Wireless Android ADB Controller (PIN Unlock, SMS, Calls, Vision)
-│   ├── aria_tools.py            # Windows System Controls, Filesystem, Crypto, RSS News, Wikipedia
-│   ├── aria_chrome.py           # Chrome Browser Automation, DuckDuckGo & Research Scraper
-│   ├── aria_extended.py         # Home Assistant IoT, Window Sizing, Wallpaper Controls
-│   ├── aria_organizer.py        # Desktop & Downloads Automated File Sorter
+├── system_tools/                # Clean System Tools & Hardware Swarm
+│   ├── aria_android.py          # Wireless Android ADB Controller
+│   ├── aria_tools.py            # Windows System Controls & Filesystem
+│   ├── aria_chrome.py           # Chrome Browser Automation
+│   ├── aria_organizer.py        # Automated File Sorter
 │   └── aria_vision_executor.py  # Visual Coordinate Locator & Screen Clicker
 │
-├── server/                      # Multi-Device Companion & LAN Access
-│   ├── aria_api.py              # FastAPI Backend, WebSockets & HTML5 Mobile App
-│   └── aria_auth.py             # Session Authentication & RBAC
+├── data/                        # MUTABLE BY SYSTEM: State, Memory & Logs
+│   ├── aria_memory/             # Vector Database Stores
+│   ├── profiles/                # User Profiles & Personalities
+│   └── inner_mind/              # Cognitive Telemetry & Secret Diary
 │
-├── gui/                         # Desktop Dashboard
-│   └── aria_gui.py              # Cyber-Purple Dark Theme GUI (CustomTkinter)
+├── docs/                        # Static Documentation & Roadmap
+│   ├── guidelines/              # Architecture & Safety Guidelines
+│   ├── limitations.md           # System Constraints
+│   └── ROADMAP_COMPLETED.md     # 100% Completed Feature Catalog
 │
-├── tests/                       # Comprehensive Automated Test Suite
-│   ├── test_polyglot_execution.py  # Multi-Language Runner, Safety & Error Taxonomy Tests
-│   ├── test_inner_mind.py          # Thought Extraction & GAIA Emotional Analysis Tests
-│   ├── test_grounding_and_tools.py # Anti-Acting Grounding & Lab Tools Tests
-│   ├── test_brain_switching.py     # Multi-Brain Switching & Rate Limiting Tests
-│   ├── test_gaia_rl_supervisor.py  # Sisterly RL Gamification & Reality Check Tests
-│   └── test_android_controller.py  # Wireless ADB Phone Tests
+├── tests/                       # Automated Verification Test Suite (128 Tests)
+│   ├── test_polyglot_execution.py
+│   ├── test_inner_mind.py
+│   ├── test_grounding_and_tools.py
+│   ├── test_brain_switching.py
+│   ├── test_gaia_rl_supervisor.py
+│   ├── test_android_controller.py
+│   └── test_roadmap_features.py
 │
-├── agent.py                     # Root CLI & Voice Launcher
-├── aria_gui.py                  # Root Desktop GUI Launcher
-└── aria_api.py                  # Root Mobile Web Companion Server
+└── sandbox/                     # THE AGENT'S PLAYGROUND (Isolated at Root)
+    ├── snapshots/               # Time-Machine State Snapshots
+    ├── incidents/               # Error Recovery & Incident Audits
+    ├── tools/                   # Dynamic Agent-Created Tools
+    └── workspace/               # Autonomous Multi-Language Lab
+        └── aria_lab.py
 ```
 
 ---

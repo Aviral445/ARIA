@@ -18,7 +18,7 @@ class AriaMCPServer:
     def _load_config(self):
         """Load security config and API credentials."""
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        root_dir = os.path.dirname(base_dir)
+        root_dir = os.path.dirname(os.path.dirname(base_dir)) if os.path.basename(os.path.dirname(base_dir)) == "core" else os.path.dirname(base_dir)
         cfg_candidates = [
             os.path.join(base_dir, "aria_mcp_config.json"),
             os.path.join(root_dir, "config", "aria_mcp_config.json"),

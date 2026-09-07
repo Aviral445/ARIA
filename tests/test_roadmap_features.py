@@ -176,7 +176,7 @@ def test_voice_cloning_profile_manager():
 
 
 try:
-    from gui.aria_system_tray import AriaSystemTray
+    from core.aria_system_tray import AriaSystemTray
 except (ImportError, ModuleNotFoundError):
     from aria_system_tray import AriaSystemTray
 

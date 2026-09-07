@@ -22,7 +22,7 @@ if hasattr(sys.stdout, "reconfigure"):
         pass
 
 # Ensure repository root and core are discoverable
-ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if ROOT_DIR not in sys.path:
     sys.path.insert(0, ROOT_DIR)
 
@@ -38,7 +38,7 @@ def launch_agent(extra_args):
 
 def launch_gui(extra_args):
     """Launches the Pygame Desktop GUI."""
-    from gui.aria_gui import main
+    from core.aria_gui import main
     sys.argv = ["aria_gui.py"] + extra_args
     main()
 
@@ -54,7 +54,7 @@ def launch_api(extra_args):
             host = arg.split("=")[1]
     print(f"🚀 Starting Aria FastAPI Server on http://{host}:{port}...")
     import uvicorn
-    uvicorn.run("server.aria_api:app", host=host, port=port, reload=False)
+    uvicorn.run("core.aria_api:app", host=host, port=port, reload=False)
 
 
 def launch_gaia(extra_args):

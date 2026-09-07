@@ -181,7 +181,7 @@ except ImportError:
 
 EDGE_VOICE = "en-US-AnaNeural"  # Microsoft's high-fidelity cute / young girl neural voice
 PIPER_VOICE = "en_US-amy-medium"
-PIPER_MODEL_DIR = "./piper_models"
+PIPER_MODEL_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "models", "piper_models")
 
 
 def clean_text_for_speech(text: str) -> str:

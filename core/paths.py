@@ -14,9 +14,10 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CORE_DIR         = os.path.join(ROOT_DIR, "core")
 SYSTEM_TOOLS_DIR = os.path.join(ROOT_DIR, "system_tools")
 TOOLS_DIR        = SYSTEM_TOOLS_DIR  # Alias for backward compatibility
-GUI_DIR          = os.path.join(ROOT_DIR, "gui")
-SERVER_DIR       = os.path.join(ROOT_DIR, "server")
-MCP_DIR          = os.path.join(ROOT_DIR, "mcp")
+GUI_DIR          = CORE_DIR          # Consolidated into core/ (aria_gui.py)
+SERVER_DIR       = CORE_DIR          # Consolidated into core/ (aria_api.py)
+MCP_DIR          = os.path.join(CORE_DIR, "mcp")
+SCRIPTS_DIR      = os.path.join(CORE_DIR, "scripts")
 DATA_DIR         = os.path.join(ROOT_DIR, "data")
 CONFIG_DIR       = os.path.join(ROOT_DIR, "config")
 MODELS_DIR       = os.path.join(ROOT_DIR, "models")
@@ -51,7 +52,7 @@ except Exception:
 ENV_FILE = os.path.join(ROOT_DIR, ".env")
 
 # Ensure sub-packages are discoverable across the entire runtime
-for _p in [ROOT_DIR, CORE_DIR, SYSTEM_TOOLS_DIR, SERVER_DIR, MCP_DIR, GUI_DIR, DATA_DIR]:
+for _p in [ROOT_DIR, CORE_DIR, SYSTEM_TOOLS_DIR, MCP_DIR, DATA_DIR]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
 

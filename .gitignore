@@ -57,6 +57,7 @@ data/aria_memory/
 
 # Large Model Binaries, ADB Platform Tools & Executables
 models/piper_models/*.onnx
+piper_models/
 piper_models/*.onnx
 tools/platform-tools/
 system_tools/platform-tools/
