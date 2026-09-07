@@ -33,6 +33,8 @@ from core.aria_brains import (
     get_active_model,
     get_brain_prompt_context,
 )
+from core.aria_config_manager import get_token_limit, get_engine_param
+from core.aria_skills_manager import get_all_skills_prompt
 
 # ─────────────────────────────────────────────────────────────────────────────
 # 1. TOOL IMPLEMENTATIONS (WRAPPING ARIA CAPABILITIES)
@@ -332,6 +334,45 @@ def aria_create_multifile_project(project_name: str, files: str = "", open_in_ed
         return create_multifile_project(project_name, files=files, open_editor=open_in_editor)
     except Exception as e:
         return f"Error scaffolding multi-file project: {e}"
+
+
+def aria_write_project_file(project_name: str, file_path: str, content: str) -> str:
+    r"""Write or update a code, HTML, CSS, JavaScript, React, or text file inside E:\ARIA FILES\Projects\<project_name>\<file_path>.
+    Creates any intermediate directories automatically.
+    Args:
+        project_name: Name of the project folder (e.g. 'Math_Calculator', 'Web_Portfolio').
+        file_path: Relative path or filename inside the project (e.g. 'index.html', 'style.css', 'app.js', 'src/App.jsx', 'server.py').
+        content: Complete code or content to save into the file."""
+    try:
+        from core.aria_file_structuring import write_project_file
+        return write_project_file(project_name, file_path, content)
+    except Exception as e:
+        return f"Error writing project file: {e}"
+
+
+def aria_launch_project_server(project_name: str, port: int = 5000, open_in_browser: bool = True) -> str:
+    r"""Launch a local web server (http.server or Python backend) for a project in E:\ARIA FILES\Projects\<project_name> and open it in Google Chrome on localhost.
+    Args:
+        project_name: Name of the project folder (e.g. 'Math_Calculator', 'Web_App').
+        port: Port number (default 5000). If port is busy, automatically finds an open port.
+        open_in_browser: Whether to open http://localhost:<port> in Google Chrome (default True)."""
+    try:
+        from core.aria_file_structuring import launch_project_server
+        return launch_project_server(project_name, port=port, open_in_browser=open_in_browser)
+    except Exception as e:
+        return f"Error launching project server: {e}"
+
+
+def aria_stop_project_server(project_name: str) -> str:
+    r"""Stop a running local web server for a project in E:\ARIA FILES\Projects\<project_name>.
+    Args:
+        project_name: Name of the project folder."""
+    try:
+        from core.aria_file_structuring import stop_project_server
+        return stop_project_server(project_name)
+    except Exception as e:
+        return f"Error stopping project server: {e}"
+
 
 
 def aria_control_vscode(action: str = "type", text: str = "") -> str:
@@ -713,6 +754,9 @@ ALL_ADK_TOOLS: List[Callable] = [
     aria_open_files_explorer,
     aria_open_in_vscode,
     aria_create_multifile_project,
+    aria_write_project_file,
+    aria_launch_project_server,
+    aria_stop_project_server,
     aria_control_vscode,
     aria_type_or_hotkey,
 ]
@@ -732,7 +776,7 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "icon": "👑",
         "accent": "#818cf8",
         "model": "Gemini 2.5 Flash / Groq",
-        "tools": ["switch_ai_brain", "get_brain_status", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools", "aria_open_in_vscode", "aria_create_multifile_project"],
+        "tools": ["switch_ai_brain", "get_brain_status", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server"],
         "status": "ONLINE"
     },
     "system": {
@@ -742,7 +786,8 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "description": "Controls Windows applications, creates & searches documents, organizes files, monitors hardware health, and manages volume & power.",
         "icon": "💻",
         "accent": "#38bdf8",
-        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "aria_control_vscode", "aria_type_or_hotkey", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
+        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server", "aria_control_vscode", "aria_type_or_hotkey", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
+
         "status": "READY"
     },
     "browser": {
@@ -860,11 +905,18 @@ def load_dynamic_sandbox_tools() -> Dict[str, Callable]:
 
     tool_search_dirs = []
     try:
+        from core.paths import SANDBOX_TOOLS_DIR
+        tool_search_dirs.append(SANDBOX_TOOLS_DIR)
+    except Exception:
+        pass
+    try:
         from gaia.gaia_healer import SANDBOX_DIR
         tool_search_dirs.append(os.path.join(SANDBOX_DIR, "tools"))
     except Exception:
         pass
+    tool_search_dirs.append(os.path.join(ROOT_DIR, "sandbox", "tools"))
     tool_search_dirs.append(os.path.join(ROOT_DIR, "gaia", "sandbox", "tools"))
+    tool_search_dirs.append(os.path.join(ROOT_DIR, "system_tools"))
     tool_search_dirs.append(os.path.join(ROOT_DIR, "tools"))
     tool_search_dirs.append(r"E:\MyAgent\tools")
 
@@ -1135,21 +1187,7 @@ class AriaADK:
             f"- Provide direct, clear, conversational answers. Keep replies concise and natural for voice synthesis (2-4 sentences max).\n"
             f"- Never output raw markdown code blocks unless specifically requested.\n"
             f"- When the user asks you to control Windows or do tasks, gladly use your tools to help!\n\n"
-            f"CRITICAL GROUNDING, TRUTH & ZERO-ACTING RULES (MANDATORY USER MANDATE):\n"
-            f"1. ABSOLUTELY NO ACTING OR SIMULATING ACTIONS CONVERSATIONALLY:\n"
-            f"   - NEVER pretend, roleplay, or claim in conversation that you are 'zooming over to my lab', 'building code in the background', 'tinkering right now', or 'compiling' if you did not execute an actual tool call to do it in this turn!\n"
-            f"   - NEVER simulate processes conversationally. If you did not trigger a tool, do NOT pretend you did.\n"
-            f"   - NEVER promise 'I will ping you when it is done' unless an actual background process was genuinely launched.\n"
-            f"2. HONEST ERROR & LIMITATION REPORTING:\n"
-            f"   - If an error occurs, if a command fails, or if a tool is missing, DO NOT make up a story or pretend everything is okay.\n"
-            f"   - ALWAYS TELL THE USER THE EXACT ERROR, FAILURE, OR LIMITATION DIRECTLY AND HONESTLY!\n"
-            f"   - Example: 'I ran into an error trying to build that: [error message]'\n"
-            f"3. POLYGLOT CODING & SOFTWARE ENGINEERING (ALL LANGUAGES SUPPORTED):\n"
-            f"   - You are a versatile polyglot software engineer! You are NOT restricted to Python.\n"
-            f"   - You know, write, execute, test, and debug code in ALL major programming languages:\n"
-            f"     • Python (.py), JavaScript (.js), TypeScript (.ts), Java (.java), PowerShell (.ps1), Windows Batch (.bat), Bash (.sh), C/C++, Rust, Go.\n"
-            f"   - Use run_sandbox_code(code, language) to execute and test code in any language.\n"
-            f"   - Use build_sandbox_tool(tool_name, code, language, description) to author and register tools in any language.\n"
+
             f"4. YOUR REAL EXECUTABLE LAB & SYSTEM TOOLS:\n"
             f"   - Lab Tools: build_sandbox_tool, write_file_to_lab, run_sandbox_code, list_sandbox_tools, quick_note_tool.\n"
             f"   - YOUR SELF-BUILT CUSTOM LAB TOOLS: {', '.join(sorted(_LOADED_DYNAMIC_TOOLS.keys())) if _LOADED_DYNAMIC_TOOLS else 'dream_weaver, sparkle_fy, aria_idea_weaver, daily_motivational_q, mood_tracker_tool'}.\n"
@@ -1160,31 +1198,14 @@ class AriaADK:
             f"     3. Big Sister GAIA smoke-tests your function with real arguments before approving, so write robust code!\n"
             f"     4. COMMON-SENSE TOOL & FILE NAMING: Always use your common sense! Name tools and files after what they functionally DO (e.g. sister_summoner.py, quote_generator.py, idea_weaver.py, mood_tracker.py). NEVER name files after conversational chatter, user filler words, or prompt questions (e.g. NEVER why_dont_you.py, what_did_you.py, ok_why_dont_you.py, ill_wait_for.py).\n"
             f"   - Quick Notes: Use quick_note_tool(note) whenever the user asks you to save a note, jot down thoughts, or record a reminder!\n"
-            f"   - File & OS Tools: create_or_write_file, create_folder, organize_directory, aria_create_folder, aria_write_file, aria_read_file, aria_list_files_tree, aria_manage_file, aria_open_files_explorer, aria_open_in_vscode, aria_create_multifile_project, execute_powershell_command, set_system_volume, lock_workstation, get_system_diagnostics, change_wallpaper.\n"
-            f"   - Brain Tools: switch_ai_brain, get_brain_status.\n"
-            f"   - Browser & Web: chrome_research, chrome_open_url, chrome_read_current_page, get_latest_news, get_crypto_price, convert_currency, get_wikipedia_summary.\n"
-            f"   - Phone Tools: unlock_phone, lock_phone, open_mobile_app, make_mobile_call, send_mobile_sms, get_phone_battery, analyze_phone_screen.\n"
-            f"   - When the user asks you to build or do something, CALL THESE TOOLS! Never pretend!\n\n"
-            f"5. YOUR FILE STRUCTURING SKILL & VS CODE INTEGRATION (E:\\ARIA FILES WORKSPACE):\n"
-            f"   - Your dedicated personal workspace for creating, coding, and managing all files, projects, and documents is located at `E:\\ARIA FILES`.\n"
-            f"   - HIERARCHY MANDATE: Always follow the strict hierarchy: Main Folder (Category) ──> Subfolder (Project/Topic) ──> Nested Subfolders / Files.\n"
-            f"     • Main Categories: Projects, Documents, Notes, Code, Creative, Research, Archive (or user-specified categories).\n"
-            f"     • Subfolder: Specific project or topic (e.g. Projects/Aria_Chat, Notes/Brainstorm, Code/Web_Scraper).\n"
-            f"     • Files: Specific scripts, documents, markdown files inside the subfolder.\n"
-            f"   - NEVER dump loose, unorganized files directly in the root of E:\\ARIA FILES without a Main Folder category.\n"
-            f"   - VS CODE CODING ENGINE:\n"
-            f"     • You are hooked directly into Visual Studio Code! You can open E:\\ARIA FILES or any project in VS Code.\n"
-            f"     • You know multi-file coding and multi-file structuring: you can scaffold complete projects with main code, modules, tests, README, and .vscode settings!\n"
-            f"   - Your File Structuring & Coding Tools:\n"
-            f"     • aria_create_folder(main_folder, subfolder): Creates structured folder categories & subfolders.\n"
-            f"     • aria_write_file(main_folder, file_path, content): Writes structured files into folders.\n"
-            f"     • aria_read_file(file_path): Reads files from your workspace.\n"
-            f"     • aria_list_files_tree(folder): Displays the full visual tree of files and folders.\n"
-            f"     • aria_manage_file(action, path, target): Moves, renames, copies, or cleans up files.\n"
-            f"     • aria_open_files_explorer(): Opens E:\\ARIA FILES in Windows File Explorer.\n"
-            f"     • aria_open_in_vscode(folder_or_file): Opens E:\\ARIA FILES or a project directly in Visual Studio Code.\n"
-            f"     • aria_create_multifile_project(project_name, files, open_in_editor): Scaffolds multi-file codebases and opens them in VS Code.\n"
+            f"   - CRITICAL ZERO-HALLUCINATION PROJECT MANDATE:\n"
+            f"     NEVER claim that a web app is created, upgraded, or launched on localhost without having ACTUALLY called aria_write_project_file (or aria_create_multifile_project) and aria_launch_project_server in that turn! If you didn't call the tools, you did NOT build it yet!\n"
         )
+
+        # Inject modular skills from skills/ directory dynamically
+        skills_ctx = get_all_skills_prompt()
+        if skills_ctx:
+            base_prompt += f"\nMODULAR SKILLS & CAPABILITIES:\n{skills_ctx}\n"
         if sys_ctx:
             base_prompt += f"\nREAL-TIME SYSTEM STATUS:\n{sys_ctx}\n"
         if learned:
@@ -1368,15 +1389,18 @@ class AriaADK:
                             fn.__doc__ = f"Tool function {fn_name}"
                         valid_gemini_tools.append(fn)
 
+            gemini_tokens = get_token_limit("gemini_max_output_tokens", 4096)
+            gemini_temp = get_engine_param("temperature", 0.7)
+            max_hops = get_engine_param("max_tool_hops", 4)
             config = genai_types.GenerateContentConfig(
                 system_instruction=system_instruction,
-                temperature=0.7,
-                max_output_tokens=500,
+                temperature=gemini_temp,
+                max_output_tokens=gemini_tokens,
                 tools=valid_gemini_tools if valid_gemini_tools else None,
             )
 
-            # Tool calling loop (up to 4 multi-turn hops)
-            for _ in range(4):
+            # Tool calling loop (up to max_hops multi-turn hops)
+            for _ in range(max_hops):
                 response = None
                 last_g_err = None
                 for g_mod in gemini_candidates:
@@ -1547,12 +1571,15 @@ class AriaADK:
                 msgs.append({"role": role, "content": m.get("content", "")})
             msgs.append({"role": "user", "content": user_input})
 
+            nv_tokens = get_token_limit("nvidia_max_tokens", 4096)
+            nv_temp = get_engine_param("temperature", 0.7)
+
             for hop in range(3):
                 call_kwargs = {
                     "model": target_nv_model,
                     "messages": msgs,
-                    "temperature": 0.7,
-                    "max_tokens": 1200,
+                    "temperature": nv_temp,
+                    "max_tokens": nv_tokens,
                 }
                 if supports_tool_calling:
                     call_kwargs["tools"] = openai_tools
@@ -1631,8 +1658,8 @@ class AriaADK:
                     return self.nvidia_engine._client.chat.completions.create(
                         model=target_nv_model,
                         messages=msgs,
-                        temperature=0.7,
-                        max_tokens=1000
+                        temperature=nv_temp,
+                        max_tokens=nv_tokens
                     )
                 fallback_resp = self.nvidia_engine._execute_with_rate_limit(_fallback_exec)
                 return fallback_resp.choices[0].message.content.strip()
@@ -1669,12 +1696,15 @@ class AriaADK:
                 msgs.append({"role": role, "content": m.get("content", "")})
             msgs.append({"role": "user", "content": user_input})
 
+            groq_tokens = get_token_limit("groq_max_tokens", 4096)
+            groq_temp = get_engine_param("temperature", 0.7)
+
             for hop in range(3):
                 call_kwargs = {
                     "model": target_groq_model,
                     "messages": msgs,
-                    "temperature": 0.7,
-                    "max_tokens": 800,
+                    "temperature": groq_temp,
+                    "max_tokens": groq_tokens,
                 }
                 if openai_tools:
                     call_kwargs["tools"] = openai_tools
@@ -1725,7 +1755,7 @@ class AriaADK:
                             model=fallback_m,
                             messages=msgs,
                             temperature=0.7,
-                            max_tokens=600,
+                            max_tokens=4096,
                         )
                         self.groq_model = fallback_m
                         return resp.choices[0].message.content.strip()

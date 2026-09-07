@@ -169,9 +169,55 @@ def cmd_vault_sync():
     print(f"Total Cloud Snapshots:  {res['total_cloud_snapshots']}\n")
 
 
+def cmd_architect_status():
+    print("\n" + "=" * 60)
+    print("🏗️ GAIA ARCHITECT: Dedicated Sandbox & Diagnostics Engine")
+    print("=" * 60)
+    from gaia.gaia_architect import get_gaia_architect
+    arch = get_gaia_architect()
+    st = arch.get_status()
+    print(f"Architect Sandbox:      {st['architect_dir']}")
+    print(f"Workspace Staged Files: {st['workspace_files_count']}")
+    print(f"Incident Reports:       {st['incidents_count']}")
+    print(f"Core Patch Proposals:   {st['patches_count']}")
+    print(f"Snapshots & Backups:    {st['backups_count']}")
+    print(f"Total Live Deployments: {st['total_deployments']}")
+    print(f"Modular Skills Loaded:  {st['skills_count']}")
+    print(f"Circuit Breaker Counts: {st['active_circuit_attempts']}")
+    cfg = st.get("engine_config", {}).get("limits", {})
+    print("\n⚡ Dynamic Engine Limits:")
+    for k, v in cfg.items():
+        print(f"  • {k}: {v} tokens")
+    print("=" * 60 + "\n")
+
+
+def cmd_architect():
+    print("\n" + "=" * 60)
+    print("🔍 GAIA ARCHITECT: Running Codebase Diagnostic Cycle...")
+    print("=" * 60)
+    from gaia.gaia_architect import get_gaia_architect
+    arch = get_gaia_architect()
+    impediments = arch.diagnose_aria_impediments()
+    if not impediments:
+        print("✅ No active impediments found in recent events, thoughts, or logs!")
+        print("Aria is operating smoothly without blocking errors or missing tools.")
+    else:
+        print(f"⚠️ Found {len(impediments)} diagnosed impediment(s):")
+        for idx, imp in enumerate(impediments, 1):
+            print(f"\n[{idx}] Issue ID:    {imp.get('issue_id')}")
+            print(f"    Type:        {imp.get('type')}")
+            print(f"    Target:      {imp.get('target_name')}")
+            print(f"    Description: {imp.get('description')}")
+            print(f"    Solution:    {imp.get('solution_type')}")
+            print(f"    Evidence:    {imp.get('evidence', '')[:120]}...")
+    print("=" * 60 + "\n")
+
+
 def main():
     parser = argparse.ArgumentParser(description="GAIA Supervisor & Aria Lab CLI")
     parser.add_argument("--status", action="store_true", help="Show live status of GAIA and Aria's lab")
+    parser.add_argument("--architect", action="store_true", help="Run GAIA Architect diagnostics across codebase and logs")
+    parser.add_argument("--architect-status", action="store_true", help="Show GAIA Architect sandbox, incidents, and patches status")
     parser.add_argument("--curiosity", type=str, nargs="?", const="", help="Run autonomous curiosity session (optional topic)")
     parser.add_argument("--rollback", action="store_true", help="Roll back sandbox to previous stable snapshot")
     parser.add_argument("--test-safety", action="store_true", help="Test GAIA's AST security guardrail")
@@ -189,6 +235,10 @@ def main():
 
     if args.status:
         cmd_status()
+    elif args.architect:
+        cmd_architect()
+    elif args.architect_status:
+        cmd_architect_status()
     elif args.curiosity is not None:
         cmd_curiosity(args.curiosity if args.curiosity else None)
     elif args.rollback:

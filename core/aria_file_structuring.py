@@ -451,3 +451,189 @@ def create_multifile_project(project_name: str, files: Any = None, open_editor: 
         summary += f"\n{vscode_msg}"
 
     return summary
+
+
+def write_project_file(project_name: str, file_path: str, content: str, overwrite: bool = True) -> str:
+    r"""
+    Writes or updates a specific file inside E:\ARIA FILES\Projects\<project_name>\<file_path>.
+    Creates any needed intermediate subfolders automatically.
+
+    Args:
+        project_name: Name of the project folder (e.g. 'Math_Calculator', 'Web_App', 'My_Game').
+        file_path: Relative path or filename within the project (e.g. 'index.html', 'style.css', 'app.js', 'src/App.jsx', 'server.py').
+        content: Code or text to save in the file.
+        overwrite: Whether to overwrite existing file (default True).
+    """
+    if not project_name or not project_name.strip():
+        return "Error: Please specify a project name."
+    if not file_path or not file_path.strip():
+        return "Error: Please specify the file path inside the project."
+
+    clean_proj = _sanitize_name(project_name.strip())
+    clean_file = file_path.replace("/", os.sep).replace("\\", os.sep).strip().lstrip(os.sep)
+    rel_path = os.path.join("Projects", clean_proj, clean_file)
+
+    try:
+        safe_path = _resolve_safe_path(rel_path)
+        if os.path.exists(safe_path) and not overwrite:
+            return f"File '{clean_file}' already exists in Projects/{clean_proj} and overwrite=False."
+
+        os.makedirs(os.path.dirname(safe_path), exist_ok=True)
+        with open(safe_path, "w", encoding="utf-8") as f:
+            f.write(content)
+
+        size_bytes = os.path.getsize(safe_path)
+        size_str = f"{size_bytes / 1024:.1f} KB" if size_bytes >= 1024 else f"{size_bytes} bytes"
+        line_count = len(content.splitlines())
+
+        return f"📄 Successfully saved '{clean_file}' ({size_str}, {line_count} lines) in E:\\ARIA FILES\\Projects\\{clean_proj}!"
+    except Exception as e:
+        return f"Error writing project file: {e}"
+
+
+_RUNNING_SERVERS: Dict[str, Any] = {}
+
+
+def _open_url_in_browser(url: str) -> bool:
+    """Helper to open a URL in Chrome or default browser."""
+    import webbrowser
+    try:
+        try:
+            import aria_extended
+            aria_extended.open_chrome_with_profile(url)
+            return True
+        except Exception:
+            webbrowser.open(url)
+            return True
+    except Exception:
+        return False
+
+
+def launch_project_server(project_name: str, port: int = 5000, open_in_browser: bool = True) -> str:
+    r"""
+    Launches a lightweight local web server for a project located in E:\ARIA FILES\Projects\<project_name>
+    and opens it in Google Chrome / browser on localhost.
+
+    Args:
+        project_name: Name of the project in Projects/ (e.g. 'Math_Calculator', 'Web_App').
+        port: Desired port (default 5000). If port is busy, automatically finds an open port.
+        open_in_browser: Whether to open http://localhost:<port> in Google Chrome (default True).
+    """
+    import socket
+    import sys
+    import time
+
+    if not project_name or not project_name.strip():
+        return "Error: Please specify a project name to launch."
+
+    clean_proj = _sanitize_name(project_name.strip())
+    rel_proj = os.path.join("Projects", clean_proj)
+
+    try:
+        proj_dir = _resolve_safe_path(rel_proj)
+        if not os.path.exists(proj_dir) or not os.path.isdir(proj_dir):
+            return f"Error: Project folder 'Projects/{clean_proj}' does not exist in E:\\ARIA FILES."
+
+        # Check if already running for this project
+        if clean_proj in _RUNNING_SERVERS:
+            proc_info = _RUNNING_SERVERS[clean_proj]
+            proc = proc_info.get("process")
+            existing_port = proc_info.get("port")
+            if proc and proc.poll() is None:
+                url = f"http://localhost:{existing_port}"
+                if open_in_browser:
+                    _open_url_in_browser(url)
+                return f"🚀 Project '{clean_proj}' server is already running at {url} (PID: {proc.pid}) and opened in browser!"
+
+        # Find an open port starting from requested port
+        def _is_port_in_use(p: int) -> bool:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                return s.connect_ex(('127.0.0.1', p)) == 0
+
+        target_port = port
+        while _is_port_in_use(target_port) and target_port < port + 20:
+            target_port += 1
+
+        if _is_port_in_use(target_port):
+            return f"Error: Could not find an open port between {port} and {port + 20}."
+
+        has_server_py = os.path.exists(os.path.join(proj_dir, "server.py"))
+        has_app_py = os.path.exists(os.path.join(proj_dir, "app.py"))
+
+        creation_flags = 0
+        if sys.platform == "win32":
+            creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP | subprocess.DETACHED_PROCESS
+
+        if has_server_py:
+            cmd = [sys.executable, "server.py"]
+            desc = "Python backend server (server.py)"
+        elif has_app_py:
+            cmd = [sys.executable, "app.py"]
+            desc = "Python backend application (app.py)"
+        else:
+            cmd = [sys.executable, "-m", "http.server", str(target_port)]
+            desc = f"Python HTTP static web server (port {target_port})"
+
+        env = os.environ.copy()
+        env["PORT"] = str(target_port)
+
+        proc = subprocess.Popen(
+            cmd,
+            cwd=proj_dir,
+            env=env,
+            creationflags=creation_flags,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL
+        )
+
+        _RUNNING_SERVERS[clean_proj] = {
+            "process": proc,
+            "port": target_port,
+            "cmd": cmd,
+            "started_at": time.time(),
+            "dir": proj_dir
+        }
+
+        # Wait briefly for socket binding
+        time.sleep(0.5)
+
+        url = f"http://localhost:{target_port}"
+        browser_status = ""
+        if open_in_browser:
+            opened = _open_url_in_browser(url)
+            browser_status = " and opened in Google Chrome!" if opened else "!"
+
+        file_list = [f for f in os.listdir(proj_dir) if not f.startswith(".")]
+        return (
+            f"🚀 Successfully launched {desc} for 'Projects/{clean_proj}'!\n"
+            f"• Local URL: {url}\n"
+            f"• Server PID: {proc.pid}\n"
+            f"• Project files detected: {', '.join(file_list[:8])}\n"
+            f"Server is actively running in background{browser_status}"
+        )
+    except Exception as e:
+        return f"Error launching project server: {e}"
+
+
+def stop_project_server(project_name: str) -> str:
+    r"""Stops a running local web server for a project."""
+    if not project_name or not project_name.strip():
+        return "Error: Please specify a project name."
+    clean_proj = _sanitize_name(project_name.strip())
+    if clean_proj in _RUNNING_SERVERS:
+        proc_info = _RUNNING_SERVERS.pop(clean_proj)
+        proc = proc_info.get("process")
+        if proc:
+            try:
+                proc.terminate()
+                try:
+                    proc.wait(timeout=2)
+                except Exception:
+                    proc.kill()
+                    proc.wait(timeout=1)
+                return f"🛑 Stopped server for project '{clean_proj}' (PID: {proc.pid})."
+            except Exception as e:
+                return f"Error stopping server process: {e}"
+    return f"No active server tracked for project '{clean_proj}'."
+
+

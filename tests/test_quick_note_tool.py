@@ -1,6 +1,9 @@
 import os
 import unittest
-from gaia.sandbox.tools.quick_note_tool import quick_note_tool, register_tool, get_notes_folder
+try:
+    from sandbox.tools.quick_note_tool import quick_note_tool, register_tool, get_notes_folder
+except ImportError:
+    from gaia.sandbox.tools.quick_note_tool import quick_note_tool, register_tool, get_notes_folder
 from core.aria_adk import load_dynamic_sandbox_tools, ALL_ADK_TOOLS, TOOL_NAME_MAP
 
 class TestQuickNoteTool(unittest.TestCase):

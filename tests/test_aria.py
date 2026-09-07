@@ -1,8 +1,9 @@
 import unittest, os, sys
 _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-for _p in [_ROOT, os.path.join(_ROOT, "core"), os.path.join(_ROOT, "tools"), os.path.join(_ROOT, "server"), os.path.join(_ROOT, "mcp"), os.path.join(_ROOT, "gui")]:
+for _p in [_ROOT, os.path.join(_ROOT, "core"), os.path.join(_ROOT, "system_tools"), os.path.join(_ROOT, "tools"), os.path.join(_ROOT, "server"), os.path.join(_ROOT, "mcp"), os.path.join(_ROOT, "gui")]:
     if _p not in sys.path:
         sys.path.insert(0, _p)
+import core.paths
 
 import aria_tools, aria_scheduler, aria_memory, aria_extended
 

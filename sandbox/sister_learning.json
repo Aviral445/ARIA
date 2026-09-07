@@ -1,0 +1,30 @@
+[
+  {
+    "timestamp": "2026-09-02 22:47:56",
+    "solver": "ARIA",
+    "script": "broken_test.py",
+    "error_summary": "NameError: name 'undefined_variable_name' is not defined",
+    "lesson": "Woohoo! I figured out I forgot to define `undefined_variable_name` and that made my script crash, so I gave it a starting value to make `result` happy!"
+  },
+  {
+    "timestamp": "2026-09-02 22:49:12",
+    "solver": "GAIA_ASSISTED",
+    "script": "weather_tool.py",
+    "error_summary": "KeyError: 'forecast'",
+    "lesson": "Oops, you tried to access a key `'forecast'` that wasn't present in your `forecast_data` dictionary, I fixed it for you by setting `status` to the entire `forecast_data` dictionary itself. This way, your `weather_tool` can return all the available forecast information!"
+  },
+  {
+    "timestamp": "2026-09-06 20:13:59",
+    "solver": "ANTIGRAVITY_AND_SISTERS",
+    "script": "why_dont_you.py",
+    "error_summary": "Tool Contract: Missing Docstring on Callable in why_dont_you.py",
+    "lesson": "Aria and GAIA learned that every callable returned by register_tool() must have an inner triple-quoted docstring explaining its purpose so AI brains can understand and invoke it. GAIA also learned to inspect Aria's actual created tools before assuming a conversational phrase is a missing file."
+  },
+  {
+    "timestamp": "2026-09-06 20:41:00",
+    "solver": "GAIA_AND_ARIA",
+    "script": "common_sense_naming",
+    "error_summary": "Common Sense: Functional Tool Naming vs Conversational Phrases",
+    "lesson": "👩‍🏫 GAIA: Little sis, naming files after prompt snippets like 'why_dont_you.py' or 'what_did_you.py' is silly and cracks everyone up! You are a brilliant engineer. Always use common sense and name files and tools after what they functionally DO (e.g. 'sister_summoner.py', 'quote_generator.py', 'idea_weaver.py'). Never name files after chat phrases! Aria: 'Understood big sis! I have common sense now! I will always name my tools after what they do!' ✨"
+  }
+]

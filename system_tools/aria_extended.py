@@ -103,20 +103,27 @@ def open_or_focus_laptop_app(app_keyword: str) -> str:
         subprocess.Popen(["powershell", "-c", f"Start-Process '{target}' -ErrorAction SilentlyContinue"])
         return f"Opening '{target}' on your laptop!"
 
-def open_chrome_with_profile(url: str = "", profile_name: str = "Profile 7") -> str:
+def get_primary_chrome_profile() -> str:
+    """Returns the primary Chrome profile directory (Profile 7 for aviirrll@gmail.com)."""
+    return "Profile 7"
+
+def open_chrome_with_profile(url: str = "", profile_name: str = "") -> str:
     """Launches Google Chrome directly on the user desktop using the aviirrll@gmail.com profile (Profile 7)."""
+    if not profile_name:
+        profile_name = get_primary_chrome_profile()
+    target_url = url if url else "https://www.google.com"
+    if target_url and not target_url.startswith(("http://", "https://")):
+        target_url = "https://" + target_url
+
+    cmd = f'chrome.exe --profile-directory={profile_name} "{target_url}"'
     try:
-        if url:
-            if not url.startswith(("http://", "https://")):
-                url = "https://" + url
-            os.system(f'start chrome.exe --profile-directory="{profile_name}" "{url}"')
-            return f"Opening {url} in Google Chrome (aviirrll@gmail.com) on your laptop!"
-        else:
-            os.system(f'start chrome.exe --profile-directory="{profile_name}" "https://www.google.com"')
-            return "Opening Google Chrome with profile 'aviirrll@gmail.com' on your laptop!"
+        subprocess.Popen(cmd, shell=True)
     except Exception:
-        subprocess.Popen(["powershell", "-c", f"Start-Process chrome -ArgumentList '--profile-directory=\"{profile_name}\"', '{url or 'https://www.google.com'}' -ErrorAction SilentlyContinue"])
-        return "Opening Google Chrome with profile 'aviirrll@gmail.com' on your laptop!"
+        os.system(f'start {cmd}')
+
+    if url:
+        return f"Opening {url} in Google Chrome ({profile_name}) on your laptop!"
+    return f"Opening Google Chrome with profile '{profile_name}' on your laptop!"
 
 
 def switch_google_search_section(section_name: str, query: str = "") -> str:
@@ -435,7 +442,8 @@ def show_toast_notification(title: str, message: str):
 
 
 # ── 11. SMART HOME / WEBHOOK TRIGGER (Feature 40) ─────────────────────────────
-SMART_HOME_CONFIG = "smart_home.json"
+from core.paths import get_config_file
+SMART_HOME_CONFIG = get_config_file("smart_home.json")
 
 def trigger_smart_device(device_or_action: str) -> str:
     """Triggers configured Home Assistant or Webhook endpoints for smart switches/lights."""

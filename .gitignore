@@ -31,14 +31,21 @@ data/reminders.json
 data/goals.json
 data/learned_corrections.json
 data/profiles/
+data/profiles
 data/profile.json
 data/smart_home.json
 data/session_checkpoint.json
 data/big_bro_bridge.json
 data/big_bro_budget.json
+data/.security_auth.json
+data/.vault_salt
+data/approval_audit.jsonl
+data/active_voice_profile.json
 tools/mood_log.txt
 smart_home.json
+config/smart_home.json
 !smart_home.example.json
+!config/smart_home.example.json
 
 # Vector Databases and SQLite State
 aria_memory/
@@ -52,6 +59,7 @@ data/aria_memory/
 models/piper_models/*.onnx
 piper_models/*.onnx
 tools/platform-tools/
+system_tools/platform-tools/
 platform-tools/
 *.exe
 *.dll
@@ -90,6 +98,10 @@ gaia/events.json
 gaia/sandbox/
 gaia/data/
 data/notes/
+sandbox/snapshots/
+sandbox/incidents/
+sandbox/notes/
+sandbox/scratch/
 sandbox_notes/
 *.mp3
 *.wav

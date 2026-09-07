@@ -1,0 +1,40 @@
+{
+  "Aria (Default)": {
+    "engine": "piper",
+    "model": "en_US-lessac-medium",
+    "rate": 1.0,
+    "pitch": 0,
+    "description": "Standard warm, upbeat personal assistant voice."
+  },
+  "Aria (Calm & Soothing)": {
+    "engine": "piper",
+    "model": "en_US-amy-medium",
+    "rate": 0.9,
+    "pitch": -2,
+    "description": "Relaxed and calming cadence for late-night or focus sessions."
+  },
+  "Aria (Expressive Neural)": {
+    "engine": "edge-tts",
+    "model": "en-US-AnaNeural",
+    "rate": 1.05,
+    "pitch": 2,
+    "description": "High-fidelity neural expressive voice with emotional responsiveness."
+  },
+  "Custom Cloned Voice": {
+    "engine": "custom",
+    "model": "cloned_profile_reference",
+    "rate": 1.0,
+    "pitch": 0,
+    "sample_path": "",
+    "description": "User custom recorded voice reference profile."
+  },
+  "TestUserClonedVoice": {
+    "engine": "custom_cloned",
+    "model": "cloned_profile",
+    "rate": 1.1,
+    "pitch": 2,
+    "sample_path": "",
+    "description": "Custom cloned voice profile for TestUserClonedVoice.",
+    "created_at": "2026-09-07 16:38:34"
+  }
+}

@@ -15,7 +15,7 @@ from gaia.gaia_runner import run_sandboxed_script, ExecutionResult
 from gaia.gaia_healer import GaiaHealer, SANDBOX_DIR, SNAPSHOTS_DIR
 from gaia.gaia_voice import gaia_speak, aria_speak
 from gaia.gaia_bus import bus
-from gaia.sandbox.curiosity import AriaCuriosityEngine
+from gaia.gaia_curiosity import AriaCuriosityEngine
 from gaia.gaia_rl import rl_game, classify_error_title
 
 GAIA_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -37,14 +37,25 @@ class GaiaSupervisor:
         snaps = self.healer.list_snapshots()
         events = bus.get_recent_events(10)
         rl_stats = rl_game.get_status()
+        try:
+            from gaia.gaia_architect import get_gaia_architect
+            architect_stats = get_gaia_architect().get_status()
+        except Exception:
+            architect_stats = {}
+
         return {
             "is_supervising": self.is_supervising,
             "sandbox_dir": SANDBOX_DIR,
             "total_snapshots": len(snaps),
             "latest_snapshot": snaps[0]["snapshot_id"] if snaps else "None",
             "rl_game": rl_stats,
-            "recent_events": events
+            "recent_events": events,
+            "architect": architect_stats
         }
+
+    def get_architect(self):
+        from gaia.gaia_architect import get_gaia_architect
+        return get_gaia_architect()
 
     def supervise_code_deployment(self, target_filename: str, proposed_code: str, idea_desc: str = "") -> Tuple[bool, str]:
         """
@@ -332,8 +343,8 @@ class GaiaSupervisor:
         # Check if physical creation / modification was requested or claimed
         creation_verbs = ["created", "made", "wrote", "saved", "added", "built", "generated", "implemented"]
         claims_creation = any(f"{v} a " in text_lower or f"{v} the " in text_lower or f"{v} this " in text_lower or f"i have {v}" in text_lower or f"i've {v}" in text_lower for v in creation_verbs)
-        claims_filename = bool(re.search(r'\b([a-zA-Z0-9_\-]+\.(?:py|txt|md|json|csv|html))\b', candidate_response, re.IGNORECASE))
-        user_requested_build = any(k in user_lower for k in ["create a tool", "make a tool", "build a tool", "write a tool", "create a file", "make a file", "edit your file", "write a script", "write code"])
+        claims_filename = bool(re.search(r'\b([a-zA-Z0-9_\-]+\.(?:py|txt|md|json|csv|html|css|js|jsx|tsx))\b', candidate_response, re.IGNORECASE))
+        user_requested_build = any(k in user_lower for k in ["create a tool", "make a tool", "build a tool", "write a tool", "create a file", "make a file", "edit your file", "write a script", "write code", "frontend", "web app", "calculator"])
 
         # Check for conversational simulation / acting phrases
         simulation_phrases = [
@@ -354,13 +365,13 @@ class GaiaSupervisor:
             return False, candidate_response
 
         # Check if Aria is affirmatively claiming completion or simulating background action
-        has_affirmation = any(p in text_lower for p in ["i have created", "i've created", "i created", "i made", "i've made", "i wrote", "i've written", "here is the file", "file is ready", "tool is ready", "saved to", "created the file", "created the tool"])
-        if not (has_affirmation or is_simulating_action or (user_requested_build and any(v in text_lower for v in ["here is", "created", "done", "finished", "added"]))):
+        has_affirmation = any(p in text_lower for p in ["i have created", "i've created", "i created", "i made", "i've made", "i wrote", "i've written", "here is the file", "file is ready", "tool is ready", "saved to", "created the file", "created the tool", "launched it", "running on localhost"])
+        if not (has_affirmation or is_simulating_action or (user_requested_build and any(v in text_lower for v in ["here is", "created", "done", "finished", "added", "launched"]))):
             return False, candidate_response
 
 
         # Extract filename hint strictly from Aria's candidate_response (never from the user's prompt!)
-        m_file = re.search(r'\b([a-zA-Z0-9_\-]+\.(?:py|txt|md|json|csv|html))\b', candidate_response, re.IGNORECASE)
+        m_file = re.search(r'\b([a-zA-Z0-9_\-]+\.(?:py|txt|md|json|csv|html|css|js|jsx|tsx))\b', candidate_response, re.IGNORECASE)
         claimed_filename = m_file.group(1) if m_file else None
         alt_filename = None
         if not claimed_filename:
@@ -375,6 +386,8 @@ class GaiaSupervisor:
         exists_on_disk = False
         target_path = None
         filenames_to_check = [f for f in [claimed_filename, alt_filename] if f]
+        aria_files_base = r"E:\ARIA FILES" if os.path.exists(r"E:\ARIA FILES") else os.path.join(os.path.dirname(GAIA_DIR), "data", "aria_files")
+
         if filenames_to_check:
             for fname in filenames_to_check:
                 candidate_paths = [
@@ -382,9 +395,25 @@ class GaiaSupervisor:
                     os.path.join(SANDBOX_DIR, fname),
                     os.path.join(os.path.dirname(GAIA_DIR), "tools", fname),
                     os.path.join(os.path.dirname(GAIA_DIR), fname),
+                    os.path.join(aria_files_base, fname),
+                    os.path.join(aria_files_base, "Code", fname),
+                    os.path.join(aria_files_base, "Documents", fname),
                     os.path.join(os.path.expandvars(r"%USERPROFILE%\Desktop"), fname),
                     os.path.join(os.path.expandvars(r"%USERPROFILE%\Documents"), fname),
                 ]
+                # Also check all project folders inside E:\ARIA FILES\Projects
+                proj_dir = os.path.join(aria_files_base, "Projects")
+                if os.path.exists(proj_dir):
+                    try:
+                        for psub in os.listdir(proj_dir):
+                            psub_full = os.path.join(proj_dir, psub)
+                            if os.path.isdir(psub_full):
+                                candidate_paths.append(os.path.join(psub_full, fname))
+                                for sub2 in ["css", "js", "src", "static", "templates"]:
+                                    candidate_paths.append(os.path.join(psub_full, sub2, fname))
+                    except Exception:
+                        pass
+
                 for cp in candidate_paths:
                     if os.path.exists(cp):
                         exists_on_disk = True
