@@ -23,11 +23,7 @@ class AriaAPI {
 
   async sendCommand(commandText, sessionId = 'default-session') {
     if (!this.online) {
-      // Fallback local echo if server is starting or offline
-      return {
-        handled: true,
-        response: `[Offline Simulation] Aria received: "${commandText}". To connect full agent capabilities, please ensure Aria API server is running on ${this.baseUrl}.`
-      };
+      await this.checkHealth();
     }
 
     try {
@@ -41,11 +37,20 @@ class AriaAPI {
           cmd: commandText,
           token: this.authToken,
           session_id: sessionId
-        })
+        }),
+        signal: AbortSignal.timeout(45000)
       });
-      return await res.json();
+      if (res.ok) {
+        this.online = true;
+        return await res.json();
+      }
+      return { handled: false, response: `Aria Server Error (${res.status}): Please check backend logs.` };
     } catch (err) {
-      return { handled: false, response: `Network Error: ${err.message}` };
+      this.online = false;
+      return {
+        handled: false,
+        response: `[Aria Workstation Connecting] Aria backend server is initializing or offline at ${this.baseUrl}. If starting up, please try again in a few seconds.`
+      };
     }
   }
 

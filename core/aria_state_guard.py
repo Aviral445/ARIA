@@ -176,7 +176,7 @@ class StateGuard:
 
         def _on_clean_exit():
             self.save_checkpoint(reason="clean_exit", status="clean_shutdown")
-            _safe_print("\n[StateGuard]: Clean shutdown checkpoint saved. Zero work lost, Bro L!")
+            _safe_print("\n[StateGuard]: Clean shutdown checkpoint saved. Zero work lost, Mentor L!")
 
         def _on_signal(signum, frame):
             _safe_print(f"\n[StateGuard]: Instance interrupt received ({signum}). Saving emergency checkpoint...")

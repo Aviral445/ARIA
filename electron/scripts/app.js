@@ -169,7 +169,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tb = document.getElementById('aria-thinking');
     if (tb) tb.remove();
 
-    const replyText = response.response || response.reply || "I processed your request, Bro!";
+    const replyText = response.response || response.reply || "I processed your request, Mentor L!";
     appendMessage('aria', replyText);
     orb.setStatus(isAgentRunning ? 'listening' : 'idle');
   }

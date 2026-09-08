@@ -1594,11 +1594,12 @@ def trigger_personality_reflection():
 if __name__ == "__main__":
     import uvicorn
     local_ip = get_local_ip()
+    port = int(os.environ.get("ARIA_PORT", 8000))
     print("=" * 50)
-    print("Aria Mobile Companion & Multi-Device API is Ready!")
-    print(f"   • On your PC browser:        http://localhost:8765")
-    print(f"   • On your Phone (same WiFi): http://{local_ip}:8765")
+    print("Aria Cyber Workstation & Multi-Device API is Ready!")
+    print(f"   • On your PC browser:        http://localhost:{port}")
+    print(f"   • On your Phone (same WiFi): http://{local_ip}:{port}")
     print(f"   • Master Admin Login:        User: 'L' | Pass: 'balluboss'")
     print("=" * 50)
-    uvicorn.run(app, host="0.0.0.0", port=8765, log_level="info")
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info")
 

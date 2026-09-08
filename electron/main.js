@@ -8,18 +8,25 @@ let apiProcess = null;
 
 function ensureBackendRunning() {
   const req = http.get('http://127.0.0.1:8000/status', (res) => {
-    // Backend is already alive and running!
+    // Backend is already alive and running on port 8000!
   });
   req.on('error', () => {
     try {
       const pythonExe = process.platform === 'win32' ? 'python' : 'python3';
       const rootDir = path.join(__dirname, '..');
-      const apiScript = path.join(rootDir, 'core', 'aria_api.py');
+      const apiScript = path.join(rootDir, 'aria_api.py');
       apiProcess = spawn(pythonExe, [apiScript], {
         cwd: rootDir,
         windowsHide: true,
-        stdio: 'ignore'
+        stdio: 'pipe',
+        env: Object.assign({}, process.env, { ARIA_PORT: '8000' })
       });
+      if (apiProcess.stdout) {
+        apiProcess.stdout.on('data', (d) => console.log(`[AriaBackend] ${d}`));
+      }
+      if (apiProcess.stderr) {
+        apiProcess.stderr.on('data', (d) => console.error(`[AriaBackend] ${d}`));
+      }
     } catch (e) {
       console.error('Failed to spawn Aria backend:', e);
     }
