@@ -400,21 +400,4 @@ document.addEventListener('DOMContentLoaded', () => {
   // Poll personality every 6 seconds
   setInterval(pollPersonality, 6000);
   pollPersonality();
-
-  // ── 9. CYBER VIDEO BACKGROUND CONTROLLER ─────────────────────────────────
-  const bgVideo = document.getElementById('bgVideo');
-  if (bgVideo) {
-    bgVideo.muted = true;
-    bgVideo.defaultMuted = true;
-    bgVideo.playbackRate = 1.0;
-    const playPromise = bgVideo.play();
-    if (playPromise !== undefined) {
-      playPromise.catch((err) => {
-        console.log('Video background autoplay assist:', err);
-        window.addEventListener('click', () => {
-          bgVideo.play().catch(() => {});
-        }, { once: true });
-      });
-    }
-  }
 });
