@@ -58,7 +58,23 @@ class GaiaVault:
         """
         b = self._get_bucket()
         if not b:
-            return False, "Google Cloud Storage client not available."
+            # Fallback to Google Drive Vault via gaia_google
+            try:
+                from gaia.gaia_google import gaia_google
+                snap_path = os.path.join(LOCAL_SNAPSHOTS_DIR, snapshot_id)
+                if not os.path.exists(snap_path):
+                    return False, f"Local snapshot '{snapshot_id}' does not exist."
+                zip_path = shutil.make_archive(snap_path, 'zip', snap_path)
+                ok, msg = gaia_google.upload_to_drive(zip_path, drive_folder_name="GAIA_Snapshots")
+                try:
+                    os.remove(zip_path)
+                except Exception:
+                    pass
+                if ok:
+                    return True, f"[Drive Vault] {msg}"
+                return False, f"Drive vault upload failed: {msg}"
+            except Exception as e_drv:
+                return False, f"GCS and Drive fallback unavailable: {e_drv}"
 
         snap_path = os.path.join(LOCAL_SNAPSHOTS_DIR, snapshot_id)
         if not os.path.exists(snap_path):

@@ -24,15 +24,28 @@ class AriaMCPServer:
             os.path.join(root_dir, "config", "aria_mcp_config.json"),
             os.path.join(root_dir, "aria_mcp_config.json"),
         ]
+        aria_creds = os.path.join(root_dir, "config", "aria_gaia_google_account", "google_credentials.json")
+        master_creds = os.path.join(root_dir, "config", "google_credentials.json")
+        fallback_creds = os.path.join(root_dir, "google_credentials.json")
+
         for cp in cfg_candidates:
             if os.path.exists(cp):
                 with open(cp, encoding="utf-8") as f:
                     cfg = json.load(f)
+                    configured_path = cfg.get("google_credentials_path", "")
+                    if configured_path and not os.path.isabs(configured_path):
+                        configured_path = os.path.join(root_dir, configured_path)
+                    if not configured_path or not os.path.exists(configured_path):
+                        configured_path = aria_creds if os.path.exists(aria_creds) else master_creds
+                    cfg["google_credentials_path"] = configured_path
                     return cfg
 
-        creds_path = os.path.join(root_dir, "config", "google_credentials.json")
-        if not os.path.exists(creds_path):
-            creds_path = os.path.join(root_dir, "google_credentials.json")
+        if os.path.exists(aria_creds):
+            creds_path = aria_creds
+        elif os.path.exists(master_creds):
+            creds_path = master_creds
+        else:
+            creds_path = fallback_creds
 
         return {
             "google_credentials_path": creds_path,
@@ -133,6 +146,16 @@ class AriaMCPServer:
                 "handler": self._sheets_write
             },
             
+            # YouTube
+            "youtube_search": {
+                "description": "Search for videos and media on YouTube",
+                "parameters": {
+                    "query": {"type": "string", "description": "Search query"},
+                    "max_results": {"type": "integer", "default": 5}
+                },
+                "handler": self._youtube_search
+            },
+            
             # Local Files
             "file_read": {
                 "description": "Read a local file (restricted to allowed paths)",
@@ -210,6 +233,21 @@ class AriaMCPServer:
             f.write(json.dumps(entry) + "\n")
         self.audit_log.append(entry)
     
+    def _get_google_creds(self):
+        """Loads and auto-refreshes Google OAuth credentials."""
+        creds_path = self.config.get("google_credentials_path")
+        if not creds_path or not os.path.exists(creds_path):
+            return None
+        try:
+            from google.oauth2.credentials import Credentials
+            from google.auth.transport.requests import Request
+            creds = Credentials.from_authorized_user_file(creds_path)
+            if creds and creds.expired and creds.refresh_token:
+                creds.refresh(Request())
+            return creds
+        except Exception:
+            return None
+
     # ═══ GOOGLE DRIVE HANDLERS ═══════════════════════════════════════
     
     def _drive_search(self, query):
@@ -219,12 +257,9 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
-            
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/drive.readonly']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('drive', 'v3', credentials=creds)
             results = service.files().list(
@@ -245,30 +280,25 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
+            from googleapiclient.http import MediaIoBaseDownload
             import io
             
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/drive.readonly']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('drive', 'v3', credentials=creds)
-            
-            # Get file metadata
             file_meta = service.files().get(fileId=file_id).execute()
             
-            # Download content
             request = service.files().get_media(fileId=file_id)
             fh = io.BytesIO()
-            from googleapiclient.http import MediaIoBaseDownload
             downloader = MediaIoBaseDownload(fh, request)
             
             done = False
             while not done:
                 status, done = downloader.next_chunk()
             
-            content = fh.getvalue().decode('utf-8')
+            content = fh.getvalue().decode('utf-8', errors='replace')
             
             return {
                 "name": file_meta.get("name"),
@@ -279,7 +309,7 @@ class AriaMCPServer:
         except Exception as e:
             return {"error": str(e)}
     
-    def _drive_create(self, name, content, mime_type):
+    def _drive_create(self, name, content, mime_type="text/plain"):
         """Create new file in Google Drive."""
         if not self._request_permission("drive_create", 
                                        {"name": name, "size": len(content)}):
@@ -287,16 +317,13 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
             from googleapiclient.http import MediaInMemoryUpload
             
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/drive.file']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('drive', 'v3', credentials=creds)
-            
             file_metadata = {'name': name}
             media = MediaInMemoryUpload(
                 content.encode('utf-8'),
@@ -323,12 +350,9 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
-            
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/gmail.readonly']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('gmail', 'v1', credentials=creds)
             results = service.users().messages().list(
@@ -349,13 +373,11 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
             import base64
             
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/gmail.readonly']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('gmail', 'v1', credentials=creds)
             message = service.users().messages().get(
@@ -364,20 +386,23 @@ class AriaMCPServer:
                 format='full'
             ).execute()
             
-            # Parse headers
             headers = {}
-            for h in message['payload'].get('headers', []):
+            for h in message.get('payload', {}).get('headers', []):
                 headers[h['name']] = h['value']
             
-            # Get body
             body = ""
-            if 'parts' in message['payload']:
-                for part in message['payload']['parts']:
-                    if part['mimeType'] == 'text/plain':
+            payload = message.get('payload', {})
+            if 'parts' in payload:
+                for part in payload['parts']:
+                    if part.get('mimeType') == 'text/plain' and 'data' in part.get('body', {}):
                         body = base64.urlsafe_b64decode(
                             part['body']['data']
-                        ).decode('utf-8')
+                        ).decode('utf-8', errors='replace')
                         break
+            elif 'data' in payload.get('body', {}):
+                body = base64.urlsafe_b64decode(
+                    payload['body']['data']
+                ).decode('utf-8', errors='replace')
             
             return {
                 "subject": headers.get('Subject', ''),
@@ -397,23 +422,19 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
             from email.mime.text import MIMEText
             import base64
             
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/gmail.send']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('gmail', 'v1', credentials=creds)
-            
             message = MIMEText(body)
             message['to'] = to
             message['subject'] = subject
             
             raw = base64.urlsafe_b64encode(message.as_bytes()).decode()
-            
             result = service.users().messages().send(
                 userId='me',
                 body={'raw': raw}
@@ -433,16 +454,13 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
             from datetime import datetime, timezone
             
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/calendar.readonly']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('calendar', 'v3', credentials=creds)
-            
             now = datetime.now(timezone.utc).isoformat()
             events_result = service.events().list(
                 calendarId='primary',
@@ -465,15 +483,11 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
-            
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/calendar']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('calendar', 'v3', credentials=creds)
-            
             event = {
                 'summary': summary,
                 'start': {'dateTime': start, 'timeZone': 'UTC'},
@@ -500,15 +514,11 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
-            
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/spreadsheets.readonly']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('sheets', 'v4', credentials=creds)
-            
             result = service.spreadsheets().values().get(
                 spreadsheetId=spreadsheet_id,
                 range=range
@@ -529,15 +539,11 @@ class AriaMCPServer:
         
         try:
             from googleapiclient.discovery import build
-            from google.oauth2.credentials import Credentials
-            
-            creds = Credentials.from_authorized_user_file(
-                self.config["google_credentials_path"],
-                ['https://www.googleapis.com/auth/spreadsheets']
-            )
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
             
             service = build('sheets', 'v4', credentials=creds)
-            
             body = {'values': values}
             result = service.spreadsheets().values().update(
                 spreadsheetId=spreadsheet_id,
@@ -548,6 +554,32 @@ class AriaMCPServer:
             
             return {"updated_cells": result.get('updatedCells')}
             
+        except Exception as e:
+            return {"error": str(e)}
+    
+    # ═══ YOUTUBE HANDLERS ════════════════════════════════════════════
+    
+    def _youtube_search(self, query, max_results=5):
+        """Search YouTube videos."""
+        if not self._request_permission("youtube_search", {"query": query}):
+            return {"error": "Permission denied"}
+        try:
+            from googleapiclient.discovery import build
+            creds = self._get_google_creds()
+            if not creds:
+                return {"error": "Google credentials unavailable"}
+            service = build('youtube', 'v3', credentials=creds)
+            res = service.search().list(q=query, part="snippet", maxResults=max_results, type="video").execute()
+            items = []
+            for item in res.get("items", []):
+                snippet = item.get("snippet", {})
+                items.append({
+                    "title": snippet.get("title"),
+                    "videoId": item.get("id", {}).get("videoId"),
+                    "channelTitle": snippet.get("channelTitle"),
+                    "description": snippet.get("description")
+                })
+            return {"videos": items}
         except Exception as e:
             return {"error": str(e)}
     

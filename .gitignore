@@ -15,6 +15,8 @@ google_credentials.json
 client_secret.json
 *credentials*.json
 *client_secret*.json
+config/aria_gaia_google_account/*.json
+!config/aria_gaia_google_account/profile_info.json
 !config/client_secret.example.json
 
 # Local Machine Auth & User Runtime Configurations

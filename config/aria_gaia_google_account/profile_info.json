@@ -1,0 +1,15 @@
+{
+  "account_email": "aviirrll@gmail.com",
+  "project_name": "Aria-Gaia",
+  "project_id": "aria-gaia",
+  "client_secret_path": "config/aria_gaia_google_account/client_secret.json",
+  "credentials_path": "config/aria_gaia_google_account/google_credentials.json",
+  "billing_status": "disabled_free_tier",
+  "enabled_services": [
+    "Google Drive API",
+    "Gmail API",
+    "Google Calendar API",
+    "Google Sheets API",
+    "YouTube Data API v3"
+  ]
+}
