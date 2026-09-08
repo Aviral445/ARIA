@@ -48,6 +48,68 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // ── 3B. AUTO-HIDE NAVIGATION RAIL ─────────────────────────────────────────
+  const navRail = document.getElementById('navRail') || document.querySelector('.nav-rail');
+  const navPinBtn = document.getElementById('navPinBtn');
+  let isNavPinned = localStorage.getItem('aria_nav_pinned') === 'true';
+
+  function applyPinState() {
+    if (!navRail) return;
+    navRail.classList.toggle('is-pinned', isNavPinned);
+    document.body.classList.toggle('has-pinned-nav', isNavPinned);
+    if (navPinBtn) {
+      navPinBtn.textContent = isNavPinned ? '📌' : '📍';
+      navPinBtn.title = isNavPinned ? 'Unpin Navigation Rail (Auto-Hide)' : 'Pin Navigation Rail';
+    }
+  }
+
+  if (navPinBtn) {
+    navPinBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      isNavPinned = !isNavPinned;
+      localStorage.setItem('aria_nav_pinned', isNavPinned);
+      applyPinState();
+    });
+  }
+
+  applyPinState();
+
+  if (navRail) {
+    let hideTimer = null;
+    document.addEventListener('mousemove', (e) => {
+      if (isNavPinned) return;
+      // Show when mouse approaches within 38px of left edge
+      if (e.clientX <= 38) {
+        clearTimeout(hideTimer);
+        navRail.classList.add('is-hovered');
+      } else if (e.clientX > 105 && !navRail.matches(':hover')) {
+        clearTimeout(hideTimer);
+        hideTimer = setTimeout(() => {
+          if (!isNavPinned) {
+            navRail.classList.remove('is-hovered');
+          }
+        }, 140);
+      }
+    });
+
+    navRail.addEventListener('mouseleave', () => {
+      if (!isNavPinned) {
+        navRail.classList.remove('is-hovered');
+      }
+    });
+
+    // Auto-hide briefly after clicking a tab for immediate responsive feel
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!isNavPinned) {
+          setTimeout(() => {
+            navRail.classList.remove('is-hovered');
+          }, 180);
+        }
+      });
+    });
+  }
+
   // ── 4. AGENT START / STOP CONTROLLER ───────────────────────────────────────
   const toggleAgentBtn = document.getElementById('toggleAgentBtn');
   const statusIndicator = document.getElementById('statusIndicator');

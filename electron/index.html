@@ -9,9 +9,10 @@
 </head>
 <body class="theme-obsidian">
 
-  <!-- ── TIER 1: SLIM NAV-RAIL ── -->
-  <nav class="nav-rail">
+  <!-- ── TIER 1: SLIM NAV-RAIL (AUTO-HIDE) ── -->
+  <nav class="nav-rail" id="navRail">
     <div class="brand-badge" title="Aria AI Cockpit">⚡</div>
+    <button class="nav-pin-btn" id="navPinBtn" title="Toggle Pin / Auto-Hide Navigation">📍</button>
     
     <div class="nav-items">
       <button class="nav-btn active" data-tab="home" title="Executive Dashboard">
@@ -74,6 +75,7 @@
       </select>
     </div>
   </nav>
+  <div class="nav-rail-edge-hint" title="Hover left edge to open navigation rail"></div>
 
   <!-- ── TIER 2: COMMAND & TELEMETRY SIDEBAR ── -->
   <aside class="sidebar">
