@@ -120,9 +120,13 @@ class NeuralOrb {
     ctx.stroke();
     ctx.shadowBlur = 0;
 
-    // 5. Singularity Core (Black Hole Void)
+    // 5. Singularity Core (Deep Relativistic Void with Lensing Gradient)
     const coreR = r * 0.74;
-    ctx.fillStyle = '#020306';
+    const coreGrad = ctx.createRadialGradient(cx, cy, 0, cx, cy, coreR);
+    coreGrad.addColorStop(0, 'rgba(3, 4, 8, 0.88)');
+    coreGrad.addColorStop(0.75, 'rgba(4, 7, 15, 0.80)');
+    coreGrad.addColorStop(1, 'rgba(6, 12, 24, 0.62)');
+    ctx.fillStyle = coreGrad;
     ctx.beginPath();
     ctx.arc(cx, cy, coreR, 0, Math.PI * 2);
     ctx.fill();
