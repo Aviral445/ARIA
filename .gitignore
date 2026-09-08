@@ -108,6 +108,8 @@ sandbox/scratch/
 sandbox_notes/
 *.mp3
 *.wav
+*.mp4
+electron/assets/*.mp4
 snapshots/
 diffs/
 scratch/
