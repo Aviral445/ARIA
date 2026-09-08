@@ -37,10 +37,8 @@ def launch_agent(extra_args):
 
 
 def launch_gui(extra_args):
-    """Launches the Pygame Desktop GUI."""
-    from core.aria_gui import main
-    sys.argv = ["aria_gui.py"] + extra_args
-    main()
+    """Launches the Aria Desktop Cyber Workstation (Electron)."""
+    launch_electron(extra_args)
 
 
 def launch_api(extra_args):
@@ -69,6 +67,12 @@ def launch_test(extra_args):
     print("[TEST] Running Aria & GAIA Test Suite...")
     cmd = [sys.executable, "-m", "pytest"] + (extra_args if extra_args else ["tests", "-v"])
     res = subprocess.run(cmd)
+def launch_electron(extra_args):
+    """Launches the Electron Desktop Workstation."""
+    electron_dir = os.path.join(ROOT_DIR, "electron")
+    print(f"🚀 Launching Aria Cyber Electron Workstation from {electron_dir}...")
+    cmd = ["npm", "start"] + extra_args
+    res = subprocess.run(cmd, cwd=electron_dir, shell=True if os.name == "nt" else False)
     sys.exit(res.returncode)
 
 
@@ -81,7 +85,7 @@ Usage: python run.py <command> [options]
 
 Commands:
   agent            Launch Aria interactive voice/text CLI (default)
-  gui              Launch Aria Pygame Desktop Companion
+  gui, electron    Launch Aria Desktop Cyber Workstation (Electron)
   api              Launch FastAPI mobile & web companion server
   gaia             Launch GAIA Supervisor & Architect CLI
                    Examples:
@@ -107,6 +111,8 @@ def main():
         launch_agent(extra_args)
     elif cmd in ("gui", "app", "desktop"):
         launch_gui(extra_args)
+    elif cmd in ("electron", "cyber", "workstation"):
+        launch_electron(extra_args)
     elif cmd in ("api", "server", "web"):
         launch_api(extra_args)
     elif cmd == "gaia":

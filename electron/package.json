@@ -1,0 +1,15 @@
+{
+  "name": "aria-desktop-workstation",
+  "version": "3.5.0",
+  "description": "Next-Generation Cyber Desktop AI Workstation for Aria",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": ["aria", "ai", "assistant", "workstation", "cyberpunk", "electron"],
+  "author": "Aria AI Team",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^34.0.0"
+  }
+}

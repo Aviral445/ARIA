@@ -42,7 +42,7 @@
 ```mermaid
 flowchart TB
     subgraph Interfaces ["💻 Client & Interaction Interfaces"]
-        GUI["🖥️ Desktop Cyber GUI (CustomTkinter + Waveform)"]
+        GUI["🖥️ Desktop Cyber Workstation (Electron + Canvas Waveform)"]
         Voice["🎙️ Voice Loop (Whisper STT + Piper Neural TTS)"]
         WebCompanion["📱 Mobile Web Companion (FastAPI + WebSockets)"]
         ThoughtCLI["💭 Inner Mind CLI & GAIA CLI"]
@@ -109,10 +109,15 @@ c:\MyAgent\
 │   ├── google_credentials.json  # OAuth credentials
 │   └── ...
 │
+├── electron/                    # Desktop Workstation GUI (Electron + HTML/CSS/JS)
+│   ├── main.js                  # Electron Window Host & Process Manager
+│   ├── index.html               # 12 Modular Cyber Dashboards
+│   ├── styles/                  # Custom Theme Engine (Obsidian, Purple, Cyan, etc.)
+│   └── scripts/                 # Canvas Neural Core Orb & API Client
+│
 ├── core/                        # IMMUTABLE: System Runners & Base Cognitive Logic
 │   ├── agent.py                 # Core Voice/Text CLI Agent Runner
 │   ├── aria_api.py              # FastAPI Mobile & Web Companion Server
-│   ├── aria_gui.py              # Desktop Workstation GUI (CustomTkinter)
 │   ├── aria_system_tray.py      # System Tray Icon Manager
 │   ├── run.py                   # Master Unified Multi-Subsystem Launcher
 │   ├── agent_core.py            # Agent Orchestration Loop & Tool Dispatch
@@ -379,10 +384,12 @@ The lightweight hands-free voice loop with neural speech recognition and instant
 python agent.py
 ```
 
-### Mode 2: 🖥️ Desktop Cyber GUI Dashboard
-Full dark-mode desktop cockpit with animated waveform, live event feed, memory cards, and quick controls:
+### Mode 2: 🖥️ Desktop Cyber Workstation (Electron)
+Full dark-mode desktop cockpit with animated 60 FPS neural core orb, live event feed, 12 modular dashboards, and quick controls:
 ```powershell
-python aria_gui.py
+python run.py gui
+# or:
+python run.py electron
 ```
 
 ### Mode 3: 👩‍🏫 Big Sister GAIA Inspector CLI

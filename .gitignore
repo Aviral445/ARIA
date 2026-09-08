@@ -110,3 +110,9 @@ snapshots/
 diffs/
 scratch/
 
+# Node & Electron dependencies
+node_modules/
+electron/node_modules/
+npm-debug.log*
+yarn-debug.log*
+

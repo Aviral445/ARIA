@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aria AI — Autonomous Desktop Cyber Workstation</title>
+  <link rel="stylesheet" href="styles/themes.css">
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body class="theme-obsidian">
+
+  <!-- ── TIER 1: SLIM NAV-RAIL ── -->
+  <nav class="nav-rail">
+    <div class="brand-badge" title="Aria AI Cockpit">⚡</div>
+    
+    <div class="nav-items">
+      <button class="nav-btn active" data-tab="home" title="Executive Dashboard">
+        <span class="nav-icon">📊</span>
+        <span class="nav-label">Home</span>
+      </button>
+      <button class="nav-btn" data-tab="chat" title="Pro Chat Studio">
+        <span class="nav-icon">💬</span>
+        <span class="nav-label">Chat</span>
+      </button>
+      <button class="nav-btn" data-tab="phone" title="Android Wireless ADB">
+        <span class="nav-icon">📱</span>
+        <span class="nav-label">Phone</span>
+      </button>
+      <button class="nav-btn" data-tab="vision" title="Screen Vision Lab">
+        <span class="nav-icon">👁️</span>
+        <span class="nav-label">Vision</span>
+      </button>
+      <button class="nav-btn" data-tab="agents" title="Autonomous Agent Swarm">
+        <span class="nav-icon">🤖</span>
+        <span class="nav-label">Swarm</span>
+      </button>
+      <button class="nav-btn" data-tab="nvidia" title="NVIDIA NIM 40 RPM Hub">
+        <span class="nav-icon">⚡</span>
+        <span class="nav-label">NIM</span>
+      </button>
+      <button class="nav-btn" data-tab="gaia" title="Big Sister GAIA Supervisor">
+        <span class="nav-icon">👩‍🏫</span>
+        <span class="nav-label">GAIA</span>
+      </button>
+      <button class="nav-btn" data-tab="system" title="Windows System Automation">
+        <span class="nav-icon">⚙️</span>
+        <span class="nav-label">System</span>
+      </button>
+      <button class="nav-btn" data-tab="memory" title="Long-Term Memory Vault">
+        <span class="nav-icon">🧠</span>
+        <span class="nav-label">Memory</span>
+      </button>
+      <button class="nav-btn" data-tab="browser" title="Chrome Studio">
+        <span class="nav-icon">🌐</span>
+        <span class="nav-label">Web</span>
+      </button>
+      <button class="nav-btn" data-tab="analytics" title="Telemetry & Metrics">
+        <span class="nav-icon">📈</span>
+        <span class="nav-label">Metrics</span>
+      </button>
+      <button class="nav-btn" data-tab="settings" title="Workstation Settings">
+        <span class="nav-icon">🛠️</span>
+        <span class="nav-label">Config</span>
+      </button>
+    </div>
+
+    <div class="nav-footer">
+      <select id="themeSelect" class="theme-dropdown" title="Select Theme Palette">
+        <option value="theme-obsidian">Obsidian</option>
+        <option value="theme-purple">Cyber Purple</option>
+        <option value="theme-cyan">Neon Cyan</option>
+        <option value="theme-emerald">Emerald</option>
+        <option value="theme-amber">Amber</option>
+      </select>
+    </div>
+  </nav>
+
+  <!-- ── TIER 2: COMMAND & TELEMETRY SIDEBAR ── -->
+  <aside class="sidebar">
+    <!-- Relativistic Canvas Neural Core Orb -->
+    <div class="orb-card">
+      <canvas id="orbCanvas"></canvas>
+      <div class="orb-status-row">
+        <div class="status-indicator" id="statusIndicator">
+          <div class="status-dot" id="statusDot"></div>
+          <span id="statusText">STANDBY // READY</span>
+        </div>
+        <span class="voice-level-meter">48 kHz</span>
+      </div>
+      <button class="agent-btn" id="toggleAgentBtn">
+        <span>▶</span> START ARIA AGENT
+      </button>
+    </div>
+
+    <!-- Live Telemetry Card -->
+    <div class="telemetry-card">
+      <div class="card-label">
+        <span>Hardware & Telemetry</span>
+        <span id="srvStateLbl" style="color:var(--success);font-weight:bold;">● ONLINE</span>
+      </div>
+      <div class="telemetry-grid">
+        <div class="telemetry-item">
+          <div class="telemetry-val" id="cpuVal">14.2%</div>
+          <div class="telemetry-name">CPU Load</div>
+        </div>
+        <div class="telemetry-item">
+          <div class="telemetry-val" id="ramVal">41.8%</div>
+          <div class="telemetry-name">RAM Usage</div>
+        </div>
+        <div class="telemetry-item">
+          <div class="telemetry-val" id="rpmVal">0 / 40</div>
+          <div class="telemetry-name">RPM Meter</div>
+        </div>
+        <div class="telemetry-item">
+          <div class="telemetry-val" style="color:var(--cyan);">0.8ms</div>
+          <div class="telemetry-name">Core Latency</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile / Multi-Device Companion Card -->
+    <div class="companion-card">
+      <div class="card-label">Mobile Companion Server</div>
+      <div style="font-size:10.5px;color:var(--text-muted);line-height:1.4;">
+        Connect phone or tablet over local Wi-Fi:
+      </div>
+      <div class="companion-row">
+        <button class="btn-sm" id="copyCompanionBtn" style="flex:1;">Copy URL</button>
+        <button class="btn-sm" id="openCompanionBtn" style="flex:1;">Open Web</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── TIER 3: MODULAR WORKSPACE (12 DASHBOARDS) ── -->
+  <main class="workspace">
+
+    <!-- 1. EXECUTIVE HOME DASHBOARD -->
+    <section class="dashboard-page active" id="page-home">
+      <header class="page-header">
+        <div>
+          <div class="page-title">EXECUTIVE DASHBOARD</div>
+          <div class="page-subtitle">Autonomous Operations & Cyber Cockpit</div>
+        </div>
+        <div class="page-badge">⚡ NVIDIA NIM 40 RPM + GEMINI 2.5 FLASH</div>
+      </header>
+
+      <div class="page-content">
+        <div class="hero-card">
+          <div class="hero-title">Welcome back, Aviral!</div>
+          <div class="hero-subtitle">
+            Aria is operating at full frontier capability with NVIDIA NIM DeepSeek-R1, Screen Vision, and Windows OS Control.
+          </div>
+          <div class="hero-tags">
+            <span class="hero-tag" style="color:var(--nvidia);">● NVIDIA NIM 70B Active</span>
+            <span class="hero-tag" style="color:var(--cyan);">● Screen Vision Ready</span>
+            <span class="hero-tag" style="color:var(--violet);">● ChromaDB Memory Synced</span>
+            <span class="hero-tag" style="color:var(--amber);">● 40 RPM Guard Paced</span>
+          </div>
+        </div>
+
+        <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.6px;">
+          🚀 Quick Action Launchpad
+        </div>
+
+        <div class="grid-3">
+          <div class="action-card" data-jump-tab="chat">
+            <div class="action-icon">💬</div>
+            <div class="action-title">Pro Chat Studio</div>
+            <div class="action-desc">Direct conversation with code rendering, reasoning, and context.</div>
+          </div>
+          <div class="action-card" data-jump-tab="vision">
+            <div class="action-icon">👁️</div>
+            <div class="action-title">Screen Vision Lab</div>
+            <div class="action-desc">Autonomous multi-monitor inspection and visual UI element clicking.</div>
+          </div>
+          <div class="action-card" data-jump-tab="phone">
+            <div class="action-icon">📱</div>
+            <div class="action-title">Android Phone ADB</div>
+            <div class="action-desc">Control your smartphone wirelessly, grab screens, and launch apps.</div>
+          </div>
+          <div class="action-card" data-jump-tab="agents">
+            <div class="action-icon">🤖</div>
+            <div class="action-title">Agent Swarm</div>
+            <div class="action-desc">Dispatch specialized subagents for parallel research and coding.</div>
+          </div>
+          <div class="action-card" data-jump-tab="gaia">
+            <div class="action-icon">👩‍🏫</div>
+            <div class="action-title">Big Sister GAIA</div>
+            <div class="action-desc">Inspect architectural evolution, safety sandbox, and RL score.</div>
+          </div>
+          <div class="action-card" data-jump-tab="memory">
+            <div class="action-icon">🧠</div>
+            <div class="action-title">Memory Vault</div>
+            <div class="action-desc">Explore ChromaDB vector embeddings and encrypted user notes.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. PRO CHAT STUDIO -->
+    <section class="dashboard-page" id="page-chat">
+      <header class="page-header">
+        <div>
+          <div class="page-title">PRO CHAT STUDIO</div>
+          <div class="page-subtitle">Frontier Reasoning & Cognitive Synthesis</div>
+        </div>
+        <div class="page-badge">MODEL: NVIDIA LLAMA-3.1-70B</div>
+      </header>
+
+      <div class="chat-container">
+        <div class="chat-stream" id="chatStream">
+          <div class="chat-bubble aria">
+            <div class="bubble-meta aria">
+              <span>⚡ ARIA 3.5</span>
+              <span>Online</span>
+            </div>
+            Hello Bro! I am Aria, your autonomous cyber workstation companion. My cognitive models, screen vision, Android wireless ADB, and memory vault are online. What are we building today?
+          </div>
+        </div>
+
+        <div class="chat-input-bar">
+          <textarea class="chat-input" id="chatInput" placeholder="Message Aria or type a command... (Press Enter to send)"></textarea>
+          <button class="chat-send-btn" id="chatSendBtn">
+            <span>Send</span> ⚡
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. ANDROID PHONE COMPANION -->
+    <section class="dashboard-page" id="page-phone">
+      <header class="page-header">
+        <div>
+          <div class="page-title">ANDROID WIRELESS ADB</div>
+          <div class="page-subtitle">Mobile Phone Automation & Screen Mirroring</div>
+        </div>
+        <div class="page-badge">PORT 5555</div>
+      </header>
+      <div class="page-content">
+        <div class="setting-card">
+          <div class="hero-title" style="font-size:15px;">Device Pairing Status</div>
+          <div style="font-size:12px;color:var(--text-muted);margin:6px 0 14px;">
+            Wireless ADB allows Aria to automate phone tasks, capture live screenshots, and launch mobile apps.
+          </div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-sm" style="padding:10px 16px;">Scan Wireless ADB</button>
+            <button class="btn-sm" style="padding:10px 16px;">Capture Mobile Screen</button>
+            <button class="btn-sm" style="padding:10px 16px;">Open WhatsApp</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. SCREEN VISION LAB -->
+    <section class="dashboard-page" id="page-vision">
+      <header class="page-header">
+        <div>
+          <div class="page-title">SCREEN VISION LAB</div>
+          <div class="page-subtitle">Autonomous Visual Grounding & Desktop Interaction</div>
+        </div>
+        <div class="page-badge">NVIDIA VISION REASONING</div>
+      </header>
+      <div class="page-content">
+        <div class="setting-card">
+          <div class="hero-title" style="font-size:15px;">Desktop Vision Inspector</div>
+          <div style="font-size:12px;color:var(--text-muted);margin:6px 0 14px;">
+            Aria captures your desktop, analyzes UI elements with NVIDIA NIM Vision models, and clicks controls autonomously.
+          </div>
+          <button class="btn-sm" style="padding:10px 18px;">Inspect Current Desktop</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. AGENT SWARM -->
+    <section class="dashboard-page" id="page-agents">
+      <header class="page-header">
+        <div>
+          <div class="page-title">AUTONOMOUS AGENT SWARM</div>
+          <div class="page-subtitle">Multi-Agent Dispatch & Parallel Task Execution</div>
+        </div>
+        <div class="page-badge">SWARM READY</div>
+      </header>
+      <div class="page-content">
+        <div class="grid-3">
+          <div class="action-card">
+            <div class="action-icon">💻</div>
+            <div class="action-title">Code Architect Agent</div>
+            <div class="action-desc">Autonomous multi-file refactoring and feature scaffolding.</div>
+          </div>
+          <div class="action-card">
+            <div class="action-icon">🔍</div>
+            <div class="action-title">Deep Research Agent</div>
+            <div class="action-desc">Autonomous web scraping, paper analysis, and report generation.</div>
+          </div>
+          <div class="action-card">
+            <div class="action-icon">🛡️</div>
+            <div class="action-title">Security & Safety Agent</div>
+            <div class="action-desc">Enforces sandbox isolation, HITL risk gates, and credential safety.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. NVIDIA NIM 40 RPM HUB -->
+    <section class="dashboard-page" id="page-nvidia">
+      <header class="page-header">
+        <div>
+          <div class="page-title">NVIDIA NIM 40 RPM HUB</div>
+          <div class="page-subtitle">Frontier Acceleration & Rate-Limit Pace Telemetry</div>
+        </div>
+        <div class="page-badge">40 REQ / MIN</div>
+      </header>
+      <div class="page-content">
+        <div class="hero-card">
+          <div class="hero-title" id="rpmLargeVal">0 Requests Active (40 RPM Cap)</div>
+          <div class="hero-subtitle">
+            Aria's intelligent token bucket prevents 429 rate limit exceptions by smoothing out bursts across DeepSeek-R1 and LLaMA-3.1-70B.
+          </div>
+          <div style="background:var(--bg-deep);border-radius:8px;height:12px;overflow:hidden;border:1px solid var(--border);">
+            <div style="background:var(--nvidia);width:15%;height:100%;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. GAIA SUPERVISOR -->
+    <section class="dashboard-page" id="page-gaia">
+      <header class="page-header">
+        <div>
+          <div class="page-title">BIG SISTER GAIA SUPERVISOR</div>
+          <div class="page-subtitle">Sisterly RL Supervision & Reality-Check Governance</div>
+        </div>
+        <div class="page-badge">RL VERDICT: APPROVED</div>
+      </header>
+      <div class="page-content">
+        <div class="hero-card">
+          <div class="hero-title">Sisterly Reinforcement Learning Score: 98.4%</div>
+          <div class="hero-subtitle">
+            GAIA protects Aria from hallucination loops, acting behavior, and enforces clean file structuring and sandbox isolation.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. SYSTEM AUTOMATION -->
+    <section class="dashboard-page" id="page-system">
+      <header class="page-header">
+        <div>
+          <div class="page-title">WINDOWS SYSTEM AUTOMATION</div>
+          <div class="page-subtitle">Desktop Process Management & Hardware Controls</div>
+        </div>
+        <div class="page-badge">WIN32 API</div>
+      </header>
+      <div class="page-content">
+        <div class="setting-card">
+          <div class="hero-title" style="font-size:15px;">Quick System Controls</div>
+          <div style="display:flex;gap:10px;margin-top:14px;">
+            <button class="btn-sm">Mute / Unmute Audio</button>
+            <button class="btn-sm">Open File Explorer</button>
+            <button class="btn-sm">Lock Workstation</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9. MEMORY VAULT -->
+    <section class="dashboard-page" id="page-memory">
+      <header class="page-header">
+        <div>
+          <div class="page-title">LONG-TERM MEMORY VAULT</div>
+          <div class="page-subtitle">ChromaDB Vector Embeddings & Encrypted Profiles</div>
+        </div>
+        <div class="page-badge">AES-256 VAULT</div>
+      </header>
+      <div class="page-content">
+        <div class="setting-card">
+          <div class="hero-title" style="font-size:15px;">Semantic Memory Search</div>
+          <div style="display:flex;gap:10px;margin:12px 0;">
+            <input class="form-input" style="flex:1;" placeholder="Search memories, facts, preferences...">
+            <button class="btn-sm">Query Vector DB</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10. CHROME STUDIO -->
+    <section class="dashboard-page" id="page-browser">
+      <header class="page-header">
+        <div>
+          <div class="page-title">CHROME STUDIO</div>
+          <div class="page-subtitle">Headless & Visual Web Automation Engine</div>
+        </div>
+        <div class="page-badge">CHROME CDP</div>
+      </header>
+      <div class="page-content">
+        <div class="setting-card">
+          <div class="hero-title" style="font-size:15px;">Web Navigator & Scraper</div>
+          <div style="display:flex;gap:10px;margin:12px 0;">
+            <input class="form-input" style="flex:1;" placeholder="https://example.com">
+            <button class="btn-sm">Navigate</button>
+            <button class="btn-sm">Extract Content</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11. ANALYTICS & METRICS -->
+    <section class="dashboard-page" id="page-analytics">
+      <header class="page-header">
+        <div>
+          <div class="page-title">TELEMETRY & METRICS</div>
+          <div class="page-subtitle">System Performance & Cognitive Latencies</div>
+        </div>
+        <div class="page-badge">REAL-TIME TELEMETRY</div>
+      </header>
+      <div class="page-content">
+        <div class="grid-3">
+          <div class="setting-card">
+            <div class="action-title">Average Latency</div>
+            <div class="hero-title" style="color:var(--cyan);margin-top:8px;">240ms</div>
+          </div>
+          <div class="setting-card">
+            <div class="action-title">Tokens Processed</div>
+            <div class="hero-title" style="color:var(--violet);margin-top:8px;">14,280</div>
+          </div>
+          <div class="setting-card">
+            <div class="action-title">Session Health</div>
+            <div class="hero-title" style="color:var(--success);margin-top:8px;">100%</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12. WORKSTATION SETTINGS -->
+    <section class="dashboard-page" id="page-settings">
+      <header class="page-header">
+        <div>
+          <div class="page-title">WORKSTATION SETTINGS</div>
+          <div class="page-subtitle">API Keys, Voices, and Cognitive Model Priorities</div>
+        </div>
+        <div class="page-badge">CONFIG V3.5</div>
+      </header>
+      <div class="page-content">
+        <div class="setting-card">
+          <div class="hero-title" style="font-size:15px;margin-bottom:14px;">Cognitive Engines & API Configuration</div>
+          <div class="form-group">
+            <label class="form-label">Active Cognitive Brain</label>
+            <input class="form-input" value="NVIDIA NIM (DeepSeek-R1 / LLaMA-3.1-70B)" readonly>
+          </div>
+          <div class="form-group">
+            <label class="form-label">FastAPI Companion Port</label>
+            <input class="form-input" value="8000" readonly>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── APPLICATION SCRIPTS (Vanilla JS) ── -->
+  <script src="scripts/orb.js"></script>
+  <script src="scripts/api.js"></script>
+  <script src="scripts/app.js"></script>
+</body>
+</html>

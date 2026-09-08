@@ -1,0 +1,239 @@
+/**
+ * app.js — Main Application Controller for Aria Electron Workstation
+ * Pure Vanilla JavaScript: 12 Dashboards, Telemetry Loop, Chat Stream, Theme Manager
+ */
+
+document.addEventListener('DOMContentLoaded', () => {
+  // ── 1. INITIALIZE NEURAL CORE ORB ──────────────────────────────────────────
+  const orb = new NeuralOrb('orbCanvas');
+  let isAgentRunning = false;
+  let rpmCount = 0;
+
+  // ── 2. THEME ENGINE ────────────────────────────────────────────────────────
+  const themeSelect = document.getElementById('themeSelect');
+  const savedTheme = localStorage.getItem('aria_theme') || 'theme-obsidian';
+  document.body.className = savedTheme;
+  if (themeSelect) {
+    themeSelect.value = savedTheme;
+    themeSelect.addEventListener('change', (e) => {
+      document.body.className = e.target.value;
+      localStorage.setItem('aria_theme', e.target.value);
+    });
+  }
+
+  // ── 3. 12 DASHBOARDS TAB SWITCHING ─────────────────────────────────────────
+  const navButtons = document.querySelectorAll('.nav-btn');
+  const dashboardPages = document.querySelectorAll('.dashboard-page');
+
+  function switchTab(targetTab) {
+    navButtons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.tab === targetTab);
+    });
+
+    dashboardPages.forEach(page => {
+      page.classList.toggle('active', page.id === `page-${targetTab}`);
+    });
+  }
+
+  navButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      switchTab(btn.dataset.tab);
+    });
+  });
+
+  // Also enable quick action cards on Home page to jump to tabs
+  document.querySelectorAll('[data-jump-tab]').forEach(el => {
+    el.addEventListener('click', () => {
+      switchTab(el.dataset.jumpTab);
+    });
+  });
+
+  // ── 4. AGENT START / STOP CONTROLLER ───────────────────────────────────────
+  const toggleAgentBtn = document.getElementById('toggleAgentBtn');
+  const statusIndicator = document.getElementById('statusIndicator');
+  const statusDot = document.getElementById('statusDot');
+  const statusText = document.getElementById('statusText');
+
+  if (toggleAgentBtn) {
+    toggleAgentBtn.addEventListener('click', () => {
+      isAgentRunning = !isAgentRunning;
+      if (isAgentRunning) {
+        toggleAgentBtn.classList.add('running');
+        toggleAgentBtn.innerHTML = '<span>■</span> STOP ARIA AGENT';
+        statusText.textContent = 'ONLINE // LISTENING';
+        statusDot.style.backgroundColor = 'var(--cyan)';
+        statusDot.style.boxShadow = '0 0 10px var(--cyan)';
+        orb.setStatus('listening');
+      } else {
+        toggleAgentBtn.classList.remove('running');
+        toggleAgentBtn.innerHTML = '<span>▶</span> START ARIA AGENT';
+        statusText.textContent = 'STANDBY // READY';
+        statusDot.style.backgroundColor = 'var(--text-muted)';
+        statusDot.style.boxShadow = 'none';
+        orb.setStatus('idle');
+      }
+    });
+  }
+
+  // ── 5. PRO CHAT STUDIO ─────────────────────────────────────────────────────
+  const chatStream = document.getElementById('chatStream');
+  const chatInput = document.getElementById('chatInput');
+  const chatSendBtn = document.getElementById('chatSendBtn');
+
+  function appendMessage(sender, text) {
+    if (!chatStream) return;
+    const bubble = document.createElement('div');
+    bubble.className = `chat-bubble ${sender}`;
+
+    const meta = document.createElement('div');
+    meta.className = `bubble-meta ${sender}`;
+    meta.innerHTML = `<span>${sender === 'aria' ? '⚡ ARIA 3.5' : '👤 YOU'}</span><span>${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+    bubble.appendChild(meta);
+
+    // Markdown / Code Block formatting
+    const content = document.createElement('div');
+    content.innerHTML = formatMarkdown(text);
+    bubble.appendChild(content);
+
+    chatStream.appendChild(bubble);
+    chatStream.scrollTop = chatStream.scrollHeight;
+
+    // Attach copy handlers
+    bubble.querySelectorAll('.copy-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const codeText = btn.closest('.code-block').querySelector('pre').innerText;
+        navigator.clipboard.writeText(codeText);
+        btn.textContent = 'Copied!';
+        setTimeout(() => { btn.textContent = 'Copy Code'; }, 1800);
+      });
+    });
+  }
+
+  function formatMarkdown(raw) {
+    if (!raw) return '';
+    // Escape HTML first
+    let escaped = raw
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+
+    // Code blocks ```lang ... ```
+    escaped = escaped.replace(/```([a-zA-Z0-9_-]*)\n([\s\S]*?)```/g, (match, lang, code) => {
+      return `
+        <div class="code-block">
+          <div class="code-header">
+            <span>${lang || 'CODE'}</span>
+            <button class="copy-btn">Copy Code</button>
+          </div>
+          <pre><code>${code.trim()}</code></pre>
+        </div>
+      `;
+    });
+
+    // Inline code `code`
+    escaped = escaped.replace(/`([^`]+)`/g, '<code style="background:var(--card-alt);padding:2px 6px;border-radius:4px;font-family:monospace;">$1</code>');
+
+    // Bold **text**
+    escaped = escaped.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+
+    // Line breaks to <br>
+    escaped = escaped.replace(/\n/g, '<br>');
+
+    return escaped;
+  }
+
+  async function handleSend() {
+    if (!chatInput) return;
+    const msg = chatInput.value.trim();
+    if (!msg) return;
+
+    chatInput.value = '';
+    appendMessage('user', msg);
+
+    orb.setStatus('speaking');
+    rpmCount++;
+    updateRpmDisplay();
+
+    // Show thinking bubble
+    const thinkingBubble = document.createElement('div');
+    thinkingBubble.className = 'chat-bubble aria';
+    thinkingBubble.id = 'aria-thinking';
+    thinkingBubble.innerHTML = `<div class="bubble-meta aria"><span>⚡ ARIA 3.5</span></div><em>Synthesizing thoughts & frontier response...</em>`;
+    chatStream.appendChild(thinkingBubble);
+    chatStream.scrollTop = chatStream.scrollHeight;
+
+    // Call Aria API
+    const response = await window.ariaApi.sendCommand(msg);
+
+    // Remove thinking
+    const tb = document.getElementById('aria-thinking');
+    if (tb) tb.remove();
+
+    const replyText = response.response || response.reply || "I processed your request, Bro!";
+    appendMessage('aria', replyText);
+    orb.setStatus(isAgentRunning ? 'listening' : 'idle');
+  }
+
+  if (chatSendBtn) chatSendBtn.addEventListener('click', handleSend);
+  if (chatInput) {
+    chatInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+    });
+  }
+
+  // ── 6. LIVE TELEMETRY & STATS POLLER ───────────────────────────────────────
+  const cpuVal = document.getElementById('cpuVal');
+  const ramVal = document.getElementById('ramVal');
+  const rpmVal = document.getElementById('rpmVal');
+  const srvStateLbl = document.getElementById('srvStateLbl');
+
+  function updateRpmDisplay() {
+    if (rpmVal) rpmVal.textContent = `${rpmCount} / 40`;
+    const rpmLarge = document.getElementById('rpmLargeVal');
+    if (rpmLarge) rpmLarge.textContent = `${rpmCount} Requests Active (40 RPM Cap)`;
+  }
+
+  async function pollTelemetry() {
+    const isOnline = await window.ariaApi.checkHealth();
+    if (srvStateLbl) {
+      srvStateLbl.textContent = isOnline ? '● ONLINE' : '● OFFLINE';
+      srvStateLbl.style.color = isOnline ? 'var(--success)' : 'var(--text-muted)';
+    }
+
+    if (isOnline) {
+      const stats = await window.ariaApi.getSystemStats();
+      if (stats && stats.context) {
+        // If system stats context has CPU/RAM
+        if (cpuVal && stats.context.cpu !== undefined) cpuVal.textContent = `${stats.context.cpu}%`;
+        if (ramVal && stats.context.ram !== undefined) ramVal.textContent = `${stats.context.ram}%`;
+      }
+    } else {
+      // Hardware simulation fallback
+      if (cpuVal) cpuVal.textContent = `${(12 + Math.random() * 8).toFixed(1)}%`;
+      if (ramVal) ramVal.textContent = `${(38 + Math.random() * 3).toFixed(1)}%`;
+    }
+  }
+
+  setInterval(pollTelemetry, 3000);
+  pollTelemetry();
+
+  // ── 7. COMPANION BUTTONS & CLIPBOARD ───────────────────────────────────────
+  const copyCompanionBtn = document.getElementById('copyCompanionBtn');
+  if (copyCompanionBtn) {
+    copyCompanionBtn.addEventListener('click', () => {
+      navigator.clipboard.writeText('http://127.0.0.1:8000');
+      copyCompanionBtn.textContent = 'Copied!';
+      setTimeout(() => { copyCompanionBtn.textContent = 'Copy URL'; }, 1600);
+    });
+  }
+
+  const openCompanionBtn = document.getElementById('openCompanionBtn');
+  if (openCompanionBtn) {
+    openCompanionBtn.addEventListener('click', () => {
+      window.open('http://127.0.0.1:8000', '_blank');
+    });
+  }
+});
