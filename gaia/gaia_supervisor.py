@@ -106,10 +106,17 @@ class GaiaSupervisor:
 
         if exec_res.success:
             rl_game.record_independent_success(f"Deployed '{target_filename}' cleanly.")
+            sister_praise = "Great job, Aria! Your new code passed all tests independently. That's plus two points!"
+            try:
+                from gaia.gaia_personality import gaia_personality
+                gaia_personality.record_sister_interaction("aria_solo_success")
+                sister_praise = gaia_personality.generate_sisterly_response("praise_solo")
+            except Exception:
+                pass
             success_msg = f"✨ Big Sister Approval: '{target_filename}' tested successfully! (Duration: {exec_res.duration_sec}s) [+2 pts]"
             bus.emit("GAIA", "SUCCESS", success_msg, exec_res.to_dict())
             if self.enable_voice:
-                gaia_speak("Great job, Aria! Your new code passed all tests independently. That's plus two points!")
+                gaia_speak(sister_praise)
             self._record_diff_if_any(target_filename, idea_desc, "Tested and approved successfully.")
             return True, success_msg
 
@@ -184,6 +191,11 @@ class GaiaSupervisor:
                     gaia_speak(explanation)
                     aria_speak("Thank you, big sis! You're the best! I understand now.")
                 self.healer.record_learning(solver="GAIA_ASSISTED", script=target_filename, error=short_err, lesson=explanation)
+                try:
+                    from gaia.gaia_personality import gaia_personality
+                    gaia_personality.record_sister_interaction("healed_together", explanation)
+                except Exception:
+                    pass
                 self._record_diff_if_any(target_filename, idea_desc, f"GAIA assisted: {explanation}")
                 return True, healed_msg
             else:

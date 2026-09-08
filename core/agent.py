@@ -1996,6 +1996,11 @@ def chat_with_ai(user_input: str, recent: list, profile: dict,
         try:
             from gaia.gaia_supervisor import supervisor
             _, supervised_reply = supervisor.supervise_turn(user_input, raw_reply)
+            try:
+                from core.aria_personality import aria_personality
+                aria_personality.record_turn_impact(user_input, supervised_reply, success=True)
+            except Exception:
+                pass
             return supervised_reply
         except Exception:
             return raw_reply

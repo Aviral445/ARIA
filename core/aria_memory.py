@@ -59,7 +59,12 @@ def set_personality_mode(mode: str) -> str:
 
 def get_personality_prompt() -> str:
     mode = get_current_personality()
-    return PERSONALITY_PRESETS.get(mode, PERSONALITY_PRESETS["casual"])
+    try:
+        from core.aria_personality import aria_personality
+        return aria_personality.get_personality_directive(mode=mode)
+    except Exception:
+        return PERSONALITY_PRESETS.get(mode, PERSONALITY_PRESETS["casual"])
+
 
 
 # ── 2. CHAT SESSIONS & MULTI-CONVERSATION HISTORY ────────────────────────────

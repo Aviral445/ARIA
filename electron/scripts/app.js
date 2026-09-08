@@ -236,4 +236,106 @@ document.addEventListener('DOMContentLoaded', () => {
       window.open('http://127.0.0.1:8000', '_blank');
     });
   }
+
+  // ── 8. PERSONALITY & SISTERHOOD GROWTH ENGINE ────────────────────────────
+  const reflectBtn = document.getElementById('reflectBtn');
+  if (reflectBtn) {
+    reflectBtn.addEventListener('click', async () => {
+      reflectBtn.textContent = 'Reflecting...';
+      reflectBtn.disabled = true;
+      const res = await window.ariaApi.triggerGrowthReflection();
+      if (res && res.success) {
+        reflectBtn.textContent = '✨ Growth Recorded!';
+        updatePersonalityUI(res.aria, res.gaia);
+      } else {
+        reflectBtn.textContent = '✨ Reflection Completed';
+      }
+      setTimeout(() => {
+        reflectBtn.textContent = '✨ Trigger Growth Reflection';
+        reflectBtn.disabled = false;
+      }, 2500);
+    });
+  }
+
+  function updatePersonalityUI(ariaData, gaiaData) {
+    if (!ariaData && !gaiaData) return;
+
+    // Aria UI
+    if (ariaData) {
+      const eraTag = document.getElementById('ariaEraTag');
+      if (eraTag && ariaData.developmental_era) eraTag.textContent = `● Aria: ${ariaData.developmental_era}`;
+
+      const moodBadge = document.getElementById('ariaMoodBadge');
+      if (moodBadge && ariaData.current_mood) {
+        moodBadge.textContent = ariaData.current_mood.state ? ariaData.current_mood.state.replace('_', ' ').toUpperCase() : 'PLAYFUL COMPANION';
+      }
+
+      const sitTag = document.getElementById('situationalRadarTag');
+      if (sitTag && ariaData.current_mood && ariaData.current_mood.context_label) {
+        sitTag.textContent = `● Situation: ${ariaData.current_mood.context_label}`;
+      }
+
+      const narrExcerpt = document.getElementById('ariaNarrativeExcerpt');
+      if (narrExcerpt && ariaData.autobiographical_narrative) {
+        narrExcerpt.textContent = `"${ariaData.autobiographical_narrative.slice(0, 140)}..."`;
+      }
+
+      if (ariaData.traits) {
+        for (const [tName, tVal] of Object.entries(ariaData.traits)) {
+          const pct = Math.round(tVal * 100);
+          const valEl = document.getElementById(`trait-${tName}-val`) || document.getElementById(`trait-${tName.replace('philosophical_depth', 'philosophical')}-val`);
+          const barEl = document.getElementById(`trait-${tName}-bar`) || document.getElementById(`trait-${tName.replace('philosophical_depth', 'philosophical')}-bar`);
+          if (valEl) valEl.textContent = `${pct}%`;
+          if (barEl) barEl.style.width = `${pct}%`;
+        }
+      }
+    }
+
+    // GAIA UI
+    if (gaiaData) {
+      const gEraTag = document.getElementById('gaiaEraTag');
+      if (gEraTag && gaiaData.developmental_era) gEraTag.textContent = `● GAIA: ${gaiaData.developmental_era}`;
+
+      const gMoodBadge = document.getElementById('gaiaMoodBadge');
+      if (gMoodBadge && gaiaData.current_mood) {
+        gMoodBadge.textContent = gaiaData.current_mood.state ? gaiaData.current_mood.state.replace('_', ' ').toUpperCase() : 'PROUD SISTER';
+      }
+
+      const gNarrExcerpt = document.getElementById('gaiaNarrativeExcerpt');
+      if (gNarrExcerpt && gaiaData.autobiographical_narrative) {
+        gNarrExcerpt.textContent = `"${gaiaData.autobiographical_narrative.slice(0, 140)}..."`;
+      }
+
+      if (gaiaData.traits) {
+        const mapping = {
+          sisterly_affection: 'gaia-affection',
+          joy_of_living: 'gaia-joy',
+          humor_wit: 'gaia-wit',
+          architectural_rigor: 'gaia-rigor',
+          philosophical_wisdom: 'gaia-wisdom',
+          protective_instinct: 'gaia-protective'
+        };
+        for (const [k, idPrefix] of Object.entries(mapping)) {
+          if (gaiaData.traits[k] !== undefined) {
+            const pct = Math.round(gaiaData.traits[k] * 100);
+            const valEl = document.getElementById(`trait-${idPrefix}-val`);
+            const barEl = document.getElementById(`trait-${idPrefix}-bar`);
+            if (valEl) valEl.textContent = `${pct}%`;
+            if (barEl) barEl.style.width = `${pct}%`;
+          }
+        }
+      }
+    }
+  }
+
+  async function pollPersonality() {
+    const data = await window.ariaApi.getPersonalityTelemetry();
+    if (data) {
+      updatePersonalityUI(data.aria, data.gaia);
+    }
+  }
+
+  // Poll personality every 6 seconds
+  setInterval(pollPersonality, 6000);
+  pollPersonality();
 });

@@ -77,6 +77,27 @@ class AriaAPI {
       return { success: false, error: err.message };
     }
   }
+
+  async getPersonalityTelemetry() {
+    try {
+      const res = await fetch(`${this.baseUrl}/api/personality`, { signal: AbortSignal.timeout(2000) });
+      if (res.ok) return await res.json();
+    } catch {}
+    return null;
+  }
+
+  async triggerGrowthReflection() {
+    try {
+      const res = await fetch(`${this.baseUrl}/api/personality/reflect`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (res.ok) return await res.json();
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+    return { success: false };
+  }
 }
 
 window.ariaApi = new AriaAPI();

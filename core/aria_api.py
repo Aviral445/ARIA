@@ -1565,6 +1565,31 @@ def clear_all_caches():
     except Exception as e:
         return {"success": False, "error": str(e)}
 
+@app.get("/api/personality")
+def get_personality_status():
+    """Returns living personality state, traits, and evolution metrics for Aria and GAIA."""
+    try:
+        from core.aria_personality import aria_personality
+        from gaia.gaia_personality import gaia_personality
+        return {
+            "success": True,
+            "aria": aria_personality.get_telemetry(),
+            "gaia": gaia_personality.get_telemetry()
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/personality/reflect")
+def trigger_personality_reflection():
+    """Triggers an episodic reflection cycle to synthesize recent experiences."""
+    try:
+        from core.aria_personality import aria_personality
+        narrative = aria_personality.run_episodic_reflection()
+        return {"success": True, "narrative": narrative}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
 
 if __name__ == "__main__":
     import uvicorn

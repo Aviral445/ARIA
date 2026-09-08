@@ -1154,10 +1154,14 @@ class AriaADK:
         
         # Personality prompt
         try:
-            import aria_memory
-            pers = aria_memory.get_personality_prompt()
+            from core.aria_personality import aria_personality
+            pers = aria_personality.get_personality_directive()
         except Exception:
-            pers = ""
+            try:
+                import aria_memory
+                pers = aria_memory.get_personality_prompt()
+            except Exception:
+                pers = ""
 
         # System context
         try:
@@ -1248,6 +1252,19 @@ class AriaADK:
             print(f"[InnerMind Notice]: {e_im}")
 
         cleaned = _sanitize_aria_response(raw_reply)
+
+        # 2. Evolve Aria's living personality based on this turn's experience
+        try:
+            from core.aria_personality import aria_personality
+            aria_personality.record_turn_impact(
+                user_input=user_input,
+                reply=cleaned,
+                success=True,
+                tools_called=tools_called or []
+            )
+        except Exception as e_pers:
+            pass
+
         if not cleaned or cleaned.startswith("I'm having difficulty connecting"):
             return cleaned
         try:
@@ -1275,6 +1292,13 @@ class AriaADK:
         Execute an agent turn with automated tool calling and failover.
         If is_admin is False, runs in conversation-only mode without executing host OS tools.
         """
+        # Situational perception radar
+        try:
+            from core.aria_personality import aria_personality
+            aria_personality.perceive_situation(user_input, chat_history)
+        except Exception:
+            pass
+
         system_instruction = self.build_system_instruction(user_name, preferences)
         if not is_admin:
             system_instruction += "\n[SECURITY POLICY]: The user is currently a GUEST. You are operating in CONVERSATION-ONLY MODE. You cannot trigger system tools or command the host laptop. If the user asks you to open apps, switch windows, or execute OS commands, explain politely that Admin authentication is required."
