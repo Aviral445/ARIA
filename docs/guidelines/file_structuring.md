@@ -21,3 +21,11 @@
   • `aria_write_project_file(project_name, file_path, content)`: Writes or updates individual files inside `Projects/<project_name>/<file_path>` directly and sequentially!
   • `aria_launch_project_server(project_name, port, open_in_browser)`: Starts a local web server (http.server or Python backend) on localhost and opens Google Chrome live!
   • `aria_stop_project_server(project_name)`: Stops the local web server when finished.
+
+- WINDOWS FILESYSTEM SAFETY LAWS (Preventing `E:\ARIA FILES` Failures):
+  1. **Forbidden Device Names**: NEVER name files or folders with Windows reserved names: `CON`, `PRN`, `AUX`, `NUL`, `COM1`–`COM9`, `LPT1`–`LPT9`. (e.g. use `helper_aux.py`, not `aux.py`).
+  2. **No Trailing Dots or Spaces**: Windows Explorer will corrupt or hide paths ending in a dot or space. Always strip them.
+  3. **Atomic Writes & Verification**: Before reporting a file is created, verify with `os.path.exists()` and ensure `size_bytes > 0`. Never leave 0-byte corrupt files.
+  4. **Binary-Safe Reading**: Never read images (`.png`, `.jpg`), databases (`.db`), or compiled archives (`.zip`, `.pyc`) as UTF-8 text. Use metadata or binary inspect.
+  5. **Clean Slate Teardown**: When decommissioning an ADK swarm or cleaning scratch files, terminate worker subprocesses first to avoid `WinError 32` file locking.
+  6. **ADK-to-Supervisor Escalation**: If an ADK or tool hits an unresolvable error or missing capability, DO NOT hallucinate or loop blindly. Package an `IncidentReport` (traceback, inputs, failed attempts) and dispatch to Big Sister GAIA Supervisor to auto-heal or escalate!

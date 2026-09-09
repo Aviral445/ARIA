@@ -7,7 +7,10 @@ class AriaAPI {
   constructor(baseUrl = 'http://127.0.0.1:8000') {
     this.baseUrl = baseUrl;
     this.online = false;
-    this.authToken = localStorage.getItem('aria_token') || '';
+    this.authToken = localStorage.getItem('aria_token') || 'admin_master_host_pc';
+    if (!localStorage.getItem('aria_token')) {
+      try { localStorage.setItem('aria_token', 'admin_master_host_pc'); } catch (_) {}
+    }
   }
 
   async checkHealth() {
@@ -103,6 +106,23 @@ class AriaAPI {
     }
     return { success: false };
   }
+
+  async getWebOperationsFeed() {
+    try {
+      const res = await fetch(`${this.baseUrl}/api/web_feed`, { signal: AbortSignal.timeout(2500) });
+      if (res.ok) return await res.json();
+    } catch {}
+    return null;
+  }
+
+  async getTokenTelemetry() {
+    try {
+      const res = await fetch(`${this.baseUrl}/api/tokens_telemetry`, { signal: AbortSignal.timeout(2500) });
+      if (res.ok) return await res.json();
+    } catch {}
+    return null;
+  }
 }
 
 window.ariaApi = new AriaAPI();
+

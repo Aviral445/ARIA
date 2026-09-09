@@ -1,0 +1,16 @@
+{
+  "adk_name": "Image_Processing_ADK",
+  "version": "1.0.0",
+  "author": "Aria",
+  "description": "Filter and upscale images",
+  "created_at": "2026-09-09T13:47:05.897111",
+  "updated_at": "2026-09-09T13:47:05.897111",
+  "status": "active",
+  "tools": [
+    "sample_tool"
+  ],
+  "connected_to": [],
+  "tags": [
+    "image_processing_adk"
+  ]
+}

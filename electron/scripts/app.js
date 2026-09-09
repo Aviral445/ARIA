@@ -21,11 +21,45 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // ── 3. 12 DASHBOARDS TAB SWITCHING ─────────────────────────────────────────
+  // ── 3. WORKSPACE TAB SWITCHING & ADMIN MODE CONTROLLER ────────────────────
   const navButtons = document.querySelectorAll('.nav-btn');
   const dashboardPages = document.querySelectorAll('.dashboard-page');
+  let activeTab = 'home';
+  let previousTab = 'home';
+  let isAdminMode = false;
+
+  function setAdminToggleState(active) {
+    isAdminMode = active;
+    document.body.classList.toggle('admin-mode', active);
+    if (navRail && active) {
+      navRail.classList.remove('is-hovered');
+    }
+    document.querySelectorAll('.admin-toggle-btn').forEach(btn => {
+      btn.classList.toggle('active', active);
+      btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+    if (window.AriaAdmin) {
+      if (active && typeof window.AriaAdmin.onAdminEnter === 'function') {
+        window.AriaAdmin.onAdminEnter();
+      } else if (!active && typeof window.AriaAdmin.onAdminExit === 'function') {
+        window.AriaAdmin.onAdminExit();
+      }
+    }
+  }
 
   function switchTab(targetTab) {
+    if (targetTab === 'admin') {
+      if (!isAdminMode) {
+        previousTab = activeTab || 'home';
+      }
+      setAdminToggleState(true);
+      activeTab = 'admin';
+    } else {
+      setAdminToggleState(false);
+      activeTab = targetTab;
+      previousTab = targetTab;
+    }
+
     navButtons.forEach(btn => {
       btn.classList.toggle('active', btn.dataset.tab === targetTab);
     });
@@ -34,6 +68,21 @@ document.addEventListener('DOMContentLoaded', () => {
       page.classList.toggle('active', page.id === `page-${targetTab}`);
     });
   }
+
+  function toggleAdmin() {
+    if (isAdminMode) {
+      switchTab(previousTab || 'home');
+    } else {
+      switchTab('admin');
+    }
+  }
+
+  document.querySelectorAll('.admin-toggle-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleAdmin();
+    });
+  });
 
   navButtons.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -77,7 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (navRail) {
     let hideTimer = null;
     document.addEventListener('mousemove', (e) => {
-      if (isNavPinned) return;
+      if (isNavPinned || isAdminMode) return;
       // Show when mouse approaches within 38px of left edge
       if (e.clientX <= 38) {
         clearTimeout(hideTimer);
@@ -394,6 +443,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const data = await window.ariaApi.getPersonalityTelemetry();
     if (data) {
       updatePersonalityUI(data.aria, data.gaia);
+      if (window.AriaAdmin && typeof window.AriaAdmin.updatePersonality === 'function') {
+        window.AriaAdmin.updatePersonality(data.aria, data.gaia);
+      }
     }
   }
 

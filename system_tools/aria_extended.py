@@ -259,33 +259,37 @@ def send_whatsapp_message(recipient: str, message: str) -> str:
 def execute_power_command(command: str, is_admin: bool = True) -> tuple[bool, str]:
     """Handles remote or voice power commands: shutdown, restart, sleep, lock, cancel shutdown."""
     cmd_l = command.lower().strip()
+
+    # Safety Guard: If user sends a conversational message (> 7 words or > 45 chars), do not trigger accidental power actions!
+    if len(cmd_l.split()) > 7 or len(cmd_l) > 45:
+        return False, ""
     
     # Cancel shutdown
-    if any(k in cmd_l for k in ["cancel shutdown", "abort shutdown", "stop shutdown"]):
+    if re.search(r"\b(cancel shutdown|abort shutdown|stop shutdown)\b", cmd_l):
         os.system("shutdown /a")
         return True, "Shutdown cancelled on your laptop."
 
     # Power off / Shutdown
-    if any(k in cmd_l for k in ["shutdown", "shut down", "turn off laptop", "turn off pc", "turn off my laptop", "power off"]):
+    if re.search(r"\b(shutdown|shut down|turn off laptop|turn off pc|turn off my laptop|power off)\b", cmd_l):
         if not is_admin:
             return True, "Access Denied: Only Master Admin (L) can remotely power down the host laptop."
         os.system('shutdown /s /t 20 /c "Aria Remote Shutdown Request"')
         return True, "Initiating shutdown on your laptop in 20 seconds. You can type 'cancel shutdown' from your phone to abort."
 
     # Restart
-    if any(k in cmd_l for k in ["restart laptop", "restart pc", "reboot laptop", "reboot pc", "restart computer", "restart"]):
+    if re.search(r"\b(restart laptop|restart pc|reboot laptop|reboot pc|restart computer)\b", cmd_l) or cmd_l in ["restart", "reboot"]:
         if not is_admin:
             return True, "Access Denied: Only Master Admin (L) can remotely reboot the host laptop."
         os.system("shutdown /r /t 15")
         return True, "Restarting your laptop in 15 seconds. You can type 'cancel shutdown' to abort."
 
-    # Lock
-    if any(k in cmd_l for k in ["lock laptop", "lock pc", "lock computer", "lock screen", "lock my laptop", "lock"]):
+    # Lock (Strict word boundaries! Avoid matching 'blocked', 'clock', 'padlock', etc.)
+    if re.search(r"\b(lock laptop|lock pc|lock computer|lock screen|lock my laptop|lock workstation)\b", cmd_l) or cmd_l in ["lock", "lock pc", "lock screen", "lock laptop"]:
         os.system("rundll32.exe user32.dll,LockWorkStation")
         return True, "Locked your laptop screen."
 
     # Sleep
-    if any(k in cmd_l for k in ["sleep laptop", "sleep pc", "put laptop to sleep", "sleep computer"]):
+    if re.search(r"\b(sleep laptop|sleep pc|put laptop to sleep|sleep computer)\b", cmd_l) or cmd_l in ["sleep", "go to sleep"]:
         os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
         return True, "Putting your laptop to sleep."
 

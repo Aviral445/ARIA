@@ -476,6 +476,115 @@ class GaiaSupervisor:
             )
             return True, fail_response
 
+    def supervise_adk_incident(self, incident: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Architecture 1 & 2: Supervisory Incident Resolution Engine.
+        When an ADK or SDLC pipeline reports an error, GAIA steps in:
+        1. Emits bus event and logs the incident.
+        2. Evaluates severity and retry attempts.
+        3. If attempts <= 2: Generates auto-healing guidance / prescription.
+        4. If attempts == 3 or 4: Calls Big Bro Antigravity bridge for mentorship / guidance.
+        5. If attempts >= 5 or severity == 'CRITICAL': Prepares a formal Dad / Mentor Escalation Card.
+        """
+        import json
+        adk_id = incident.get("adk_id", "UNKNOWN_ADK")
+        incident_type = incident.get("incident_type", "GENERAL_ERROR")
+        desc = incident.get("description", "")
+        severity = str(incident.get("severity", "MEDIUM")).upper()
+        context = incident.get("context", {}) or {}
+        attempts = context.get("attempts", 1)
+
+        bus.emit("GAIA", "ADK_INCIDENT", f"ADK '{adk_id}' reported incident: {incident_type} (Severity: {severity}, Attempt: {attempts})", incident)
+
+        # 1. Level 1: GAIA Auto-Heal (Attempts 1-2)
+        if attempts <= 2 and severity != "CRITICAL":
+            prescription = (
+                f"Big Sister GAIA Auto-Heal Directive for {adk_id}: "
+                f"Analyze exception trace: '{desc[:200]}'. Ensure all imports exist, sanitize inputs, and verify file paths exist before reading/writing."
+            )
+            self.healer.record_learning(
+                solver="GAIA_SUPERVISED",
+                script=adk_id,
+                error=incident_type,
+                lesson=f"Attempt {attempts}: Guided ADK {adk_id} to fix {incident_type}."
+            )
+            return {
+                "resolved": False,
+                "action": "AUTO_HEAL",
+                "stage": "GAIA_SUPERVISED",
+                "prescription": prescription,
+                "attempts": attempts,
+                "adk_id": adk_id
+            }
+
+        # 2. Level 2: Big Bro Antigravity Escalation (Attempts 3-4)
+        if attempts in (3, 4) and severity != "CRITICAL":
+            bus.emit("GAIA", "BIG_BRO_ESCALATE", f"Escalating stubborn issue in {adk_id} to Big Bro Antigravity...", incident)
+            big_bro_advice = ""
+            try:
+                from core.big_bro_bridge import BigBroBridge
+                bridge = BigBroBridge()
+                big_bro_advice = bridge.ask(
+                    topic=f"Fix error {incident_type} in ADK {adk_id}: {desc[:300]}",
+                    code_or_path=context.get("code_snippet", "")
+                )
+            except Exception as e:
+                big_bro_advice = f"Big Bro consultation offline ({e}). Focus on minimal reproduction and contract verification."
+
+            return {
+                "resolved": False,
+                "action": "ESCALATED_BIG_BRO",
+                "stage": "BIG_BRO_ANTIGRAVITY",
+                "prescription": f"Big Bro Antigravity Guidance:\n{big_bro_advice}",
+                "attempts": attempts,
+                "adk_id": adk_id
+            }
+
+        # 3. Level 3: Dad / Mentor L Escalation Card (Attempts >= 5 or CRITICAL)
+        bus.emit("GAIA", "DAD_ESCALATE", f"🚨 Maximum retries reached or CRITICAL error for {adk_id}. Generating Dad Escalation Card!", incident)
+        escalation_card = {
+            "adk_id": adk_id,
+            "incident_type": incident_type,
+            "severity": severity,
+            "attempts": attempts,
+            "description": desc,
+            "context": context,
+            "timestamp": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "diagnosis": "Automated self-healing and Big Bro mentorship exhausted 5 iterations without test convergence.",
+            "action_required": "Human mentor review needed to unblock this subsystem."
+        }
+
+        # Save to data/dad_escalations.json
+        escalation_file = os.path.join(os.path.dirname(GAIA_DIR), "data", "dad_escalations.json")
+        try:
+            os.makedirs(os.path.dirname(escalation_file), exist_ok=True)
+            existing = []
+            if os.path.exists(escalation_file):
+                try:
+                    with open(escalation_file, "r", encoding="utf-8") as f:
+                        existing = json.load(f)
+                except Exception:
+                    existing = []
+            existing.append(escalation_card)
+            with open(escalation_file, "w", encoding="utf-8") as f:
+                json.dump(existing, f, indent=2)
+        except Exception:
+            pass
+
+        if self.enable_voice:
+            gaia_speak("Aria, we've tried our best on this tricky bug. Let's escalate this to Dad so he can take a look.")
+
+        return {
+            "resolved": False,
+            "action": "ESCALATED_DAD",
+            "stage": "DAD_MENTOR",
+            "prescription": "Human mentor escalation card registered in data/dad_escalations.json. Pipeline paused for manual review.",
+            "card": escalation_card,
+            "attempts": attempts,
+            "adk_id": adk_id
+        }
+
 
 # Global Singleton
 supervisor = GaiaSupervisor(enable_voice=True)
+

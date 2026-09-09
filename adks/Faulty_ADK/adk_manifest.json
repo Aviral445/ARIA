@@ -1,0 +1,16 @@
+{
+  "adk_name": "Faulty_ADK",
+  "version": "1.0.0",
+  "author": "Aria",
+  "description": "Prone to errors",
+  "created_at": "2026-09-09T13:47:06.059688",
+  "updated_at": "2026-09-09T13:47:06.059688",
+  "status": "active",
+  "tools": [
+    "sample_tool"
+  ],
+  "connected_to": [],
+  "tags": [
+    "faulty_adk"
+  ]
+}

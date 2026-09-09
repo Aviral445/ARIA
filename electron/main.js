@@ -19,7 +19,11 @@ function ensureBackendRunning() {
         cwd: rootDir,
         windowsHide: true,
         stdio: 'pipe',
-        env: Object.assign({}, process.env, { ARIA_PORT: '8000' })
+        env: Object.assign({}, process.env, {
+          ARIA_PORT: '8000',
+          PYTHONIOENCODING: 'utf-8',
+          PYTHONUTF8: '1'
+        })
       });
       if (apiProcess.stdout) {
         apiProcess.stdout.on('data', (d) => console.log(`[AriaBackend] ${d}`));

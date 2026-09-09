@@ -1,0 +1,82 @@
+[
+  {
+    "incident_id": "INC_1788941826_Faulty_ADK",
+    "adk_name": "Faulty_ADK",
+    "task": "Compute matrix determinant",
+    "error_type": "SingularMatrixError",
+    "traceback": "Traceback (most recent call last): numpy.linalg.LinAlgError: Singular matrix",
+    "attempts": 3,
+    "timestamp": "2026-09-09T13:47:06.076236",
+    "status": "pending_supervisor"
+  },
+  {
+    "incident_id": "INC_1788941961_Faulty_ADK",
+    "adk_name": "Faulty_ADK",
+    "task": "Compute matrix determinant",
+    "error_type": "SingularMatrixError",
+    "traceback": "Traceback (most recent call last): numpy.linalg.LinAlgError: Singular matrix",
+    "attempts": 3,
+    "timestamp": "2026-09-09T13:49:21.593002",
+    "status": "pending_supervisor"
+  },
+  {
+    "incident_id": "INC_1788941980_Faulty_ADK",
+    "adk_name": "Faulty_ADK",
+    "task": "Compute matrix determinant",
+    "error_type": "SingularMatrixError",
+    "traceback": "Traceback (most recent call last): numpy.linalg.LinAlgError: Singular matrix",
+    "attempts": 3,
+    "timestamp": "2026-09-09T13:49:40.940228",
+    "status": "pending_supervisor"
+  },
+  {
+    "incident_id": "INC_1788942723_Faulty_ADK",
+    "adk_name": "Faulty_ADK",
+    "task": "Compute matrix determinant",
+    "error_type": "SingularMatrixError",
+    "traceback": "Traceback (most recent call last): numpy.linalg.LinAlgError: Singular matrix",
+    "attempts": 3,
+    "timestamp": "2026-09-09T14:02:03.452525",
+    "status": "pending_supervisor"
+  },
+  {
+    "incident_id": "INC_1788943167_Faulty_ADK",
+    "adk_name": "Faulty_ADK",
+    "task": "Compute matrix determinant",
+    "error_type": "SingularMatrixError",
+    "traceback": "Traceback (most recent call last): numpy.linalg.LinAlgError: Singular matrix",
+    "attempts": 3,
+    "timestamp": "2026-09-09T14:09:27.150830",
+    "status": "pending_supervisor"
+  },
+  {
+    "incident_id": "INC_1788946279_Faulty_ADK",
+    "adk_name": "Faulty_ADK",
+    "task": "Compute matrix determinant",
+    "error_type": "SingularMatrixError",
+    "traceback": "Traceback (most recent call last): numpy.linalg.LinAlgError: Singular matrix",
+    "attempts": 3,
+    "timestamp": "2026-09-09T15:01:19.436040",
+    "status": "pending_supervisor"
+  },
+  {
+    "incident_id": "INC_1788947728_Faulty_ADK",
+    "adk_name": "Faulty_ADK",
+    "task": "Compute matrix determinant",
+    "error_type": "SingularMatrixError",
+    "traceback": "Traceback (most recent call last): numpy.linalg.LinAlgError: Singular matrix",
+    "attempts": 3,
+    "timestamp": "2026-09-09T15:25:28.434310",
+    "status": "pending_supervisor"
+  },
+  {
+    "incident_id": "INC_1788974457_Faulty_ADK",
+    "adk_name": "Faulty_ADK",
+    "task": "Compute matrix determinant",
+    "error_type": "SingularMatrixError",
+    "traceback": "Traceback (most recent call last): numpy.linalg.LinAlgError: Singular matrix",
+    "attempts": 3,
+    "timestamp": "2026-09-09T22:50:57.847614",
+    "status": "pending_supervisor"
+  }
+]

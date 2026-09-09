@@ -1,0 +1,16 @@
+{
+  "adk_name": "Disposable_ADK",
+  "version": "1.0.0",
+  "author": "Aria",
+  "description": "To be deleted",
+  "created_at": "2026-09-09T13:47:06.088887",
+  "updated_at": "2026-09-09T13:47:06.088887",
+  "status": "active",
+  "tools": [
+    "sample_tool"
+  ],
+  "connected_to": [],
+  "tags": [
+    "disposable_adk"
+  ]
+}

@@ -946,6 +946,8 @@ def _tool_system_powershell(text):
 
 @tool("open_app")
 def _tool_open_app(text):
+    if len(text.split()) > 6 or len(text) > 40:
+        return False, ""
     text_lower = text.lower()
     if any(k in text_lower for k in ["pdf", "document", "docx", "file named", "notes"]):
         return False, "" # Handled by file_search
@@ -954,12 +956,14 @@ def _tool_open_app(text):
     if text_lower.startswith("search") or "google search" in text_lower:
         return False, ""
         
-    m = re.search(r"(?:open|launch|start|run|focus|switch to)\s+([a-zA-Z0-9_\s\.\-]+)", text, re.IGNORECASE)
+    m = re.search(r"^(?:please\s+|can you\s+)?(?:open|launch|start|run|focus|switch to)\s+([a-zA-Z0-9_\s\.\-]+)$", text.strip(), re.IGNORECASE)
     if not m:
         return False, ""
     
     raw_target = m.group(1).strip()
-    if raw_target.lower() in ["google", "youtube"]:
+    if len(raw_target.split()) > 3:
+        return False, ""
+    if raw_target.lower() in ["google", "youtube", "because", "the", "a", "an", "this", "that"]:
         return False, "" # Handled by web/youtube tools
         
     import aria_extended
@@ -1058,21 +1062,28 @@ def _tool_weather(text):
 
 @tool("time")
 def _tool_time(text):
-    if "time" in text and any(w in text for w in ["what", "current", "tell"]):
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(what('s| is)? the time|what time is it|current time|tell (me )?the time)\b", text, re.I) or text.strip() in ["time", "what time"]:
         return True, f"It's {datetime.datetime.now().strftime('%I:%M %p')}"
     return False, ""
 
 
 @tool("date")
 def _tool_date(text):
-    if "date" in text and any(w in text for w in ["what", "today"]):
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(what('s| is)? the date|what is today('s)? date|today('s)? date|what day is it)\b", text, re.I) or text.strip() in ["date", "today's date", "what date"]:
         return True, f"Today is {datetime.datetime.now().strftime('%A, %B %d %Y')}"
     return False, ""
 
 
 @tool("battery")
 def _tool_battery(text):
-    if "battery" not in text: return False, ""
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if not re.search(r"\b(battery|battery level|battery percentage)\b", text, re.I):
+        return False, ""
     try:
         result = subprocess.check_output(
             "WMIC PATH Win32_Battery Get EstimatedChargeRemaining",
@@ -1085,6 +1096,8 @@ def _tool_battery(text):
 
 @tool("volume")
 def _tool_volume(text):
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
     if "volume up" in text or "turn up" in text:
         for _ in range(5):
             subprocess.call(["powershell", "-c",
@@ -1095,7 +1108,7 @@ def _tool_volume(text):
             subprocess.call(["powershell", "-c",
                 "$o=New-Object -ComObject WScript.Shell;$o.SendKeys([char]174)"])
         return True, "Volume down!"
-    if "mute" in text:
+    if text.strip() in ["mute", "unmute", "toggle mute"]:
         subprocess.call(["powershell", "-c",
             "$o=New-Object -ComObject WScript.Shell;$o.SendKeys([char]173)"])
         return True, "Toggled mute!"
@@ -1104,7 +1117,10 @@ def _tool_volume(text):
 
 @tool("screenshot")
 def _tool_screenshot(text):
-    if "screenshot" not in text: return False, ""
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if not re.search(r"\b(take (a )?screenshot|capture screen|screenshot)\b", text, re.I):
+        return False, ""
     subprocess.call(["powershell", "-c",
         "$o=New-Object -ComObject WScript.Shell;$o.SendKeys('%{PRTSC}')"])
     return True, "Screenshot copied to clipboard!"
@@ -1112,7 +1128,9 @@ def _tool_screenshot(text):
 
 @tool("lock")
 def _tool_lock(text):
-    if "lock" in text and any(w in text for w in ["pc", "computer", "screen"]):
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(lock laptop|lock pc|lock computer|lock screen|lock workstation)\b", text, re.I) or text.strip() in ["lock", "lock pc", "lock screen"]:
         os.system("rundll32.exe user32.dll,LockWorkStation")
         return True, "Locking your computer."
     return False, ""
@@ -1120,7 +1138,9 @@ def _tool_lock(text):
 
 @tool("shutdown")
 def _tool_shutdown(text):
-    if "shutdown" in text or "shut down" in text:
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(shutdown laptop|shut down laptop|turn off pc|turn off computer)\b", text, re.I) or text.strip() in ["shutdown", "shut down"]:
         speak("Shutting down in 10 seconds. Say cancel to stop.")
         if "cancel" in listen():
             os.system("shutdown /a")
@@ -1132,7 +1152,9 @@ def _tool_shutdown(text):
 
 @tool("restart")
 def _tool_restart(text):
-    if "restart" in text or "reboot" in text:
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(restart laptop|restart pc|reboot laptop|reboot pc)\b", text, re.I) or text.strip() in ["restart", "reboot"]:
         os.system("shutdown /r /t 5")
         return True, "Restarting your computer."
     return False, ""
@@ -1696,6 +1718,10 @@ def _tool_dynamic_sandbox(text: str):
 
 def run_tools(text: str):
     """Try all registered tools. Returns (handled, response)."""
+    # Conversational Guard: Local utility tools should ONLY run for short direct voice commands (<= 7 words and <= 45 chars).
+    # Any longer instruction or paragraph MUST proceed directly to the conversational AI brain!
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
     priority = [
         "brain_switcher",
         "aria_github",
@@ -1839,6 +1865,13 @@ def build_system_prompt(profile, memory_ctx, knowledge_ctx, web_ctx,
             prompt += f"\n{learned_rules}\n"
     except Exception:
         pass
+    try:
+        from core.aria_skills_manager import get_all_skills_prompt
+        skills_ctx = get_all_skills_prompt()
+        if skills_ctx:
+            prompt += f"\nMODULAR SKILLS & ADK GUIDELINES:\n{skills_ctx}\n"
+    except Exception:
+        pass
     if mcp_tools:
         prompt += f"\nAVAILABLE TOOLS:\n{mcp_tools}\n"
         prompt += "\nTo use a tool, respond ONLY with: TOOL:tool_name|param1=value1\n"
@@ -1889,42 +1922,46 @@ def _groq_chat(system: str, messages: list, user_input: str) -> str:
 
 
 def _gemini_chat(system: str, messages: list, user_input: str) -> str:
-    """Call Gemini 2.5 Flash for deep research and large context."""
+    """Call Gemini for conversational fallback with active models."""
     history_text = ""
     for m in messages[-6:]:
-        role = "User" if m["role"] == "user" else "Aria"
-        history_text += f"{role}: {m['content']}\n"
+        role = "User" if m.get("role") == "user" else "Aria"
+        history_text += f"{role}: {m.get('content', '')}\n"
 
     full_prompt = f"{system}\n\n"
     if history_text:
         full_prompt += f"Recent conversation:\n{history_text}\n"
     full_prompt += f"User: {user_input}"
 
-    if HAS_NEW_GENAI:
-        response = gemini_client.models.generate_content(
-            model=GEMINI_MODEL,
-            contents=full_prompt,
-            config=genai_types.GenerateContentConfig(
-                temperature=0.7,
-                max_output_tokens=350,
-            )
-        )
-        return response.text.strip()
-    else:
-        chat = gemini_client.start_chat(history=[])
-        response = chat.send_message(full_prompt)
-        return response.text.strip()
+    try:
+        from google import genai
+        gem_key = os.environ.get("GEMINI_API_KEY", "")
+        if gem_key:
+            _g_client = genai.Client(api_key=gem_key)
+            for g_mod in ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.6-flash"]:
+                try:
+                    resp = _g_client.models.generate_content(model=g_mod, contents=full_prompt)
+                    if resp and resp.text:
+                        return resp.text.strip()
+                except Exception:
+                    continue
+    except Exception as e_g:
+        print(f"[Agent Gemini notice] {e_g}")
+    return ""
 
 
 def _ollama_chat(system: str, messages: list, user_input: str) -> str:
     """Fallback: call local Ollama."""
-    msgs = ([{"role": "system", "content": system}]
-            + messages
-            + [{"role": "user", "content": user_input}])
-    resp = _ollama_client.chat.completions.create(
-        model=OLLAMA_MODEL, messages=msgs,
-        temperature=0.7, max_tokens=200)
-    return resp.choices[0].message.content.strip()
+    try:
+        msgs = ([{"role": "system", "content": system}]
+                + messages
+                + [{"role": "user", "content": user_input}])
+        resp = _ollama_client.chat.completions.create(
+            model=OLLAMA_MODEL, messages=msgs,
+            temperature=0.7, max_tokens=200)
+        return resp.choices[0].message.content.strip()
+    except Exception:
+        return ""
 
 
 def chat_with_ai(user_input: str, recent: list, profile: dict,
@@ -1955,11 +1992,11 @@ def chat_with_ai(user_input: str, recent: list, profile: dict,
         raw_reply = ""
 
         # Order fallback attempts based on active brain
-        preferred = [active_b] if active_b in ["nvidia", "groq", "ollama"] else ["nvidia", "groq", "ollama"]
+        preferred = [active_b] if active_b in ["gemini", "nvidia", "groq", "ollama"] else ["gemini", "groq", "nvidia", "ollama"]
         for b in preferred:
-            if b == "nvidia" and os.environ.get("NVIDIA_API_KEY"):
+            if b == "gemini" and os.environ.get("GEMINI_API_KEY"):
                 try:
-                    raw_reply = _nvidia_chat(system, recent, user_input)
+                    raw_reply = _gemini_chat(system, recent, user_input)
                     if raw_reply:
                         break
                 except Exception:
@@ -1967,6 +2004,13 @@ def chat_with_ai(user_input: str, recent: list, profile: dict,
             elif b == "groq" and os.environ.get("GROQ_API_KEY"):
                 try:
                     raw_reply = _groq_chat(system, recent, user_input)
+                    if raw_reply:
+                        break
+                except Exception:
+                    pass
+            elif b == "nvidia" and os.environ.get("NVIDIA_API_KEY"):
+                try:
+                    raw_reply = _nvidia_chat(system, recent, user_input)
                     if raw_reply:
                         break
                 except Exception:

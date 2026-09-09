@@ -43,6 +43,7 @@ data/.security_auth.json
 data/.vault_salt
 data/approval_audit.jsonl
 data/active_voice_profile.json
+data/active_project_lock.json
 tools/mood_log.txt
 smart_home.json
 config/smart_home.json

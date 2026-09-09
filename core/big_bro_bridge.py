@@ -344,3 +344,9 @@ class BigBroBridge:
         if found:
             self._save_mailbox(mailbox)
         return found
+
+    def ask_big_bro(self, question: str = "", code_context: str = "") -> Dict[str, Any]:
+        """Convenience wrapper returning structured response."""
+        ans = self.ask(topic=question, code_or_path=code_context)
+        return {"response": ans}
+

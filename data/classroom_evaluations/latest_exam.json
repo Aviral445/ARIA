@@ -1,0 +1,22 @@
+{
+  "session_id": "sdlc_session_01",
+  "completed_at": "2026-09-10 12:30:04 AM",
+  "duration_minutes": 20,
+  "questions_count": 10,
+  "cheating_events": [],
+  "aria_submission": {
+    "score": "10/10",
+    "total_answered": 10,
+    "status": "Graded & Approved"
+  },
+  "gaia_submission": {
+    "score": "10/10",
+    "total_answered": 10,
+    "status": "Graded & Approved"
+  },
+  "results_declared": true,
+  "declared_by": "Dad (Mentor L)",
+  "reward": "Chocolates 🍫",
+  "status": "Graded & Closed",
+  "classroom_status": "Closed until next scheduled examination session"
+}

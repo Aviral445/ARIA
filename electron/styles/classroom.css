@@ -1,0 +1,358 @@
+/* ═══════════════════════════════════════════════════════════════════════════════
+   CLASSROOM // SDLC THINKPAD ARENA STYLES
+   Strict Closed-Book Examination Environment for Aria & GAIA
+   ═══════════════════════════════════════════════════════════════════════════════ */
+
+.classroom-arena {
+  margin-top: 0;
+  background: rgba(13, 17, 26, 0.78);
+  border: 1px solid rgba(168, 85, 247, 0.28);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45), 0 0 24px rgba(168, 85, 247, 0.08);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.classroom-arena:hover {
+  border-color: rgba(168, 85, 247, 0.45);
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.55), 0 0 32px rgba(168, 85, 247, 0.14);
+}
+
+/* ── CLASSROOM HEADER & TIMER HUD ─────────────────────────────────────────── */
+.classroom-header {
+  padding: 18px 24px;
+  background: linear-gradient(135deg, rgba(23, 29, 44, 0.85), rgba(15, 20, 32, 0.95));
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.classroom-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.classroom-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.classroom-pill {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  padding: 3px 9px;
+  border-radius: 20px;
+}
+
+.pill-lockdown {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.2);
+}
+
+.pill-active {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.classroom-title {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: #f8fafc;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.classroom-subtitle {
+  font-size: 11.5px;
+  color: var(--text-muted);
+}
+
+/* Master Digital Countdown Clock */
+.classroom-timer-box {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(6, 10, 18, 0.7);
+  border: 1px solid rgba(168, 85, 247, 0.25);
+  padding: 8px 18px;
+  border-radius: 12px;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.timer-digits {
+  font-family: 'Consolas', 'Courier New', monospace;
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: #38bdf8;
+  text-shadow: 0 0 16px rgba(56, 189, 248, 0.6);
+  min-width: 90px;
+  text-align: center;
+}
+
+.timer-digits.urgent {
+  color: #ef4444 !important;
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.8) !important;
+  animation: timerPulse 0.9s infinite alternate;
+}
+
+@keyframes timerPulse {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(1.04); opacity: 1; text-shadow: 0 0 26px rgba(239, 68, 68, 1); }
+}
+
+.timer-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.timer-label {
+  font-size: 9.5px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--text-muted);
+}
+
+.q-cadence {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c084fc;
+}
+
+/* Controls */
+.classroom-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.btn-exam-start {
+  background: linear-gradient(135deg, #9333ea, #6366f1);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 9px 18px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 4px 14px rgba(147, 51, 234, 0.4);
+  transition: all 0.2s;
+}
+
+.btn-exam-start:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(147, 51, 234, 0.6);
+}
+
+.btn-exam-secondary {
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 9px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-exam-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+/* ── PROCTOR BROADCAST TICKER ────────────────────────────────────────────── */
+.proctor-ticker {
+  background: rgba(10, 14, 24, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 9px 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 11.5px;
+  color: #e2e8f0;
+}
+
+.proctor-badge {
+  background: rgba(168, 85, 247, 0.2);
+  color: #d8b4fe;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+}
+
+.proctor-msg-text {
+  flex: 1;
+  font-family: 'Consolas', monospace;
+  color: #38bdf8;
+  font-weight: 600;
+}
+
+/* ── DUAL DESKS WORKSPACE ─────────────────────────────────────────────────── */
+.classroom-desks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  padding: 24px;
+}
+
+@media (max-width: 900px) {
+  .classroom-desks {
+    grid-template-columns: 1fr;
+  }
+}
+
+.student-desk {
+  background: rgba(18, 24, 38, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.student-desk.aria-desk {
+  border-top: 3px solid #06b6d4;
+}
+
+.student-desk.gaia-desk {
+  border-top: 3px solid #a855f7;
+}
+
+.desk-header {
+  padding: 12px 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.desk-student-name {
+  font-size: 13.5px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.aria-name { color: #22d3ee; }
+.gaia-name { color: #c084fc; }
+
+.desk-status {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+/* Question Banner inside Desk */
+.desk-question-card {
+  padding: 14px 18px;
+  background: rgba(10, 15, 26, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.q-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.q-number-pill {
+  font-size: 10px;
+  font-weight: 800;
+  color: #f1f5f9;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.q-difficulty {
+  font-size: 10px;
+  font-weight: 800;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.diff-beginner { color: #4ade80; background: rgba(34, 197, 94, 0.15); border: 1px solid rgba(34, 197, 94, 0.3); }
+.diff-medium { color: #fbbf24; background: rgba(251, 191, 36, 0.15); border: 1px solid rgba(251, 191, 36, 0.3); }
+.diff-hard { color: #f87171; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+.q-text {
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #f8fafc;
+  font-weight: 500;
+}
+
+/* Answer Sheet Stream */
+.desk-stream {
+  padding: 16px 18px;
+  min-height: 220px;
+  max-height: 380px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.answer-card {
+  background: rgba(23, 31, 48, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: #e2e8f0;
+}
+
+.answer-card.sealed {
+  border-left: 3px solid #22c55e;
+}
+
+.answer-header-meta {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+.desk-footer-status {
+  padding: 10px 18px;
+  background: rgba(255, 255, 255, 0.02);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-size: 11px;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

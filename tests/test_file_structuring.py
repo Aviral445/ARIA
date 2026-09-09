@@ -26,7 +26,7 @@ from core.aria_file_structuring import (
     _resolve_safe_path,
     ARIA_FILES_DIR
 )
-from tools.aria_file_structuring import register_tool, file_structuring_tool
+from system_tools.aria_file_structuring import register_tool, file_structuring_tool
 from core.aria_adk import (
     aria_create_folder,
     aria_write_file,

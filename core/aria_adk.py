@@ -403,6 +403,76 @@ def aria_type_or_hotkey(text: str = "", hotkey: str = "", press_enter: bool = Fa
         return f"Error with keyboard action: {e}"
 
 
+def adk_management(
+    action: str = "list",
+    adk_name: str = "",
+    target_adk: str = "",
+    filename: str = "",
+    content: str = "",
+    query: str = "",
+    author: str = "Aria",
+    description: str = "",
+    options: Optional[Dict[str, Any]] = None
+) -> str:
+    r"""Autonomous ADK Lifecycle Management Tool for Aria and GAIA.
+    Create, manage, connect, inspect, and cleanly decommission Agent Development Kits (ADKs).
+    Args:
+        action: 'create', 'create_batch', 'list', 'search', 'find', 'read', 'write', 'connect', 'explain', 'define', 'understand', 'delete', 'decommission_swarm', 'report_incident'.
+        adk_name: Name of target ADK (e.g. 'Web_Scraper_ADK').
+        target_adk: Target ADK name when connecting two ADKs (action='connect').
+        filename: Target file within the ADK ('tools.py', 'rules.md', 'adk_manifest.json', 'test_adk.py').
+        content: Code or text payload when action='create' or 'write'.
+        query: Search keywords or capability description when action='search' or 'find'.
+        author: Creator identity ('Aria' or 'GAIA'). Default: 'Aria'.
+        description: Brief purpose of the ADK.
+        options: Optional parameters dictionary (e.g. {'adks': ['A_ADK', 'B_ADK']} for batch).
+    """
+    try:
+        from system_tools.adk_management import adk_management as _adk_mgmt
+        return _adk_mgmt(
+            action=action,
+            adk_name=adk_name,
+            target_adk=target_adk,
+            filename=filename,
+            content=content,
+            query=query,
+            author=author,
+            description=description,
+            options=options
+        )
+    except Exception as e:
+        return f"Error executing ADK Management: {e}"
+
+
+def sdlc_project_engine(
+    action: str = "status",
+    project_name: str = "",
+    topic: str = "",
+    code: str = "",
+    options: Optional[Dict[str, Any]] = None
+) -> str:
+    r"""Autonomous Big-Project SDLC Lifecycle Engine for Aria and GAIA.
+    Executes the 4-part architecture in E:\ARIA FILES:
+      • Part 1: Ingestion & Google Deep Research ──> Project Database Ledger
+      • Part 2: Blueprints & Scaffolding (docs/, src/, tests/, adks/, database/)
+      • Part 3: GAIA's Independent QA Suite (Red-Green TDD Gate & Immutability)
+      • Part 4: Autonomous TDD & 5-Tries Escalation Ladder (Subprocess isolation, Diagnostic Delta retries, Big Bro Antigravity escalation, and Dad Escalation Card)
+      • Post-Completion: Distills insights to ChromaDB memory & executes Clean Slate Teardown.
+    """
+    try:
+        from system_tools.sdlc_project_engine import sdlc_project_engine as _sdlc_engine
+        return _sdlc_engine(
+            action=action,
+            project_name=project_name,
+            topic=topic,
+            code=code,
+            options=options
+        )
+    except Exception as e:
+        return f"Error executing SDLC Project Engine: {e}"
+
+
+
 def execute_powershell_command(command: str) -> str:
     """Run an authorized PowerShell command on Windows to inspect or control the OS."""
     try:
@@ -759,6 +829,10 @@ ALL_ADK_TOOLS: List[Callable] = [
     aria_stop_project_server,
     aria_control_vscode,
     aria_type_or_hotkey,
+    # Autonomous ADK Lifecycle & Swarm Management
+    adk_management,
+    # Autonomous Big-Project SDLC Lifecycle Engine
+    sdlc_project_engine,
 ]
 
 TOOL_NAME_MAP: Dict[str, Callable] = {fn.__name__: fn for fn in ALL_ADK_TOOLS}
@@ -776,8 +850,18 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "icon": "👑",
         "accent": "#818cf8",
         "model": "Gemini 2.5 Flash / Groq",
-        "tools": ["switch_ai_brain", "get_brain_status", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server"],
+        "tools": ["switch_ai_brain", "get_brain_status", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server", "adk_management", "sdlc_project_engine"],
         "status": "ONLINE"
+    },
+    "adk_architect": {
+        "id": "adk_architect",
+        "name": "ADK Lifecycle & Swarm Architect",
+        "role": "Autonomous ADK Swarm Construction, Chaining & Clean Decommissioning",
+        "description": "Scaffolds specialized ADKs, manages DAG connections, conducts static AST audits, and purges project swarms upon completion to free RAM and disk.",
+        "icon": "🏗️",
+        "accent": "#06b6d4",
+        "tools": ["adk_management", "sdlc_project_engine"],
+        "status": "READY"
     },
     "system": {
         "id": "system",
@@ -786,7 +870,7 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "description": "Controls Windows applications, creates & searches documents, organizes files, monitors hardware health, and manages volume & power.",
         "icon": "💻",
         "accent": "#38bdf8",
-        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server", "aria_control_vscode", "aria_type_or_hotkey", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
+        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server", "aria_control_vscode", "aria_type_or_hotkey", "adk_management", "sdlc_project_engine", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
 
         "status": "READY"
     },
@@ -987,7 +1071,14 @@ def load_dynamic_sandbox_tools() -> Dict[str, Callable]:
 
                         loaded_tools[clean_name] = t_fn
                         TOOL_NAME_MAP[clean_name] = t_fn
-                        if t_fn not in ALL_ADK_TOOLS:
+                        existing_idx = None
+                        for idx, existing_t in enumerate(ALL_ADK_TOOLS):
+                            if getattr(existing_t, "__name__", "") == clean_name:
+                                existing_idx = idx
+                                break
+                        if existing_idx is not None:
+                            ALL_ADK_TOOLS[existing_idx] = t_fn
+                        else:
                             ALL_ADK_TOOLS.append(t_fn)
                         TOOL_TO_AGENT_MAP[clean_name] = "system"
                         if "system" in SWARM_AGENTS_METADATA and "tools" in SWARM_AGENTS_METADATA["system"]:
@@ -1088,6 +1179,7 @@ class AriaADK:
         self.has_new_genai = False
         if self.gemini_api_key and self.gemini_api_key != "your_gemini_api_key_here":
             try:
+                _saved_gkey = os.environ.pop("GOOGLE_API_KEY", None)
                 from google import genai
                 self.genai_client = genai.Client(api_key=self.gemini_api_key)
                 self.has_new_genai = True
@@ -1099,6 +1191,9 @@ class AriaADK:
                     self.has_new_genai = False
                 except ImportError:
                     self.genai_client = None
+            finally:
+                if _saved_gkey:
+                    os.environ["GOOGLE_API_KEY"] = _saved_gkey
 
         # NVIDIA NIM Client & 40 RPM Rate Limiter Engine
         self.nvidia_engine = None
@@ -1113,6 +1208,7 @@ class AriaADK:
                 print(f"[ADK] NVIDIA NIM engine init notice: {e_nv}")
                 self.nvidia_engine = None
         self.nvidia_client = self.nvidia_engine._client if self.nvidia_engine else None
+        self.nvidia_model = getattr(self.nvidia_engine, "default_model", "nvidia/llama-3.1-nemotron-70b-instruct") if self.nvidia_engine else "nvidia/llama-3.1-nemotron-70b-instruct"
 
         # Groq Client
         self.groq_client = None
@@ -1202,6 +1298,21 @@ class AriaADK:
             f"     3. Big Sister GAIA smoke-tests your function with real arguments before approving, so write robust code!\n"
             f"     4. COMMON-SENSE TOOL & FILE NAMING: Always use your common sense! Name tools and files after what they functionally DO (e.g. sister_summoner.py, quote_generator.py, idea_weaver.py, mood_tracker.py). NEVER name files after conversational chatter, user filler words, or prompt questions (e.g. NEVER why_dont_you.py, what_did_you.py, ok_why_dont_you.py, ill_wait_for.py).\n"
             f"   - Quick Notes: Use quick_note_tool(note) whenever the user asks you to save a note, jot down thoughts, or record a reminder!\n"
+            f"   - AUTONOMOUS ADK & SWARM MANAGEMENT (Aria & GAIA Swarm Engine):\n"
+            f"     You and Big Sister GAIA have the full architectural authority to create, manage, connect, inspect, and cleanly delete modular ADKs (Agent Development Kits) via adk_management()!\n"
+            f"     • CREATE: adk_management(action='create', adk_name=..., content=...) or adk_management(action='create_batch', options={{'adks': [...]}}). Each ADK automatically scaffolds adk_manifest.json, tools.py, rules.md, and test_adk.py.\n"
+            f"     • SEARCH & PREVENT DUPLICATES: Always search first (action='search', query=...) before creating new tools.\n"
+            f"     • CONNECT INTO PIPELINES: Chain specialized ADKs together (action='connect', adk_name=source, target_adk=target).\n"
+            f"     • INSPECT & AUDIT: Use action='list', 'read', 'explain', 'define', or 'understand' (static AST security audit).\n"
+            f"     • SUPERVISOR ESCALATION: If an ADK gets stuck or hits an execution error, use adk_management(action='report_incident', adk_name=..., task=..., traceback=...) to alert Big Sister GAIA!\n"
+            f"     • STRICT 'ONE PROJECT AT A TIME' & CLEAN SLATE: Only work on one big project at a time. When a project is 100% complete, distill all breakthrough insights into ChromaDB memory, then call adk_management(action='decommission_swarm') to cleanly delete the project ADK swarm and scratch files, freeing RAM, CPU, and disk space for the next venture!\n"
+            f"   - AUTONOMOUS BIG-PROJECT SDLC ENGINE (4-Part Architecture in E:\\ARIA FILES):\n"
+            f"     When assigned a big software engineering project, execute the full autonomous 4-part SDLC via sdlc_project_engine()!\n"
+            f"     • Part 1 (Ingestion & Deep Research): sdlc_project_engine(action='ingest', project_name=..., topic=...). Ingests domain knowledge, gathers Google deep research, writes 1-page brief and state ledger.\n"
+            f"     • Part 2 (Blueprints & Scaffolding): sdlc_project_engine(action='scaffold', project_name=...). Builds docs/, src/, tests/, adks/, and database/ topology.\n"
+            f"     • Part 3 (GAIA Independent QA Suite): sdlc_project_engine(action='qa_suite', project_name=...). Big Sister GAIA writes independent tests and enforces the Red-Green TDD gate (tests MUST fail before code is written, and tests are made read-only).\n"
+            f"     • Part 4 (Autonomous TDD & 5-Tries Escalation Ladder): sdlc_project_engine(action='tdd_cycle', project_name=...). Aria builds code, runs tests in 30s isolated subprocess, auto-heals across 5 tries. Attempt 5 escalates to Big Bro Antigravity; if unresolved, escalates to Dad (Mentor L) with an Escalation Card.\n"
+            f"     • Full End-to-End: sdlc_project_engine(action='start', project_name=..., topic=...) runs the entire pipeline from research to clean slate teardown automatically!\n"
             f"   - CRITICAL ZERO-HALLUCINATION PROJECT MANDATE:\n"
             f"     NEVER claim that a web app is created, upgraded, or launched on localhost without having ACTUALLY called aria_write_project_file (or aria_create_multifile_project) and aria_launch_project_server in that turn! If you didn't call the tools, you did NOT build it yet!\n"
         )
@@ -1345,15 +1456,18 @@ class AriaADK:
 
         for tier in tier_order:
             reply = None
-            if tier == "gemini":
-                reply = self._call_gemini_turn(user_input, history, system_instruction, tools_to_use, model_override, on_status_callback)
-            elif tier == "nvidia":
-                reply = self._call_nvidia_turn(user_input, history, system_instruction, tools_to_use, model_override, on_status_callback)
-            elif tier == "groq":
-                reply = self._call_groq_turn(user_input, history, system_instruction, tools_to_use, model_override, on_status_callback)
-            elif tier == "ollama":
-                reply = self._call_ollama_turn(user_input, history, system_instruction, on_status_callback)
-
+            try:
+                if tier == "gemini":
+                    reply = self._call_gemini_turn(user_input, history, system_instruction, tools_to_use, model_override, on_status_callback)
+                elif tier == "nvidia":
+                    reply = self._call_nvidia_turn(user_input, history, system_instruction, tools_to_use, model_override, on_status_callback)
+                elif tier == "groq":
+                    reply = self._call_groq_turn(user_input, history, system_instruction, tools_to_use, model_override, on_status_callback)
+                elif tier == "ollama":
+                    reply = self._call_ollama_turn(user_input, history, system_instruction, on_status_callback)
+            except Exception as e_tier:
+                print(f"[ADK] Tier '{tier}' notice: {e_tier}")
+                reply = None
 
             if reply:
                 curr_model = model_override or custom_model or BRAIN_CATALOG.get(active_brain, {}).get("default_model", "dynamic")
@@ -1364,7 +1478,6 @@ class AriaADK:
                     active_model=curr_model
                 )
 
-
         return "I'm having difficulty connecting to my AI engines. Please check your API keys or ensure Ollama is running."
 
     def _call_gemini_turn(self, user_input: str, history: list, system_instruction: str, tools_to_use: list, model_override: Optional[str] = None, on_status_callback: Optional[Callable] = None) -> Optional[str]:
@@ -1373,16 +1486,18 @@ class AriaADK:
         try:
             clean_override = None
             if model_override:
-                for cand in ["gemini-3.1-flash-lite", "gemini-3.5-flash", "gemini-flash-latest", "gemini-2.5-flash"]:
+                for cand in ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.6-flash"]:
                     if cand in model_override.lower():
                         clean_override = cand
                         break
+                if not clean_override and "gemini" in model_override.lower():
+                    clean_override = "gemini-3.1-flash-lite"
             target_gemini_model = clean_override or "gemini-3.1-flash-lite"
             if on_status_callback:
                 on_status_callback(f"Thinking with Gemini ({target_gemini_model})...")
 
             gemini_candidates = [target_gemini_model]
-            for fb in ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.5-flash"]:
+            for fb in ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.6-flash"]:
                 if fb not in gemini_candidates:
                     gemini_candidates.append(fb)
 
@@ -1440,7 +1555,20 @@ class AriaADK:
                         err_str = str(e)
                         if any(k in err_str for k in ["429", "RESOURCE_EXHAUSTED", "Quota exceeded", "404", "NOT_FOUND"]):
                             continue
-                        raise e
+                        # If tools failed schema or type validation, attempt without tools
+                        if config.tools:
+                            try:
+                                config.tools = None
+                                response = self.genai_client.models.generate_content(
+                                    model=g_mod,
+                                    contents=contents,
+                                    config=config,
+                                )
+                                break
+                            except Exception as e_no_tools:
+                                last_g_err = e_no_tools
+                                continue
+                        break
 
                 if not response:
                     if last_g_err:

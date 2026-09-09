@@ -35,20 +35,20 @@ BRAIN_CATALOG: Dict[str, Dict[str, Any]] = {
         "icon": "✨",
         "provider": "Google AI Studio",
         "description": "Frontier multimodal reasoning, large context memory, and native tool execution.",
-        "default_model": "gemini-2.5-flash",
-        "available_models": ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-pro"]
+        "default_model": "gemini-3.1-flash-lite",
+        "available_models": ["gemini-3.1-flash-lite", "gemini-flash-latest", "gemini-3.6-flash"]
     },
     "nvidia": {
         "name": "NVIDIA NIM Cloud",
         "icon": "⚡",
         "provider": "NVIDIA API Catalog",
         "description": "Frontier open models with dedicated 40 RPM rate limiting (DeepSeek-R1, Llama 3.3 70B, Qwen 2.5 Coder).",
-        "default_model": "meta/llama-3.3-70b-instruct",
+        "default_model": "nvidia/llama-3.1-nemotron-70b-instruct",
         "available_models": [
+            "nvidia/llama-3.1-nemotron-70b-instruct",
             "meta/llama-3.3-70b-instruct",
             "deepseek-ai/deepseek-r1",
-            "qwen/qwen2.5-coder-32b-instruct",
-            "nvidia/llama-3.1-nemotron-70b-instruct"
+            "qwen/qwen2.5-coder-32b-instruct"
         ]
     },
     "groq": {
@@ -57,7 +57,7 @@ BRAIN_CATALOG: Dict[str, Dict[str, Any]] = {
         "provider": "Groq LPU",
         "description": "Ultra-low latency inference (~100-200ms) with high throughput.",
         "default_model": "qwen/qwen3.6-27b",
-        "available_models": ["qwen/qwen3.6-27b", "openai/gpt-oss-120b", "llama-3.3-70b-versatile", "groq/compound-mini"]
+        "available_models": ["qwen/qwen3.6-27b", "openai/gpt-oss-120b", "groq/compound-mini"]
     },
     "ollama": {
         "name": "Local Ollama",
@@ -80,8 +80,8 @@ def _load_brain_config() -> Dict[str, Any]:
     return {
         "active_brain": "auto",
         "custom_models": {
-            "gemini": "gemini-2.5-flash",
-            "nvidia": "meta/llama-3.3-70b-instruct",
+            "gemini": "gemini-3.1-flash-lite",
+            "nvidia": "nvidia/llama-3.1-nemotron-70b-instruct",
             "groq": "qwen/qwen3.6-27b",
             "ollama": "llama3.2"
         },

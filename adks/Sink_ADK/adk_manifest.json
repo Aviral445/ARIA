@@ -1,0 +1,16 @@
+{
+  "adk_name": "Sink_ADK",
+  "version": "1.0.0",
+  "author": "Aria",
+  "description": "Consumer of data",
+  "created_at": "2026-09-09T13:47:05.996243",
+  "updated_at": "2026-09-09T13:47:05.996243",
+  "status": "active",
+  "tools": [
+    "sample_tool"
+  ],
+  "connected_to": [],
+  "tags": [
+    "sink_adk"
+  ]
+}

@@ -25,6 +25,11 @@ DOCS_DIR         = os.path.join(ROOT_DIR, "docs")
 GUIDELINES_DIR   = os.path.join(DOCS_DIR, "guidelines")
 TESTS_DIR        = os.path.join(ROOT_DIR, "tests")
 GAIA_DIR         = os.path.join(ROOT_DIR, "gaia")
+ADKS_DIR         = os.path.join(ROOT_DIR, "adks")
+try:
+    os.makedirs(ADKS_DIR, exist_ok=True)
+except Exception:
+    pass
 
 # Isolated Sandbox (The Agent's Playground at Root)
 SANDBOX_DIR           = os.path.join(ROOT_DIR, "sandbox")

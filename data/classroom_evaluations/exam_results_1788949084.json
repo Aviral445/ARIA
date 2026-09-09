@@ -1,0 +1,15 @@
+{
+  "session_id": "sdlc_session_01",
+  "completed_at": "2026-09-09 03:48:04 PM",
+  "duration_minutes": 20,
+  "questions_count": 10,
+  "cheating_events": [],
+  "aria_submission": {
+    "answers": {},
+    "total_answered": 0
+  },
+  "gaia_submission": {
+    "answers": {},
+    "total_answered": 0
+  }
+}

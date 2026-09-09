@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Aria & GAIA - Master System Design Diagrams</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+
+  <style>
+    :root {
+      --bg-canvas: #060913;
+      --bg-panel: rgba(13, 19, 38, 0.95);
+      --border-subtle: rgba(255, 255, 255, 0.12);
+      --cyan: #00f0ff;
+      --purple: #c084fc;
+      --emerald: #10b981;
+      --rose: #f43f5e;
+      --amber: #fbbf24;
+      --sky: #38bdf8;
+      --indigo: #818cf8;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: var(--bg-canvas);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Header Bar */
+    header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
+      z-index: 100;
+      background: rgba(8, 12, 26, 0.96);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1.5rem;
+      gap: 1rem;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .badge-blueprint {
+      background: linear-gradient(135deg, #0284c7, #6366f1);
+      color: #fff;
+      font-weight: 800;
+      font-size: 0.72rem;
+      padding: 0.25rem 0.55rem;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      letter-spacing: 0.05em;
+    }
+
+    .header-left h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-left p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Diagram Selector Tabs */
+    .tab-bar {
+      display: flex;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 0.25rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-subtle);
+      gap: 0.25rem;
+    }
+
+    .tab-btn {
+      padding: 0.4rem 0.85rem;
+      border-radius: 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .tab-btn.active {
+      background: rgba(0, 240, 255, 0.16);
+      color: var(--cyan);
+      border: 1px solid rgba(0, 240, 255, 0.4);
+      box-shadow: 0 0 12px rgba(0, 240, 255, 0.25);
+    }
+
+    /* Pan & Zoom Controls */
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .ctrl-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s;
+    }
+
+    .ctrl-btn:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      background: rgba(0, 240, 255, 0.15);
+    }
+
+    /* Canvas Viewport */
+    main {
+      width: 100vw;
+      height: 100vh;
+      padding-top: 60px;
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      background-image: 
+        radial-gradient(circle at 50% 50%, rgba(0, 240, 255, 0.02) 0%, transparent 70%),
+        linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+      background-size: 100% 100%, 35px 35px, 35px 35px;
+    }
+
+    main:active {
+      cursor: grabbing;
+    }
+
+    .viewport-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      transform-origin: 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.05s linear;
+    }
+
+    /* Diagram Panels */
+    .diagram-view {
+      display: none;
+      padding: 1rem;
+    }
+
+    .diagram-view.active {
+      display: block;
+    }
+
+    /* HUD overlay */
+    .hud {
+      position: absolute;
+      bottom: 1.25rem;
+      left: 1.25rem;
+      background: rgba(10, 15, 30, 0.9);
+      border: 1px solid var(--border-subtle);
+      padding: 0.4rem 0.8rem;
+      border-radius: 6px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: var(--cyan);
+      pointer-events: none;
+      z-index: 50;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    }
+
+    /* SVG Diagram Styles */
+    svg {
+      overflow: visible;
+      user-select: none;
+    }
+
+    .svg-box {
+      fill: #0d1527;
+      stroke: #1e293b;
+      stroke-width: 1.5;
+      rx: 8;
+      ry: 8;
+      filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.6));
+      transition: all 0.2s;
+    }
+
+    .svg-box:hover {
+      stroke-width: 2.5;
+      filter: drop-shadow(0 8px 24px rgba(0, 240, 255, 0.25));
+    }
+
+    .panel-bg {
+      fill: rgba(15, 23, 42, 0.65);
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 1.5;
+      stroke-dasharray: 6, 6;
+      rx: 14;
+      ry: 14;
+    }
+
+    .text-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      fill: #ffffff;
+      font-size: 14px;
+    }
+
+    .text-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      fill: #94a3b8;
+    }
+
+    .text-panel-title {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: 0.02em;
+    }
+
+    .arrow-line {
+      stroke-width: 2;
+      fill: none;
+    }
+
+    .arrow-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 600;
+      paint-order: stroke;
+      stroke: #060913;
+      stroke-width: 3px;
+      stroke-linecap: butt;
+      stroke-linejoin: miter;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="header-left">
+      <span class="badge-blueprint">BLUEPRINT</span>
+      <div>
+        <h1>Aria & GAIA System Design Diagrams</h1>
+        <p>Architectural Blueprints Faithful to Paper Drawings & Runtime Code</p>
+      </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('sdlc')">
+        <span>📄</span> 1. Big-Project SDLC (Paper 2)
+      </button>
+      <button class="tab-btn" onclick="switchTab('adk')">
+        <span>🧩</span> 2. ADK Management (Paper 1)
+      </button>
+      <button class="tab-btn" onclick="switchTab('ladder')">
+        <span>🪜</span> 3. 5-Tries Escalation Ladder
+      </button>
+      <button class="tab-btn" onclick="switchTab('runtime')">
+        <span>🖥️</span> 4. MyAgent Process Topology
+      </button>
+    </div>
+
+    <!-- Canvas Pan / Zoom Controls -->
+    <div class="controls">
+      <button class="ctrl-btn" onclick="zoom(0.15)" title="Zoom In (+)">+</button>
+      <button class="ctrl-btn" onclick="zoom(-0.15)" title="Zoom Out (−)">−</button>
+      <button class="ctrl-btn" onclick="fitDiagramToScreen()" title="Fit View to Screen">⛶</button>
+    </div>
+  </header>
+
+  <!-- Viewport Canvas -->
+  <main id="viewportContainer">
+    <div class="viewport-canvas" id="canvasWrapper">
+
+      <!-- ========================================================================= -->
+      <!-- TAB 1: AUTONOMOUS BIG-PROJECT SDLC ENGINE (100% FAITHFUL TO PAPER 2) -->
+      <!-- ========================================================================= -->
+      <div class="diagram-view active" id="view-sdlc">
+        <svg width="1700" height="1420" viewBox="0 0 1700 1420">
+          <defs>
+            <marker id="arrow-emerald" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#10b981" />
+            </marker>
+            <marker id="arrow-sky" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#38bdf8" />
+            </marker>
+            <marker id="arrow-amber" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#fbbf24" />
+            </marker>
+            <marker id="arrow-rose" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#f43f5e" />
+            </marker>
+            <marker id="arrow-purple" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#c084fc" />
+            </marker>
+          </defs>
+
+          <!-- DIAGRAM HEADER TITLE -->
+          <text x="850" y="38" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="22" font-weight="800" fill="#ffffff" letter-spacing="0.02em">
+            SYSTEM DESIGN: AUTONOMOUS BIG-PROJECT SDLC ENGINE (E:\ARIA FILES\)
+          </text>
+          <text x="850" y="62" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94a3b8">
+            Complete Architectural Blueprint Faithfully Mapping the 4 Numbered Panels of User's Handwritten Paper Design
+          </text>
+
+          <!-- TOP ENTRY: DAD & GAIA / ARIA INITIATION -->
+          <rect x="620" y="85" width="460" height="52" rx="10" fill="#2e1065" stroke="#c084fc" stroke-width="2" />
+          <text x="850" y="108" text-anchor="middle" class="text-title" fill="#ffffff">👑 Initiated by Dad (Mentor L): Project Idea "Bla Bla"</text>
+          <text x="850" y="126" text-anchor="middle" class="text-sub" fill="#e9d5ff">Gaia (Architect) / Aria (Developer) Swarm Activated</text>
+
+          <!-- CENTRAL PROJECT DATABASE / LEDGER -->
+          <g id="central-db" transform="translate(730, 485)">
+            <rect x="0" y="0" width="240" height="135" rx="16" fill="#1e1b4b" stroke="#818cf8" stroke-width="3" filter="drop-shadow(0 0 25px rgba(99, 102, 241, 0.45))" />
+            <path d="M30 45 C30 35, 210 35, 210 45 C210 55, 30 55, 30 45 Z" fill="#312e81" stroke="#818cf8" stroke-width="2"/>
+            <path d="M30 45 L30 85 C30 95, 210 95, 210 85 L210 45" fill="none" stroke="#818cf8" stroke-width="2"/>
+            <text x="120" y="32" text-anchor="middle" class="text-title" font-size="16" fill="#c7d2fe">🗄️ PROJECT DATABASE</text>
+            <text x="120" y="70" text-anchor="middle" class="text-sub" fill="#e0e7ff">database/project_ledger.json</text>
+            <text x="120" y="86" text-anchor="middle" class="text-sub" fill="#a5b4fc">E:\ARIA FILES\Projects\&lt;Name&gt;</text>
+            <text x="120" y="112" text-anchor="middle" class="text-sub" fill="#38bdf8">Atomic State Machine</text>
+          </g>
+
+          <!-- ================================================================= -->
+          <!-- PANEL 1: INGESTION & DEEP KNOWLEDGE (TOP RIGHT) -->
+          <!-- ================================================================= -->
+          <g id="panel-1" transform="translate(900, 160)">
+            <rect x="0" y="0" width="760" height="290" class="panel-bg" stroke="#10b981" />
+            <text x="24" y="32" class="text-panel-title" fill="#34d399">1. Ingestion & Google Deep Research Phase</text>
+            <text x="24" y="52" class="text-sub" fill="#6ee7b7">Paper Section 1: Research Topic -> Deep Knowledge Document -> Prompt -> Database</text>
+
+            <rect x="25" y="75" width="180" height="50" class="svg-box" stroke="#10b981" />
+            <text x="115" y="98" text-anchor="middle" class="text-title">ADK Creation</text>
+            <text x="115" y="114" text-anchor="middle" class="text-sub">Research Tool Spec</text>
+
+            <rect x="250" y="75" width="240" height="50" class="svg-box" stroke="#10b981" />
+            <text x="370" y="98" text-anchor="middle" class="text-title">Research Topic</text>
+            <text x="370" y="114" text-anchor="middle" class="text-sub">Google Deep Research Out</text>
+
+            <rect x="250" y="150" width="480" height="55" class="svg-box" stroke="#10b981" fill="#064e3b" />
+            <text x="490" y="174" text-anchor="middle" class="text-title">Document with all Deep Knowledge</text>
+            <text x="490" y="192" text-anchor="middle" class="text-sub">docs/DEEP_KNOWLEDGE_BRIEF.md (Synthesized 1-Page)</text>
+
+            <rect x="25" y="150" width="180" height="55" class="svg-box" stroke="#10b981" />
+            <text x="115" y="174" text-anchor="middle" class="text-title">Prompt Document</text>
+            <text x="115" y="192" text-anchor="middle" class="text-sub">System Specifications</text>
+
+            <rect x="200" y="230" width="360" height="42" rx="6" fill="#022c22" stroke="#10b981" stroke-width="1.5" />
+            <text x="380" y="256" text-anchor="middle" class="text-sub" fill="#6ee7b7">Aria Fetches Ingested Knowledge from Database</text>
+
+            <path d="M205 100 L250 100" class="arrow-line" stroke="#10b981" marker-end="url(#arrow-emerald)" />
+            <path d="M370 125 L370 150" class="arrow-line" stroke="#10b981" marker-end="url(#arrow-emerald)" />
+            <path d="M115 125 L115 150" class="arrow-line" stroke="#10b981" marker-end="url(#arrow-emerald)" />
+
+            <path d="M115 205 L115 220 L-60 220 L-60 340 L-60 370" class="arrow-line" stroke="#10b981" marker-end="url(#arrow-emerald)" />
+            <text x="-15" y="270" class="arrow-label" fill="#10b981">Send Prompt & Docs</text>
+          </g>
+
+          <path d="M1080 111 L1280 111 L1280 160" class="arrow-line" stroke="#c084fc" marker-end="url(#arrow-purple)" />
+          <text x="1190" y="130" class="arrow-label" fill="#c084fc">Start Big Project</text>
+
+          <!-- ================================================================= -->
+          <!-- PANEL 2: BLUEPRINTING & SCAFFOLDING (TOP LEFT) -->
+          <!-- ================================================================= -->
+          <g id="panel-2" transform="translate(40, 160)">
+            <rect x="0" y="0" width="670" height="410" class="panel-bg" stroke="#0284c7" />
+            <text x="24" y="32" class="text-panel-title" fill="#38bdf8">2nd. Blueprinting, Planning & File Scaffolding</text>
+            <text x="24" y="52" class="text-sub" fill="#7dd3fc">Paper Section 2: Building Plans + File Creation (Detail) -> Database -> Develop/Test Loop</text>
+
+            <rect x="25" y="70" width="140" height="45" class="svg-box" stroke="#0284c7" />
+            <text x="95" y="93" text-anchor="middle" class="text-title">ADK Creation</text>
+            <text x="95" y="106" text-anchor="middle" class="text-sub">Prompt Document</text>
+
+            <rect x="190" y="70" width="225" height="135" class="svg-box" stroke="#0284c7" fill="#082f49" />
+            <text x="302" y="92" text-anchor="middle" class="text-title" fill="#38bdf8">Building Plans</text>
+            <text x="205" y="112" class="text-sub">• Creating Checklists</text>
+            <text x="205" y="128" class="text-sub">• Creating File Structure</text>
+            <text x="205" y="144" class="text-sub">• Checking Tools Needed</text>
+            <text x="205" y="160" class="text-sub">• Task List (TASK_CHECKLIST.md)</text>
+            <text x="205" y="176" class="text-sub">• Testing List (QA Plan)</text>
+
+            <rect x="435" y="70" width="210" height="135" class="svg-box" stroke="#0284c7" fill="#082f49" />
+            <text x="540" y="92" text-anchor="middle" class="text-title" fill="#38bdf8">Files Creation (All Detail)</text>
+            <text x="450" y="112" class="text-sub">📁 Docs (docs/ARCHITECTURE.md)</text>
+            <text x="450" y="128" class="text-sub">📝 Notes (docs/DESIGN_NOTES.md)</text>
+            <text x="450" y="144" class="text-sub">📋 .txt (requirements.txt)</text>
+            <text x="450" y="160" class="text-sub">📑 .md (README.md, checklists)</text>
+            <text x="450" y="176" class="text-sub">📦 database/ (project_ledger.json)</text>
+
+            <path d="M430 205 L430 230 L660 230 L660 340" class="arrow-line" stroke="#38bdf8" marker-end="url(#arrow-sky)" />
+            <text x="470" y="224" class="arrow-label" fill="#38bdf8">Send All Files to Database</text>
+
+            <rect x="25" y="240" width="620" height="150" rx="10" fill="#041826" stroke="#0284c7" stroke-width="1.5" />
+            <text x="40" y="264" class="text-title" fill="#38bdf8">Aria / Gaia Development Loop (Fetch All Files from Database)</text>
+
+            <rect x="40" y="280" width="95" height="42" class="svg-box" stroke="#0284c7" />
+            <text x="87" y="306" text-anchor="middle" class="text-title">Check</text>
+
+            <rect x="165" y="280" width="115" height="42" class="svg-box" stroke="#0284c7" fill="#0c4a6e" />
+            <text x="222" y="306" text-anchor="middle" class="text-title">Develop (src/)</text>
+
+            <rect x="310" y="280" width="95" height="42" class="svg-box" stroke="#0284c7" />
+            <text x="357" y="306" text-anchor="middle" class="text-title">Execute</text>
+
+            <rect x="435" y="280" width="95" height="42" class="svg-box" stroke="#0284c7" />
+            <text x="482" y="306" text-anchor="middle" class="text-title">Testing</text>
+
+            <path d="M482 322 L482 355 L222 355 L222 322" class="arrow-line" stroke="#f43f5e" marker-end="url(#arrow-rose)" />
+            <text x="330" y="370" class="arrow-label" fill="#f43f5e">if fail (Retry Loop)</text>
+
+            <rect x="560" y="280" width="65" height="42" rx="6" fill="#064e3b" stroke="#34d399" stroke-width="1.5" />
+            <text x="592" y="306" text-anchor="middle" class="text-sub" fill="#6ee7b7">Commit</text>
+
+            <path d="M135 301 L165 301" class="arrow-line" stroke="#0284c7" marker-end="url(#arrow-sky)" />
+            <path d="M280 301 L310 301" class="arrow-line" stroke="#0284c7" marker-end="url(#arrow-sky)" />
+            <path d="M405 301 L435 301" class="arrow-line" stroke="#0284c7" marker-end="url(#arrow-sky)" />
+            <path d="M530 301 L560 301" class="arrow-line" stroke="#10b981" marker-end="url(#arrow-emerald)" />
+          </g>
+
+          <path d="M730 520 L400 520 L400 400" class="arrow-line" stroke="#38bdf8" marker-end="url(#arrow-sky)" />
+          <text x="480" y="512" class="arrow-label" fill="#38bdf8">Fetch All Files</text>
+
+          <!-- ================================================================= -->
+          <!-- PANEL 3: GAIA INDEPENDENT QA SUITE (BOTTOM RIGHT) -->
+          <!-- ================================================================= -->
+          <g id="panel-3" transform="translate(1000, 485)">
+            <rect x="0" y="0" width="660" height="230" class="panel-bg" stroke="#fbbf24" />
+            <text x="24" y="32" class="text-panel-title" fill="#fcd34d">3. GAIA Independent QA Suite Phase</text>
+            <text x="24" y="52" class="text-sub" fill="#fef08a">Paper Section 3: Fetch DB -> ADK QA Creation -> Testing Needed -> Files for Testing</text>
+
+            <rect x="25" y="70" width="130" height="50" class="svg-box" stroke="#fbbf24" fill="#451a03" />
+            <text x="90" y="94" text-anchor="middle" class="text-title" fill="#fde68a">GAIA</text>
+            <text x="90" y="110" text-anchor="middle" class="text-sub">QA Sentinel</text>
+
+            <rect x="185" y="70" width="170" height="50" class="svg-box" stroke="#fbbf24" />
+            <text x="270" y="94" text-anchor="middle" class="text-title">ADK Creation</text>
+            <text x="270" y="110" text-anchor="middle" class="text-sub">QA Prompt Generator</text>
+
+            <rect x="385" y="70" width="245" height="50" class="svg-box" stroke="#fbbf24" />
+            <text x="507" y="94" text-anchor="middle" class="text-title">Testing Needed Analysis</text>
+            <text x="507" y="110" text-anchor="middle" class="text-sub">Invariant & Schema Verification</text>
+
+            <rect x="25" y="145" width="605" height="65" rx="8" fill="#2d1a04" stroke="#fbbf24" stroke-width="2" />
+            <text x="327" y="170" text-anchor="middle" class="text-title" fill="#fef08a">📁 Files for Testing: tests/test_independent_qa.py</text>
+            <text x="327" y="192" text-anchor="middle" class="text-sub" fill="#fde68a">
+              🛡️ RED-GREEN TDD GATE: Must fail on empty code (tautology rejection) | Test Immutability: chmod S_IREAD
+            </text>
+
+            <path d="M155 95 L185 95" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+            <path d="M355 95 L385 95" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+            <path d="M507 120 L507 145" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+          </g>
+
+          <path d="M970 545 L1000 545" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+          <text x="975" y="535" class="arrow-label" fill="#fbbf24">Fetch</text>
+
+          <!-- ================================================================= -->
+          <!-- PANEL 4: TDD & 5-TRIES ESCALATION LADDER (BOTTOM) -->
+          <!-- ================================================================= -->
+          <g id="panel-4" transform="translate(40, 750)">
+            <rect x="0" y="0" width="1620" height="630" class="panel-bg" stroke="#f43f5e" />
+            <text x="24" y="32" class="text-panel-title" fill="#fb7185">4. TDD Execution, Supervised Fix & Escalation Ladder</text>
+            <text x="24" y="52" class="text-sub" fill="#fca5a5">Paper Section 4: Tools Check -> Testing (30s Subprocess) -> GAIA Supervise -> 5 Tries -> Big Bro -> Dad!</text>
+
+            <rect x="25" y="70" width="310" height="95" class="svg-box" stroke="#f43f5e" fill="#330b1e" />
+            <text x="180" y="92" text-anchor="middle" class="text-title" fill="#fb7185">GAIA QA & Execution Dispatch</text>
+            <text x="45" y="114" class="text-sub">• Tools Needed Identification</text>
+            <text x="45" y="132" class="text-sub">• All Testing Checklist Generation</text>
+            <text x="45" y="150" class="text-sub">• Tasklist Review & Verification</text>
+
+            <rect x="380" y="85" width="140" height="65" class="svg-box" stroke="#00f0ff" fill="#082f49" />
+            <text x="450" y="112" text-anchor="middle" class="text-title" fill="#00f0ff">Aria (Dev)</text>
+            <text x="450" y="130" text-anchor="middle" class="text-sub">Codebase Synthesizer</text>
+
+            <polygon points="630,80 700,117 630,154 560,117" fill="#3b0764" stroke="#c084fc" stroke-width="2" />
+            <text x="630" y="114" text-anchor="middle" class="text-title" font-size="12">Tools Check?</text>
+            <text x="630" y="128" text-anchor="middle" class="text-sub" font-size="10">Do tools exist?</text>
+
+            <rect x="560" y="185" width="140" height="50" class="svg-box" stroke="#fbbf24" />
+            <text x="630" y="208" text-anchor="middle" class="text-title">ADK Tool Creation</text>
+            <text x="630" y="224" text-anchor="middle" class="text-sub">Auto-wraps API/CLI</text>
+
+            <rect x="750" y="85" width="220" height="65" class="svg-box" stroke="#f43f5e" fill="#4c0519" />
+            <text x="860" y="112" text-anchor="middle" class="text-title" fill="#fecdd3">Testing Execution</text>
+            <text x="860" y="130" text-anchor="middle" class="text-sub">30s Isolated Subprocess (Pytest)</text>
+
+            <rect x="1010" y="85" width="150" height="65" class="svg-box" stroke="#fbbf24" />
+            <text x="1085" y="112" text-anchor="middle" class="text-title" fill="#fde68a">GAIA Supervise</text>
+            <text x="1085" y="130" text-anchor="middle" class="text-sub">Audit Code Diffs & Trace</text>
+
+            <rect x="1200" y="85" width="110" height="65" class="svg-box" stroke="#00f0ff" />
+            <text x="1255" y="112" text-anchor="middle" class="text-title" fill="#00f0ff">Aria Fix</text>
+            <text x="1255" y="130" text-anchor="middle" class="text-sub">Self-Repair</text>
+
+            <polygon points="1380,85 1440,117 1380,149 1320,117" fill="#064e3b" stroke="#34d399" stroke-width="2" />
+            <text x="1380" y="114" text-anchor="middle" class="text-title" font-size="12">Tests Pass?</text>
+            <text x="1380" y="128" text-anchor="middle" class="text-sub" font-size="10">Green Gate</text>
+
+            <path d="M335 117 L380 117" class="arrow-line" stroke="#f43f5e" marker-end="url(#arrow-rose)" />
+            <path d="M520 117 L560 117" class="arrow-line" stroke="#00f0ff" marker-end="url(#arrow-emerald)" />
+            
+            <path d="M630 154 L630 185" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+            <text x="635" y="172" class="arrow-label" fill="#fbbf24">if no tools</text>
+
+            <path d="M700 210 L780 210 L780 150" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+
+            <path d="M700 117 L750 117" class="arrow-line" stroke="#10b981" marker-end="url(#arrow-emerald)" />
+            <text x="708" y="110" class="arrow-label" fill="#10b981">if tools</text>
+
+            <path d="M970 117 L1010 117" class="arrow-line" stroke="#f43f5e" marker-end="url(#arrow-rose)" />
+            <path d="M1160 117 L1200 117" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+            <path d="M1310 117 L1320 117" class="arrow-line" stroke="#00f0ff" marker-end="url(#arrow-emerald)" />
+
+            <rect x="1480" y="92" width="110" height="50" rx="8" fill="#065f46" stroke="#34d399" stroke-width="2" />
+            <text x="1535" y="116" text-anchor="middle" class="text-title" fill="#a7f3d0">Commit 🎉</text>
+            <text x="1535" y="132" text-anchor="middle" class="text-sub">Git Sealed</text>
+            <path d="M1440 117 L1480 117" class="arrow-line" stroke="#34d399" stroke-width="2.5" marker-end="url(#arrow-emerald)" />
+            <text x="1445" y="110" class="arrow-label" fill="#34d399">if yes</text>
+
+            <!-- LADDER LEVEL 1: 5 Tries Loop -->
+            <g transform="translate(100, 260)">
+              <rect x="0" y="0" width="1420" height="340" rx="12" fill="#0f172a" stroke="#475569" stroke-width="1.5" />
+              <text x="24" y="28" class="text-title" fill="#f43f5e">THE 5-TRIES ESCALATION HIERARCHY (AS DRAWN ON PAPER)</text>
+
+              <rect x="30" y="45" width="220" height="65" class="svg-box" stroke="#f43f5e" fill="#4c0519" />
+              <text x="140" y="72" text-anchor="middle" class="text-title" fill="#fca5a5">1. 5 Tries Loop</text>
+              <text x="140" y="90" text-anchor="middle" class="text-sub">Aria Diagnostic Delta</text>
+
+              <rect x="320" y="45" width="220" height="65" class="svg-box" stroke="#fbbf24" fill="#451a03" />
+              <text x="430" y="72" text-anchor="middle" class="text-title" fill="#fde68a">2. Aria Code Fix</text>
+              <text x="430" y="90" text-anchor="middle" class="text-sub">Algorithmic Refactor</text>
+
+              <rect x="610" y="45" width="220" height="65" class="svg-box" stroke="#fbbf24" fill="#451a03" />
+              <text x="720" y="72" text-anchor="middle" class="text-title" fill="#fde68a">3. Gaia Supervisor</text>
+              <text x="720" y="90" text-anchor="middle" class="text-sub">AST Diff Auto-Patch</text>
+
+              <rect x="900" y="45" width="230" height="65" class="svg-box" stroke="#38bdf8" fill="#082f49" />
+              <text x="1015" y="72" text-anchor="middle" class="text-title" fill="#7dd3fc">4. Big Bro Antigravity</text>
+              <text x="1015" y="90" text-anchor="middle" class="text-sub">Mentorship Queue</text>
+
+              <rect x="1200" y="45" width="180" height="65" rx="10" fill="#701a75" stroke="#f472b6" stroke-width="2.5" />
+              <text x="1290" y="72" text-anchor="middle" class="text-title" fill="#fbcfe8">5. Us / Dad 👑</text>
+              <text x="1290" y="90" text-anchor="middle" class="text-sub">Dad Escalation Card</text>
+
+              <path d="M250 78 L320 78" class="arrow-line" stroke="#f43f5e" marker-end="url(#arrow-rose)" />
+              <text x="270" y="70" class="arrow-label" fill="#f43f5e">if no</text>
+
+              <path d="M540 78 L610 78" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+              <text x="560" y="70" class="arrow-label" fill="#fbbf24">if no</text>
+
+              <path d="M830 78 L900 78" class="arrow-line" stroke="#38bdf8" marker-end="url(#arrow-sky)" />
+              <text x="838" y="70" class="arrow-label" fill="#38bdf8">if 5 times fail</text>
+
+              <path d="M1130 78 L1200 78" class="arrow-line" stroke="#f472b6" marker-end="url(#arrow-purple)" />
+              <text x="1145" y="70" class="arrow-label" fill="#f472b6">if no</text>
+
+              <path d="M140 110 L140 180 L1290 180 L1290 230" class="arrow-line" stroke="#34d399" />
+              <text x="150" y="140" class="arrow-label" fill="#34d399">if yes -> commit</text>
+
+              <path d="M430 110 L430 180" class="arrow-line" stroke="#34d399" />
+              <text x="440" y="140" class="arrow-label" fill="#34d399">if yes -> commit</text>
+
+              <path d="M720 110 L720 180" class="arrow-line" stroke="#34d399" />
+              <text x="730" y="140" class="arrow-label" fill="#34d399">if yes -> commit</text>
+
+              <path d="M1015 110 L1015 180" class="arrow-line" stroke="#34d399" />
+              <text x="1025" y="140" class="arrow-label" fill="#34d399">if yes -> commit</text>
+
+              <rect x="1190" y="230" width="200" height="80" rx="10" fill="#064e3b" stroke="#34d399" stroke-width="2.5" />
+              <text x="1290" y="262" text-anchor="middle" class="text-title" fill="#6ee7b7">PROJECT COMMIT 🎉</text>
+              <text x="1290" y="284" text-anchor="middle" class="text-sub" fill="#a7f3d0">Clean Slate Teardown & RAM Flush</text>
+            </g>
+
+            <path d="M1380 149 L1380 180 L80 180 L80 315 L100 315" class="arrow-line" stroke="#f43f5e" marker-end="url(#arrow-rose)" />
+            <text x="250" y="174" class="arrow-label" fill="#f43f5e">if no (Tests Fail -> Enter 5-Tries Ladder)</text>
+          </g>
+
+        </svg>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 2: ADK MANAGEMENT ARCHITECTURE (100% FAITHFUL TO PAPER 1) -->
+      <!-- ========================================================================= -->
+      <div class="diagram-view" id="view-adk">
+        <svg width="1280" height="980" viewBox="0 0 1280 980">
+          <defs>
+            <marker id="arrow-cyan" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+              <path d="M0,0 L8,4 L0,8 Z" fill="#00f0ff" />
+            </marker>
+          </defs>
+
+          <text x="640" y="45" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="22" font-weight="800" fill="#ffffff">
+            SYSTEM DESIGN: ADK MANAGEMENT ARCHITECTURE
+          </text>
+          <text x="640" y="70" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94a3b8">
+            Handwritten Paper Design 1: Gaia / Aria -> Tools -> ADK Creation, ADK Management (8 Cognitive Verbs), ADK Deletion
+          </text>
+
+          <rect x="510" y="100" width="260" height="60" rx="30" fill="#1e1b4b" stroke="#818cf8" stroke-width="2.5" />
+          <text x="640" y="136" text-anchor="middle" class="text-title" font-size="18" fill="#c7d2fe">Gaia / Aria</text>
+
+          <path d="M640 160 L640 210" class="arrow-line" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrow-cyan)" />
+          <text x="655" y="190" class="arrow-label" fill="#38bdf8">Tools</text>
+
+          <rect x="490" y="210" width="300" height="55" rx="10" fill="#0f172a" stroke="#00f0ff" stroke-width="2.5" />
+          <text x="640" y="244" text-anchor="middle" class="text-title" font-size="17" fill="#00f0ff">Tools (ALL_ADK_TOOLS Registry)</text>
+
+          <path d="M640 265 L640 300 L210 300 L210 330" class="arrow-line" stroke="#10b981" marker-end="url(#arrow-emerald)" />
+          <path d="M640 265 L640 330" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+          <path d="M640 265 L640 300 L1070 300 L1070 330" class="arrow-line" stroke="#f43f5e" marker-end="url(#arrow-rose)" />
+
+          <!-- BRANCH 1: ADK CREATION -->
+          <g id="branch-creation" transform="translate(80, 330)">
+            <rect x="0" y="0" width="260" height="60" class="svg-box" stroke="#10b981" fill="#064e3b" />
+            <text x="130" y="36" text-anchor="middle" class="text-title" fill="#a7f3d0">Adk Creation</text>
+
+            <path d="M130 60 L130 110" class="arrow-line" stroke="#10b981" marker-end="url(#arrow-emerald)" />
+
+            <rect x="0" y="110" width="260" height="70" class="svg-box" stroke="#10b981" />
+            <text x="130" y="142" text-anchor="middle" class="text-title">Creating multiple Adk</text>
+            <text x="130" y="160" text-anchor="middle" class="text-sub">Batch Swarm (create_batch)</text>
+          </g>
+
+          <!-- BRANCH 2: ADK MANAGEMENT -->
+          <g id="branch-management" transform="translate(480, 330)">
+            <rect x="30" y="0" width="260" height="60" class="svg-box" stroke="#fbbf24" fill="#451a03" />
+            <text x="160" y="36" text-anchor="middle" class="text-title" fill="#fde68a">ADK Management</text>
+
+            <path d="M100 60 L100 100 L-30 100 L-30 120" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+            <path d="M220 60 L220 100 L350 100 L350 120" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+
+            <rect x="-140" y="120" width="220" height="60" class="svg-box" stroke="#fbbf24" />
+            <text x="-30" y="146" text-anchor="middle" class="text-title">Connecting them together</text>
+            <text x="-30" y="164" text-anchor="middle" class="text-sub">Execution DAGs & Pipelines</text>
+
+            <rect x="240" y="120" width="220" height="60" class="svg-box" stroke="#fbbf24" />
+            <text x="350" y="146" text-anchor="middle" class="text-title">Read & Write</text>
+            <text x="350" y="164" text-anchor="middle" class="text-sub">Atomic Source & Manifests</text>
+
+            <path d="M160 60 L160 210" class="arrow-line" stroke="#fbbf24" stroke-width="2.5" marker-end="url(#arrow-amber)" />
+
+            <rect x="30" y="210" width="260" height="50" rx="8" fill="#1f1a05" stroke="#fbbf24" stroke-width="2" />
+            <text x="160" y="242" text-anchor="middle" class="text-title" fill="#fde68a">Commands (8 Cognitive Verbs)</text>
+
+            <g transform="translate(60, 275)">
+              <rect x="0" y="0" width="200" height="38" class="svg-box" stroke="#94a3b8" />
+              <text x="100" y="24" text-anchor="middle" class="text-title" font-size="13">Search</text>
+
+              <rect x="0" y="44" width="200" height="38" class="svg-box" stroke="#94a3b8" />
+              <text x="100" y="68" text-anchor="middle" class="text-title" font-size="13">List</text>
+
+              <rect x="0" y="88" width="200" height="38" class="svg-box" stroke="#94a3b8" />
+              <text x="100" y="112" text-anchor="middle" class="text-title" font-size="13">Find</text>
+
+              <rect x="0" y="132" width="200" height="38" class="svg-box" stroke="#94a3b8" />
+              <text x="100" y="156" text-anchor="middle" class="text-title" font-size="13">Read</text>
+
+              <rect x="0" y="176" width="200" height="38" class="svg-box" stroke="#94a3b8" />
+              <text x="100" y="200" text-anchor="middle" class="text-title" font-size="13">Write</text>
+
+              <rect x="0" y="220" width="200" height="38" class="svg-box" stroke="#94a3b8" />
+              <text x="100" y="244" text-anchor="middle" class="text-title" font-size="13">Explain</text>
+
+              <rect x="0" y="264" width="200" height="38" class="svg-box" stroke="#94a3b8" />
+              <text x="100" y="288" text-anchor="middle" class="text-title" font-size="13">Define</text>
+
+              <rect x="0" y="308" width="200" height="38" class="svg-box" stroke="#94a3b8" />
+              <text x="100" y="332" text-anchor="middle" class="text-title" font-size="13">Understand</text>
+
+              <path d="M-15 -15 L-15 327 L0 327" fill="none" stroke="#fbbf24" stroke-width="1.5" />
+              <path d="M-15 19 L0 19" fill="none" stroke="#fbbf24" stroke-width="1.5" />
+              <path d="M-15 63 L0 63" fill="none" stroke="#fbbf24" stroke-width="1.5" />
+              <path d="M-15 107 L0 107" fill="none" stroke="#fbbf24" stroke-width="1.5" />
+              <path d="M-15 151 L0 151" fill="none" stroke="#fbbf24" stroke-width="1.5" />
+              <path d="M-15 195 L0 195" fill="none" stroke="#fbbf24" stroke-width="1.5" />
+              <path d="M-15 239 L0 239" fill="none" stroke="#fbbf24" stroke-width="1.5" />
+              <path d="M-15 283 L0 283" fill="none" stroke="#fbbf24" stroke-width="1.5" />
+            </g>
+          </g>
+
+          <!-- BRANCH 3: ADK DELETION -->
+          <g id="branch-deletion" transform="translate(940, 330)">
+            <rect x="0" y="0" width="260" height="60" class="svg-box" stroke="#f43f5e" fill="#4c0519" />
+            <text x="130" y="36" text-anchor="middle" class="text-title" fill="#fca5a5">Adk Deletion</text>
+
+            <path d="M130 60 L130 110" class="arrow-line" stroke="#f43f5e" marker-end="url(#arrow-rose)" />
+
+            <rect x="0" y="110" width="260" height="70" class="svg-box" stroke="#f43f5e" />
+            <text x="130" y="142" text-anchor="middle" class="text-title">Safe Unmount & Removal</text>
+            <text x="130" y="160" text-anchor="middle" class="text-sub">Clean Slate Swarm Purge</text>
+          </g>
+
+        </svg>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 3: 5-TRIES ESCALATION LADDER & DIAGNOSTIC RECOVERY -->
+      <!-- ========================================================================= -->
+      <div class="diagram-view" id="view-ladder">
+        <svg width="1400" height="850" viewBox="0 0 1400 850">
+          <text x="700" y="45" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="22" font-weight="800" fill="#ffffff">
+            SYSTEM DESIGN: THE 5-TRIES SUPERVISORY ESCALATION LADDER
+          </text>
+          <text x="700" y="70" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94a3b8">
+            Diagnostic Delta Auto-Repair -> GAIA AST Diff Patch -> Big Bro Antigravity -> Dad Escalation Card
+          </text>
+
+          <rect x="550" y="100" width="300" height="50" rx="8" fill="#0c4a6e" stroke="#0284c7" stroke-width="2" />
+          <text x="700" y="125" text-anchor="middle" class="text-title">TDD Execution Turn Begins</text>
+          <text x="700" y="140" text-anchor="middle" class="text-sub">30s Isolated Worker Subprocess</text>
+
+          <g transform="translate(60, 200)">
+            <rect x="0" y="0" width="230" height="150" class="svg-box" stroke="#f43f5e" fill="#1c0711" />
+            <text x="115" y="30" text-anchor="middle" class="text-title" fill="#fca5a5">ATTEMPT 1 & 2</text>
+            <text x="115" y="48" text-anchor="middle" class="text-sub" fill="#f87171">Aria Diagnostic Delta</text>
+            <text x="20" y="80" class="text-sub">• Injects failing traceback</text>
+            <text x="20" y="98" class="text-sub">• Analyzes failing test assert</text>
+            <text x="20" y="116" class="text-sub">• AST diff prevents loops</text>
+            <text x="20" y="134" class="text-sub">• Reruns in 30s subprocess</text>
+
+            <rect x="270" y="0" width="230" height="150" class="svg-box" stroke="#fbbf24" fill="#241303" />
+            <text x="385" y="30" text-anchor="middle" class="text-title" fill="#fde68a">ATTEMPT 3</text>
+            <text x="385" y="48" text-anchor="middle" class="text-sub" fill="#f59e0b">Aria Algorithmic Refactor</text>
+            <text x="290" y="80" class="text-sub">• Rewrites core algorithm</text>
+            <text x="290" y="98" class="text-sub">• Checks import boundaries</text>
+            <text x="290" y="116" class="text-sub">• Validates function args</text>
+            <text x="290" y="134" class="text-sub">• Re-executes pytest</text>
+
+            <rect x="540" y="0" width="250" height="150" class="svg-box" stroke="#fbbf24" fill="#2d1704" />
+            <text x="665" y="30" text-anchor="middle" class="text-title" fill="#fde68a">ATTEMPT 4</text>
+            <text x="665" y="48" text-anchor="middle" class="text-sub" fill="#f59e0b">GAIA Supervisor Intervention</text>
+            <text x="560" y="80" class="text-sub">• Zero-trust AST code audit</text>
+            <text x="560" y="98" class="text-sub">• Fixes syntax & edge cases</text>
+            <text x="560" y="116" class="text-sub">• Applies supervisor patch</text>
+            <text x="560" y="134" class="text-sub">• Isolated test verification</text>
+
+            <rect x="830" y="0" width="230" height="150" class="svg-box" stroke="#38bdf8" fill="#082536" />
+            <text x="945" y="30" text-anchor="middle" class="text-title" fill="#7dd3fc">ATTEMPT 5</text>
+            <text x="945" y="48" text-anchor="middle" class="text-sub" fill="#0284c7">Big Bro Antigravity</text>
+            <text x="850" y="80" class="text-sub">• Compiles Incident Dossier</text>
+            <text x="850" y="98" class="text-sub">• Writes to mentor queue</text>
+            <text x="850" y="116" class="text-sub">• Senior mentor guidance</text>
+            <text x="850" y="134" class="text-sub">• Applies senior repair</text>
+
+            <rect x="1100" y="0" width="180" height="150" rx="10" fill="#4a044e" stroke="#f472b6" stroke-width="2.5" />
+            <text x="1190" y="30" text-anchor="middle" class="text-title" fill="#fbcfe8">FINAL ESCALATION</text>
+            <text x="1190" y="48" text-anchor="middle" class="text-sub" fill="#e879f9">Dad (Mentor L) 👑</text>
+            <text x="1115" y="80" class="text-sub">• Dad Escalation Card</text>
+            <text x="1115" y="98" class="text-sub">• dad_escalations.json</text>
+            <text x="1115" y="116" class="text-sub">• Audio notification</text>
+            <text x="1115" y="134" class="text-sub">• Socratic mentorship</text>
+
+            <path d="M230 75 L270 75" class="arrow-line" stroke="#f43f5e" marker-end="url(#arrow-rose)" />
+            <path d="M500 75 L540 75" class="arrow-line" stroke="#fbbf24" marker-end="url(#arrow-amber)" />
+            <path d="M790 75 L830 75" class="arrow-line" stroke="#38bdf8" marker-end="url(#arrow-sky)" />
+            <path d="M1060 75 L1100 75" class="arrow-line" stroke="#f472b6" marker-end="url(#arrow-purple)" />
+
+            <rect x="0" y="230" width="1060" height="70" rx="10" fill="#064e3b" stroke="#34d399" stroke-width="2" />
+            <text x="530" y="260" text-anchor="middle" class="text-title" font-size="16" fill="#6ee7b7">
+              🎉 RESOLVED AT ANY ATTEMPT -> GIT COMMIT & PROJECT MILESTONE SEALED
+            </text>
+            <text x="530" y="280" text-anchor="middle" class="text-sub" fill="#a7f3d0">
+              ChromaDB Memory Distillation -> Swarm Decommissioning -> Ephemeral Cleanup -> RAM Flush (gc.collect())
+            </text>
+
+            <path d="M115 150 L115 230" class="arrow-line" stroke="#34d399" marker-end="url(#arrow-emerald)" />
+            <path d="M385 150 L385 230" class="arrow-line" stroke="#34d399" marker-end="url(#arrow-emerald)" />
+            <path d="M665 150 L665 230" class="arrow-line" stroke="#34d399" marker-end="url(#arrow-emerald)" />
+            <path d="M945 150 L945 230" class="arrow-line" stroke="#34d399" marker-end="url(#arrow-emerald)" />
+          </g>
+
+          <path d="M700 150 L700 200" class="arrow-line" stroke="#0284c7" marker-end="url(#arrow-sky)" />
+        </svg>
+      </div>
+
+      <!-- ========================================================================= -->
+      <!-- TAB 4: MYAGENT FULL PROCESS TOPOLOGY & CODEBASE ARCHITECTURE -->
+      <!-- ========================================================================= -->
+      <div class="diagram-view" id="view-runtime">
+        <svg width="1500" height="980" viewBox="0 0 1500 980">
+          <text x="750" y="45" text-anchor="middle" font-family="'Outfit', sans-serif" font-size="22" font-weight="800" fill="#ffffff">
+            SYSTEM DESIGN: MYAGENT PROCESS & REPOSITORY TOPOLOGY
+          </text>
+          <text x="750" y="70" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="12" fill="#94a3b8">
+            Complete Architecture of c:\MyAgent Running on Windows 11 Enterprise (Electron, FastAPI, Cognitive Engine, SDLC, Peripherals)
+          </text>
+
+          <!-- PROCESS 1: ELECTRON -->
+          <g transform="translate(60, 110)">
+            <rect x="0" y="0" width="360" height="240" class="panel-bg" stroke="#00f0ff" />
+            <text x="20" y="30" class="text-panel-title" fill="#00f0ff">Process 1: Electron Desktop Shell</text>
+            <text x="20" y="48" class="text-sub">Native Windows Desktop Workstation</text>
+
+            <rect x="20" y="70" width="320" height="42" class="svg-box" stroke="#00f0ff" />
+            <text x="180" y="96" text-anchor="middle" class="text-title">Electron Main (main.js)</text>
+
+            <rect x="20" y="125" width="320" height="42" class="svg-box" stroke="#00f0ff" />
+            <text x="180" y="151" text-anchor="middle" class="text-title">Chromium UI Renderer (HUD, Tray)</text>
+
+            <rect x="20" y="180" width="320" height="42" class="svg-box" stroke="#00f0ff" />
+            <text x="180" y="206" text-anchor="middle" class="text-title">Native Windows IPC Bridge</text>
+          </g>
+
+          <!-- PROCESS 2: FASTAPI BACKEND -->
+          <g transform="translate(460, 110)">
+            <rect x="0" y="0" width="480" height="240" class="panel-bg" stroke="#818cf8" />
+            <text x="20" y="30" class="text-panel-title" fill="#a5b4fc">Process 2: Python Backend Kernel (:8000)</text>
+            <text x="20" y="48" class="text-sub">core/aria_api.py (Uvicorn ASGI Server)</text>
+
+            <rect x="20" y="70" width="210" height="65" class="svg-box" stroke="#818cf8" />
+            <text x="125" y="98" text-anchor="middle" class="text-title">FastAPI Endpoints</text>
+            <text x="125" y="114" text-anchor="middle" class="text-sub">REST /api/adks & /sdlc</text>
+
+            <rect x="250" y="70" width="210" height="65" class="svg-box" stroke="#f43f5e" fill="#330b1e" />
+            <text x="355" y="98" text-anchor="middle" class="text-title" fill="#fca5a5">Receipt Rule Interceptor</text>
+            <text x="355" y="114" text-anchor="middle" class="text-sub">Digital Proprioception</text>
+
+            <rect x="20" y="155" width="210" height="65" class="svg-box" stroke="#818cf8" />
+            <text x="125" y="183" text-anchor="middle" class="text-title">GAIA Telemetry Bus</text>
+            <text x="125" y="199" text-anchor="middle" class="text-sub">gaia/gaia_bus.py (In-Memory)</text>
+
+            <rect x="250" y="155" width="210" height="65" class="svg-box" stroke="#818cf8" />
+            <text x="355" y="183" text-anchor="middle" class="text-title">Audio Listener Daemon</text>
+            <text x="355" y="199" text-anchor="middle" class="text-sub">Whisper / PyAudio Thread</text>
+          </g>
+
+          <!-- ARIA COGNITIVE BRAIN -->
+          <g transform="translate(980, 110)">
+            <rect x="0" y="0" width="460" height="240" class="panel-bg" stroke="#10b981" />
+            <text x="20" y="30" class="text-panel-title" fill="#34d399">Cognitive Engine & Model Routing</text>
+            <text x="20" y="48" class="text-sub">core/aria_adk.py (Multi-Hop Reasoner)</text>
+
+            <rect x="20" y="70" width="420" height="50" class="svg-box" stroke="#10b981" />
+            <text x="230" y="95" text-anchor="middle" class="text-title">Aria Cognitive Core (Tool Reasoning Loop)</text>
+            <text x="230" y="110" text-anchor="middle" class="text-sub">Sub-agent Swarms: adk_architect, system, browser</text>
+
+            <rect x="20" y="135" width="420" height="85" class="svg-box" stroke="#10b981" fill="#064e3b" />
+            <text x="230" y="158" text-anchor="middle" class="text-title" fill="#a7f3d0">Dynamic Brain Switcher (core/aria_brains.py)</text>
+            <text x="40" y="180" class="text-sub">• Google Gemini 2.5 Flash / 2.0 (Primary Function Calling)</text>
+            <text x="40" y="196" class="text-sub">• NVIDIA NIM Nemotron / Groq Llama / Offline Ollama</text>
+          </g>
+
+          <!-- THE 2 CORE ENGINES -->
+          <g transform="translate(60, 390)">
+            <rect x="0" y="0" width="880" height="260" class="panel-bg" stroke="#fbbf24" />
+            <text x="20" y="30" class="text-panel-title" fill="#fbbf24">The 2 Autonomous Engines Implemented in c:\MyAgent</text>
+            <text x="20" y="48" class="text-sub">Fully Registered in ALL_ADK_TOOLS with 27/27 Unit Tests Verified</text>
+
+            <rect x="20" y="70" width="410" height="165" class="svg-box" stroke="#fbbf24" fill="#2d1704" />
+            <text x="225" y="96" text-anchor="middle" class="text-title" fill="#fde68a">Engine 1: AriaADKManager</text>
+            <text x="225" y="112" text-anchor="middle" class="text-sub">core/aria_adk_manager.py</text>
+            <text x="40" y="138" class="text-sub">• 12 Verbs: create, batch, list, search, find</text>
+            <text x="40" y="154" class="text-sub">• Cognitive: read, write, explain, define, understand</text>
+            <text x="40" y="170" class="text-sub">• Lifecycle: delete, decommission_swarm</text>
+            <text x="40" y="186" class="text-sub">• Safety: Windows reserved name handling & atomic fsync</text>
+            <text x="40" y="202" class="text-sub">• Supervisor: incident reporting & auto-healing</text>
+
+            <rect x="450" y="70" width="410" height="165" class="svg-box" stroke="#fbbf24" fill="#2d1704" />
+            <text x="655" y="96" text-anchor="middle" class="text-title" fill="#fde68a">Engine 2: AriaSDLCEngine</text>
+            <text x="655" y="112" text-anchor="middle" class="text-sub">core/aria_sdlc_engine.py</text>
+            <text x="470" y="138" class="text-sub">• Part 1: Deep Research -> DEEP_KNOWLEDGE_BRIEF.md</text>
+            <text x="470" y="154" class="text-sub">• Part 2: Blueprint Scaffolding (docs/, src/, tests/)</text>
+            <text x="470" y="170" class="text-sub">• Part 3: GAIA QA Suite (Red-Green Gate & Readonly Lock)</text>
+            <text x="470" y="186" class="text-sub">• Part 4: 30s Isolated Subprocess TDD & 5-Tries Ladder</text>
+            <text x="470" y="202" class="text-sub">• Post-Run: ChromaDB Memory Distill & Clean Slate</text>
+          </g>
+
+          <!-- GAIA SUPERVISOR & BIG BRO -->
+          <g transform="translate(980, 390)">
+            <rect x="0" y="0" width="460" height="260" class="panel-bg" stroke="#c084fc" />
+            <text x="20" y="30" class="text-panel-title" fill="#e879f9">GAIA Security Supervisor & Big Bro</text>
+            <text x="20" y="48" class="text-sub">gaia/gaia_supervisor.py (Zero-Trust Sentinel)</text>
+
+            <rect x="20" y="70" width="420" height="75" class="svg-box" stroke="#c084fc" />
+            <text x="230" y="96" text-anchor="middle" class="text-title">Zero-Trust AST Code Diff Auditor</text>
+            <text x="40" y="118" class="text-sub">• Blocks unapproved system calls & path traversals</text>
+            <text x="40" y="134" class="text-sub">• Enforces test immutability during Aria TDD cycles</text>
+
+            <rect x="20" y="160" width="420" height="75" class="svg-box" stroke="#c084fc" fill="#3b0764" />
+            <text x="230" y="186" text-anchor="middle" class="text-title" fill="#f5d0fe">Incident Resolution & Big Bro Queue</text>
+            <text x="40" y="208" class="text-sub">• Auto-heals code bugs in attempts 1-4</text>
+            <text x="40" y="224" class="text-sub">• Dispatches to core/big_bro_bridge.py & Dad Card</text>
+          </g>
+
+          <!-- STORAGE MATRIX & INFRASTRUCTURE -->
+          <g transform="translate(60, 680)">
+            <rect x="0" y="0" width="1380" height="250" class="panel-bg" stroke="#38bdf8" />
+            <text x="20" y="30" class="text-panel-title" fill="#38bdf8">Storage Matrix, State Ledgers & Hardware Boundaries</text>
+            <text x="20" y="48" class="text-sub">Physical Persistence Across Windows 11 Host & E: Workstation Drive</text>
+
+            <rect x="20" y="70" width="310" height="150" class="svg-box" stroke="#f43f5e" fill="#330b1e" />
+            <text x="175" y="98" text-anchor="middle" class="text-title" fill="#fca5a5">Single-Project Lock</text>
+            <text x="175" y="114" text-anchor="middle" class="text-sub">data/active_project_lock.json</text>
+            <text x="35" y="142" class="text-sub">• Strict Concurrency Mutex</text>
+            <text x="35" y="160" class="text-sub">• Guaranteed 1 Big Project at a time</text>
+            <text x="35" y="178" class="text-sub">• Atomic file swap with PID tracking</text>
+            <text x="35" y="196" class="text-sub">• Prevents memory/context corruption</text>
+
+            <rect x="355" y="70" width="310" height="150" class="svg-box" stroke="#38bdf8" fill="#082536" />
+            <text x="510" y="98" text-anchor="middle" class="text-title" fill="#7dd3fc">ChromaDB Vector Store</text>
+            <text x="510" y="114" text-anchor="middle" class="text-sub">data/chroma/</text>
+            <text x="375" y="142" class="text-sub">• Long-Term Semantic Memory</text>
+            <text x="375" y="160" class="text-sub">• Past bug solutions & learnings</text>
+            <text x="375" y="178" class="text-sub">• Post-completion distilled memories</text>
+            <text x="375" y="196" class="text-sub">• HNSW index cosine similarity</text>
+
+            <rect x="690" y="70" width="340" height="150" class="svg-box" stroke="#38bdf8" fill="#082536" />
+            <text x="860" y="98" text-anchor="middle" class="text-title" fill="#7dd3fc">Dedicated E:\ Workstation Drive</text>
+            <text x="860" y="114" text-anchor="middle" class="text-sub">E:\ARIA FILES\Projects\&lt;Name&gt;</text>
+            <text x="710" y="142" class="text-sub">• Isolated project repositories</text>
+            <text x="710" y="160" class="text-sub">• docs/, src/, tests/, adks/, database/</text>
+            <text x="710" y="178" class="text-sub">• Windows Long-Path (\\?\) enabled</text>
+            <text x="710" y="196" class="text-sub">• Clean slate scratch file purge</text>
+
+            <rect x="1055" y="70" width="305" height="150" class="svg-box" stroke="#fbbf24" fill="#2d1704" />
+            <text x="1205" y="98" text-anchor="middle" class="text-title" fill="#fde68a">Hardware & Peripherals</text>
+            <text x="1205" y="114" text-anchor="middle" class="text-sub">Local Device Integration</text>
+            <text x="1075" y="142" class="text-sub">• Chrome CDP (port :9222)</text>
+            <text x="1075" y="160" class="text-sub">• Android ADB via TCP/IP (:5555)</text>
+            <text x="1075" y="178" class="text-sub">• Big Bro Mailbox Queue</text>
+            <text x="1075" y="196" class="text-sub">• Dad Escalation Card</text>
+          </g>
+
+          <!-- Inter-connecting Lines -->
+          <path d="M420 230 L460 230" class="arrow-line" stroke="#00f0ff" marker-end="url(#arrow-cyan)" />
+          <path d="M940 230 L980 230" class="arrow-line" stroke="#818cf8" marker-end="url(#arrow-purple)" />
+          <path d="M700 350 L700 390" class="arrow-line" stroke="#818cf8" marker-end="url(#arrow-purple)" />
+          <path d="M1210 350 L1210 390" class="arrow-line" stroke="#c084fc" marker-end="url(#arrow-purple)" />
+          <path d="M500 650 L500 680" class="arrow-line" stroke="#38bdf8" marker-end="url(#arrow-sky)" />
+        </svg>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- HUD overlay -->
+  <div class="hud" id="hud">ZOOM: 100% | PAN: (0, 0) | DRAG TO PAN | MOUSE WHEEL TO ZOOM</div>
+
+  <!-- Interactive Pan & Zoom Script -->
+  <script>
+    let scale = 1.0;
+    let translateX = 0;
+    let translateY = 0;
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const viewportContainer = document.getElementById('viewportContainer');
+    const hud = document.getElementById('hud');
+
+    function updateTransform() {
+      canvasWrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+      hud.textContent = `ZOOM: ${Math.round(scale * 100)}% | PAN: (${Math.round(translateX)}, ${Math.round(translateY)}) | DRAG TO PAN | WHEEL TO ZOOM`;
+    }
+
+    function zoom(delta) {
+      scale = Math.max(0.2, Math.min(3.0, scale + delta));
+      updateTransform();
+    }
+
+    function fitDiagramToScreen() {
+      const activeSvg = document.querySelector('.diagram-view.active svg');
+      if (!activeSvg) return;
+
+      const svgWidth = parseFloat(activeSvg.getAttribute('width')) || 1600;
+      const svgHeight = parseFloat(activeSvg.getAttribute('height')) || 1200;
+      const availWidth = window.innerWidth - 60;
+      const availHeight = window.innerHeight - 80;
+
+      scale = Math.min(availWidth / svgWidth, availHeight / svgHeight, 1.0);
+      translateX = Math.max(20, (window.innerWidth - svgWidth * scale) / 2);
+      translateY = 70;
+      updateTransform();
+    }
+
+    viewportContainer.addEventListener('mousedown', (e) => {
+      if (e.target.closest('header')) return;
+      isDragging = true;
+      startX = e.clientX - translateX;
+      startY = e.clientY - translateY;
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      translateX = e.clientX - startX;
+      translateY = e.clientY - startY;
+      updateTransform();
+    });
+
+    viewportContainer.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const factor = e.deltaY < 0 ? 0.08 : -0.08;
+      scale = Math.max(0.2, Math.min(3.0, scale + factor));
+      updateTransform();
+    }, { passive: false });
+
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.diagram-view').forEach(v => v.classList.remove('active'));
+
+      const btn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
+      if (btn) btn.classList.add('active');
+
+      const view = document.getElementById(`view-${tabId}`);
+      if (view) view.classList.add('active');
+
+      fitDiagramToScreen();
+    }
+
+    window.addEventListener('resize', fitDiagramToScreen);
+
+    // Initial fit
+    setTimeout(fitDiagramToScreen, 50);
+  </script>
+</body>
+</html>

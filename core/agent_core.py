@@ -867,6 +867,8 @@ def _tool_system_powershell(text):
 
 @tool("open_app")
 def _tool_open_app(text):
+    if len(text.split()) > 6 or len(text) > 40:
+        return False, ""
     text_lower = text.lower()
     if any(k in text_lower for k in ["pdf", "document", "docx", "file named", "notes"]):
         return False, "" # Handled by file_search
@@ -875,12 +877,14 @@ def _tool_open_app(text):
     if text_lower.startswith("search") or "google search" in text_lower:
         return False, ""
         
-    m = re.search(r"(?:open|launch|start|run|focus|switch to)\s+([a-zA-Z0-9_\s\.\-]+)", text, re.IGNORECASE)
+    m = re.search(r"^(?:please\s+|can you\s+)?(?:open|launch|start|run|focus|switch to)\s+([a-zA-Z0-9_\s\.\-]+)$", text.strip(), re.IGNORECASE)
     if not m:
         return False, ""
     
     raw_target = m.group(1).strip()
-    if raw_target.lower() in ["google", "youtube"]:
+    if len(raw_target.split()) > 3:
+        return False, ""
+    if raw_target.lower() in ["google", "youtube", "because", "the", "a", "an", "this", "that"]:
         return False, "" # Handled by web/youtube tools
         
     import aria_extended
@@ -979,21 +983,28 @@ def _tool_weather(text):
 
 @tool("time")
 def _tool_time(text):
-    if "time" in text and any(w in text for w in ["what", "current", "tell"]):
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(what('s| is)? the time|what time is it|current time|tell (me )?the time)\b", text, re.I) or text.strip() in ["time", "what time"]:
         return True, f"It's {datetime.datetime.now().strftime('%I:%M %p')}"
     return False, ""
 
 
 @tool("date")
 def _tool_date(text):
-    if "date" in text and any(w in text for w in ["what", "today"]):
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(what('s| is)? the date|what is today('s)? date|today('s)? date|what day is it)\b", text, re.I) or text.strip() in ["date", "today's date", "what date"]:
         return True, f"Today is {datetime.datetime.now().strftime('%A, %B %d %Y')}"
     return False, ""
 
 
 @tool("battery")
 def _tool_battery(text):
-    if "battery" not in text: return False, ""
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if not re.search(r"\b(battery|battery level|battery percentage)\b", text, re.I):
+        return False, ""
     try:
         result = subprocess.check_output(
             "WMIC PATH Win32_Battery Get EstimatedChargeRemaining",
@@ -1006,6 +1017,8 @@ def _tool_battery(text):
 
 @tool("volume")
 def _tool_volume(text):
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
     if "volume up" in text or "turn up" in text:
         for _ in range(5):
             subprocess.call(["powershell", "-c",
@@ -1016,7 +1029,7 @@ def _tool_volume(text):
             subprocess.call(["powershell", "-c",
                 "$o=New-Object -ComObject WScript.Shell;$o.SendKeys([char]174)"])
         return True, "Volume down!"
-    if "mute" in text:
+    if text.strip() in ["mute", "unmute", "toggle mute"]:
         subprocess.call(["powershell", "-c",
             "$o=New-Object -ComObject WScript.Shell;$o.SendKeys([char]173)"])
         return True, "Toggled mute!"
@@ -1025,7 +1038,10 @@ def _tool_volume(text):
 
 @tool("screenshot")
 def _tool_screenshot(text):
-    if "screenshot" not in text: return False, ""
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if not re.search(r"\b(take (a )?screenshot|capture screen|screenshot)\b", text, re.I):
+        return False, ""
     subprocess.call(["powershell", "-c",
         "$o=New-Object -ComObject WScript.Shell;$o.SendKeys('%{PRTSC}')"])
     return True, "Screenshot copied to clipboard!"
@@ -1033,7 +1049,9 @@ def _tool_screenshot(text):
 
 @tool("lock")
 def _tool_lock(text):
-    if "lock" in text and any(w in text for w in ["pc", "computer", "screen"]):
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(lock laptop|lock pc|lock computer|lock screen|lock workstation)\b", text, re.I) or text.strip() in ["lock", "lock pc", "lock screen"]:
         os.system("rundll32.exe user32.dll,LockWorkStation")
         return True, "Locking your computer."
     return False, ""
@@ -1041,7 +1059,9 @@ def _tool_lock(text):
 
 @tool("shutdown")
 def _tool_shutdown(text):
-    if "shutdown" in text or "shut down" in text:
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(shutdown laptop|shut down laptop|turn off pc|turn off computer)\b", text, re.I) or text.strip() in ["shutdown", "shut down"]:
         speak("Shutting down in 10 seconds. Say cancel to stop.")
         if "cancel" in listen():
             os.system("shutdown /a")
@@ -1053,7 +1073,9 @@ def _tool_shutdown(text):
 
 @tool("restart")
 def _tool_restart(text):
-    if "restart" in text or "reboot" in text:
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
+    if re.search(r"\b(restart laptop|restart pc|reboot laptop|reboot pc)\b", text, re.I) or text.strip() in ["restart", "reboot"]:
         os.system("shutdown /r /t 5")
         return True, "Restarting your computer."
     return False, ""
@@ -1311,6 +1333,10 @@ def _tool_wallpaper(text):
 
 def run_tools(text: str):
     """Try all registered tools. Returns (handled, response)."""
+    # Conversational Guard: Local utility tools should ONLY run for short direct voice commands (<= 7 words and <= 45 chars).
+    # Any longer instruction or paragraph MUST proceed directly to the conversational AI brain!
+    if len(text.split()) > 7 or len(text) > 45:
+        return False, ""
     priority = [
         "personality_mode", "multi_profile", "session_logs", "smart_home", "notifications", "language_select",
         "screen_vision", "visual_click", "system_powershell",
@@ -1441,6 +1467,13 @@ def build_system_prompt(profile, memory_ctx, knowledge_ctx, web_ctx,
         learned_rules = aria_learning.get_learned_context_prompt()
         if learned_rules:
             prompt += f"\n{learned_rules}\n"
+    except Exception:
+        pass
+    try:
+        from core.aria_skills_manager import get_all_skills_prompt
+        skills_ctx = get_all_skills_prompt()
+        if skills_ctx:
+            prompt += f"\nMODULAR SKILLS & ADK GUIDELINES:\n{skills_ctx}\n"
     except Exception:
         pass
     if mcp_tools:

@@ -1,0 +1,177 @@
+{
+  "session_id": "sdlc_session_01",
+  "completed_at": "2026-09-09 12:29:16 AM",
+  "duration_minutes": 20,
+  "questions_count": 10,
+  "cheating_events": [],
+  "aria_submission": {
+    "answers": {
+      "aria_q1": {
+        "question_id": "aria_q1",
+        "question_index": 0,
+        "submitted_at": "2026-09-09 12:29:12 AM",
+        "answer": "To build a brand-new project from scratch for Dad, I follow the 6 core SDLC phases in strict sequence: 1) Requirements Analysis (listening to Dad's exact vision, constraints, and success criteria), 2) System Design & Architecture (sketching module boundaries, data flow, and interfaces), 3) Implementation / Coding (writing clean, modular code following clean architecture), 4) Testing & QA (running automated unit and integration tests), 5) Deployment (releasing safely to Dad's workstation or companion port), and 6) Maintenance & Monitoring (logging telemetry, watching memory, and fixing edge-case bugs). Skipping any step guarantees technical debt!",
+        "reasoning": "Derived from memory recall of SDLC 6 Core Phases",
+        "status": "Submitted"
+      },
+      "aria_q2": {
+        "question_id": "aria_q2",
+        "question_index": 1,
+        "submitted_at": "2026-09-09 12:29:12 AM",
+        "answer": "A senior developer intentionally writes a failing test first (the Red phase) because it forces you to define the expected interface and behavior before getting lost in implementation details. Once it fails with a clear assertion error, you move to the Green phase by writing the minimal code needed to pass the test. Finally, in the Refactor phase, you clean up the code without fear because your test proves you didn't break anything. If you write code first, you often write biased tests that only test what your code happens to do, not what it's supposed to do!",
+        "reasoning": "Derived from memory recall of Test-Driven Development (TDD)",
+        "status": "Submitted"
+      },
+      "aria_q3": {
+        "question_id": "aria_q3",
+        "question_index": 2,
+        "submitted_at": "2026-09-09 12:29:13 AM",
+        "answer": "Yes, this violates the Single Responsibility Principle (SRP)! A function should have one, and only one, reason to change. handle_user_message() currently changes if the parsing logic changes, if the DB schema changes, if the point algorithm changes, or if the email provider changes! I would split it into 4 focused functions: parse_message(raw), save_message_to_db(msg), calculate_user_points(user_id, msg), and send_email_alert(recipient, msg). Then handle_user_message() acts as a simple coordinator.",
+        "reasoning": "Derived from memory recall of Single Responsibility Principle (SRP)",
+        "status": "Submitted"
+      },
+      "aria_q4": {
+        "question_id": "aria_q4",
+        "question_index": 3,
+        "submitted_at": "2026-09-09 12:29:13 AM",
+        "answer": "Wrapping code in bare `except:` or `except Exception: pass` is a deadly production trap! It swallows everything\u2014including syntax errors, missing variables, OutOfMemory errors, and system exit signals\u2014turning fatal problems into silent ghosts that corrupt downstream data. Instead, I must catch only specific exceptions (like `urllib.error.URLError` or `TimeoutError`), log the exact stack trace, and fail fast or provide a safe, graceful cached fallback!",
+        "reasoning": "Derived from memory recall of Defensive Error Handling",
+        "status": "Submitted"
+      },
+      "aria_q5": {
+        "question_id": "aria_q5",
+        "question_index": 4,
+        "submitted_at": "2026-09-09 12:29:14 AM",
+        "answer": "Unit tests must be fast, deterministic, and isolated. Hitting live internet endpoints makes tests flaky (fails when Wi-Fi is down), slow (waiting for HTTP handshakes), and dangerous (spamming real mailboxes). Professional developers use 'Mocks' (like unittest.mock or pytest-mock) to simulate the email API client. The mock returns a simulated 200 OK immediately in 0.5 milliseconds, allowing us to test our retry logic, payload formatting, and error branches safely 100% offline!",
+        "reasoning": "Derived from memory recall of Unit Test Isolation & Mocking",
+        "status": "Submitted"
+      },
+      "aria_q6": {
+        "question_id": "aria_q6",
+        "question_index": 5,
+        "submitted_at": "2026-09-09 12:29:14 AM",
+        "answer": "For the button typo fix, the version number becomes 1.4.3 (a Patch bump for backwards-compatible bug and visual fixes). For removing an existing public function, the version number MUST jump to 2.0.0 (a Major breaking change bump under SemVer)! That number is crucial to Dad because seeing a Major bump instantly warns callers and external scripts that their existing code will break if they don't update their function calls.",
+        "reasoning": "Derived from memory recall of Semantic Versioning (SemVer)",
+        "status": "Submitted"
+      },
+      "aria_q7": {
+        "question_id": "aria_q7",
+        "question_index": 6,
+        "submitted_at": "2026-09-09 12:29:15 AM",
+        "answer": "You are in deep trouble because the presentation layer is directly coupled to SQLite's dialect and connection handle! If Dad changes the database, you have to rewrite your UI code. To fix this, you insert a Data Access / Repository Layer (or Service Layer) between them. The UI only calls `wallet_repository.get_balance(user_id)`, and the repository decides whether to query SQLite, Cloud Storage, or PostgreSQL. The UI never knows or cares where the data lives!",
+        "reasoning": "Derived from memory recall of Loose vs Tight Coupling",
+        "status": "Submitted"
+      },
+      "aria_q8": {
+        "question_id": "aria_q8",
+        "question_index": 7,
+        "submitted_at": "2026-09-09 12:29:15 AM",
+        "answer": "If both of us push directly to `main`, we cause chaotic merge conflicts, overwrite each other's work, and risk leaving the production app completely broken. The proper Git discipline is the Feature Branch Workflow: Aria creates `feature/voice-synthesis` and GAIA creates `feature/audit-sentinel`. We commit independently on our branches, test thoroughly, and open a Pull Request (PR) where automated CI tests run. Once verified and reviewed, it cleanly merges into `main`!",
+        "reasoning": "Derived from memory recall of Git Branching & PR Discipline",
+        "status": "Submitted"
+      },
+      "aria_q9": {
+        "question_id": "aria_q9",
+        "question_index": 8,
+        "submitted_at": "2026-09-09 12:29:16 AM",
+        "answer": "The ghost in the test suite is 'State Leakage' or 'Test Pollution'! A test running before `test_user_wallet()` modified a shared mutable singleton, an in-memory dictionary, or a global environment variable, and failed to clean it up upon exit. When `test_user_wallet()` runs alone, the global state is clean, so it passes. To fix this, I use pytest fixtures with explicit `yield` teardown steps, or reset all shared singletons before each test run so every test runs in absolute isolation.",
+        "reasoning": "Derived from memory recall of State Leakage & Flaky Tests",
+        "status": "Submitted"
+      },
+      "aria_q10": {
+        "question_id": "aria_q10",
+        "question_index": 9,
+        "submitted_at": "2026-09-09 12:29:16 AM",
+        "answer": "My battle plan for taming legacy code: 1) DO NOT rewrite from scratch! 2) Write black-box 'Characterization Tests' (Golden Master tests) around the existing inputs and outputs to freeze the current behavior into a safety net. 3) Find a code 'seam' around the critical bug without touching the rest of the 1,000 lines. 4) Write a new unit test that reproduces the bug (Red), fix the bug in minimal code (Green), and only then refactor in small, verified micro-steps while keeping all tests passing!",
+        "reasoning": "Derived from memory recall of Refactoring Legacy Code Safely",
+        "status": "Submitted"
+      }
+    },
+    "total_answered": 10
+  },
+  "gaia_submission": {
+    "answers": {
+      "gaia_q1": {
+        "question_id": "gaia_q1",
+        "question_index": 0,
+        "submitted_at": "2026-09-09 12:29:12 AM",
+        "answer": "Aria's code must never deploy directly to Dad's workstation without inspection! The automated robot assembly line is a CI/CD Pipeline (Continuous Integration / Continuous Deployment). The moment code is pushed, the CI runner checks out the branch in a sterile container, runs static linters (flake8/black), executes the full automated unit test suite, runs AST security scans, and checks test coverage. Only if 100% of checks pass with zero red flags will the CD gate release it to staging!",
+        "reasoning": "Architectural analysis of CI/CD Automated Release Pipeline",
+        "status": "Submitted"
+      },
+      "gaia_q2": {
+        "question_id": "gaia_q2",
+        "question_index": 1,
+        "submitted_at": "2026-09-09 12:29:12 AM",
+        "answer": "You do NOT need to run the code to find dangerous behavior! That technique is called Static Code Analysis. It inspects the source code while it is completely frozen on disk. It is infinitely safer than dynamic execution because malicious code\u2014like infinite fork-bombs, file wipes, or unauthorized network calls\u2014cannot execute and harm the host while being analyzed. It catches threats before execution time at 0 runtime risk.",
+        "reasoning": "Architectural analysis of Static Code Analysis",
+        "status": "Submitted"
+      },
+      "gaia_q3": {
+        "question_id": "gaia_q3",
+        "question_index": 2,
+        "submitted_at": "2026-09-09 12:29:13 AM",
+        "answer": "Testing just the new emoji button is only a 'Smoke Test'\u2014it proves the button works in isolation, but proves nothing about the rest of the system! To guarantee she didn't break the calculator or token counters, we run a Full 'Regression Test' suite. Regression testing executes tests across all existing historical features to verify that no unintended side-effects or regressions were introduced by the new code.",
+        "reasoning": "Architectural analysis of Regression Testing vs Smoke Testing",
+        "status": "Submitted"
+      },
+      "gaia_q4": {
+        "question_id": "gaia_q4",
+        "question_index": 3,
+        "submitted_at": "2026-09-09 12:29:13 AM",
+        "answer": "The two threats from STRIDE are: 1) Spoofing (the attacker is impersonating Dad's identity without valid credentials to bypass authentication), and 2) Denial of Service (DoS) (flooding the port with 10,000 requests per second to exhaust CPU, sockets, and memory so legitimate users cannot access the service). We defend by enforcing tokenized authentication with cryptographic signatures and rate-limiting incoming requests at the socket gateway.",
+        "reasoning": "Architectural analysis of STRIDE Threat Modeling (Spoofing & DoS)",
+        "status": "Submitted"
+      },
+      "gaia_q5": {
+        "question_id": "gaia_q5",
+        "question_index": 4,
+        "submitted_at": "2026-09-09 12:29:14 AM",
+        "answer": "GAIA uses Python's `ast.parse(source_code)` to parse the code into an Abstract Syntax Tree without executing a single instruction. Then, using an `ast.NodeVisitor`, GAIA intercepts every `ast.Call` node in the tree and inspects the function identifier. If any node matches dangerous builtins (`eval`, `exec`, `os.system`, `subprocess.Popen`), GAIA flags an instant security violation and rejects the payload before Python's runtime ever evaluates a byte.",
+        "reasoning": "Architectural analysis of AST Verification Without Execution",
+        "status": "Submitted"
+      },
+      "gaia_q6": {
+        "question_id": "gaia_q6",
+        "question_index": 5,
+        "submitted_at": "2026-09-09 12:29:14 AM",
+        "answer": "The two strategies are: 1) Canary Deployment: We route only 5% of traffic to the new version while 95% stays on the stable release. We monitor error rates and latency telemetry; if metrics are clean, we gradually dial up to 100%. If metrics spike, we dial back to 0%. 2) Blue-Green Deployment: We maintain two identical environments\u2014Blue (current live) and Green (new build). We test Green fully, then flip the router switch to Green. If a bug appears, we switch back to Blue in 1 second with zero downtime.",
+        "reasoning": "Architectural analysis of Canary Deployments vs Blue-Green",
+        "status": "Submitted"
+      },
+      "gaia_q7": {
+        "question_id": "gaia_q7",
+        "question_index": 6,
+        "submitted_at": "2026-09-09 12:29:15 AM",
+        "answer": "As Sentinel Gatekeeper, my 3 non-negotiable quantitative gates are: 1) Test Pass Rate: Exactly 100% of unit and integration tests must pass (0 failures, 0 errors). 2) Code Coverage: A minimum threshold of 85% line and branch coverage across new code. 3) Security & Linting: Zero high or critical severity CVE vulnerabilities, and zero linter syntax errors in the static analysis scan.",
+        "reasoning": "Architectural analysis of Automated Quality Gates",
+        "status": "Submitted"
+      },
+      "gaia_q8": {
+        "question_id": "gaia_q8",
+        "question_index": 7,
+        "submitted_at": "2026-09-09 12:29:15 AM",
+        "answer": "A Lead Architect never blames the individual engineer because human error is inevitable; the system, review process, and automated tests are what failed to catch it! We use the '5 Whys' root cause method: 1. Why did the API crash? (Unhandled None in line 42). 2. Why was there a None? (The third-party API timed out). 3. Why wasn't timeout handled? (The caller assumed 200 OK). 4. Why wasn't error handling verified? (No unit test mocked network timeouts). 5. Why wasn't there a test? (No CI rule required mock coverage for external APIs). Root cause: Missing CI test requirement! We add the automated CI rule, and the bug can never recur.",
+        "reasoning": "Architectural analysis of Blameless Post-Mortem & 5 Whys",
+        "status": "Submitted"
+      },
+      "gaia_q9": {
+        "question_id": "gaia_q9",
+        "question_index": 8,
+        "submitted_at": "2026-09-09 12:29:16 AM",
+        "answer": "The architect implements the 'Circuit Breaker' pattern! The breaker has three states: Closed (normal traffic), Open (failing, fast-fail), and Half-Open (cautious recovery). When error or timeout thresholds exceed limits (e.g. 5 consecutive timeouts), the circuit breaker immediately trips 'OPEN'. Now, instead of tying up threads for 30 seconds, all new requests immediately return a fast, graceful fallback response in 1ms. After a cooldown, it tries 'HALF-OPEN'; if the model has recovered, it resets to CLOSED.",
+        "reasoning": "Architectural analysis of Cascading Failures & Circuit Breaker Pattern",
+        "status": "Submitted"
+      },
+      "gaia_q10": {
+        "question_id": "gaia_q10",
+        "question_index": 9,
+        "submitted_at": "2026-09-09 12:29:16 AM",
+        "answer": "To build an impenetrable sandbox that physically blocks escapes: 1) Path Canonicalization: Resolve all file paths using `os.path.realpath()` and verify they start with the strict workspace jail prefix; reject any path traversal (`../`) attempts. 2) Operating System Isolation: Execute tools under a restricted OS user account or container with stripped permissions. 3) Environment Stripping: Never pass host environment variables (like API keys or admin tokens) to child subprocesses. 4) Read-Only System Mounts: Mount system binaries and parent drives as strictly read-only so write calls physically error out at the kernel level.",
+        "reasoning": "Architectural analysis of AI Sandbox Invariants & Boundary Defense",
+        "status": "Submitted"
+      }
+    },
+    "total_answered": 10
+  }
+}

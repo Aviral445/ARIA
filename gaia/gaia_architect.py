@@ -629,7 +629,34 @@ class GaiaArchitect:
             return {"success": True, "type": "modular_skill", "name": skill_name}
         return {"success": False, "error": f"Failed to save skill '{skill_name}'."}
 
+    def deploy_modular_adk(self, adk_name: str, tools_code: Optional[str] = None, rules_text: Optional[str] = None, description: str = "") -> Dict[str, Any]:
+        """
+        Track 1: Safe Autonomous Deployment for Modular ADKs.
+        Uses AriaADKManager with author='GAIA'.
+        """
+        from core.aria_adk_manager import get_adk_manager
+        mgr = get_adk_manager()
+        res = mgr.create_adk(
+            adk_name=adk_name,
+            author="GAIA",
+            description=description or f"Autonomous ADK architected by GAIA for {adk_name}",
+            tools_code=tools_code,
+            rules_text=rules_text
+        )
+        if res.get("success"):
+            ledger = self.load_ledger()
+            ledger.setdefault("deployments", []).append({
+                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "type": "modular_adk",
+                "name": adk_name,
+                "status": "DEPLOYED_LIVE"
+            })
+            self.save_ledger(ledger)
+            bus.emit("GAIA_ARCHITECT", "DEPLOY_SUCCESS", f"GAIA deployed new ADK '{adk_name}'.", {"adk_name": adk_name})
+        return res
+
     def adjust_engine_config(self, key: str, value: int, issue_id: str) -> Dict[str, Any]:
+
         """
         Track 1: Safe Autonomous Adjustment of Config/Token Limits.
         """

@@ -1,0 +1,16 @@
+{
+  "adk_name": "Data_Analyzer_ADK",
+  "version": "1.0.0",
+  "author": "Aria",
+  "description": "Statistical data analysis and trend projection",
+  "created_at": "2026-09-09T13:47:05.657142",
+  "updated_at": "2026-09-09T13:47:05.657142",
+  "status": "active",
+  "tools": [
+    "sample_tool"
+  ],
+  "connected_to": [],
+  "tags": [
+    "data_analyzer_adk"
+  ]
+}

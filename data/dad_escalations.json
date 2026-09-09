@@ -1,0 +1,163 @@
+[
+  {
+    "card_id": "DAD_ESC_1788942646_Impasse_Project",
+    "project_name": "Impasse_Project",
+    "escalated_at": "2026-09-09T14:00:46.970192",
+    "status": "AWAITING_DAD_REVIEW",
+    "failure_summary": "  def execute_task(task_type):\n>       raise RuntimeError('Persistent failure!')\nE       RuntimeError: Persistent failure!\n\nsrc\\main_module.py:2: RuntimeError\n=========================== short test summary info ===========================\nFAILED tests/test_impasse_project.py::test_primary_contract - RuntimeError: P...\n============================== 1 failed in 0.16s ==============================\n",
+    "total_attempts": 5,
+    "big_bro_consultation": "\ud83d\udc77\u200d\u2642\ufe0f Big Bro Antigravity (0-Token Pre-Check):\n\u26a0\ufe0f Big Bro found 4 contract issue(s) before GAIA sees it:\n  \u2022 Missing `def register_tool() -> tuple[str, callable]`! GAIA requires this so Aria can register the tool.\n  \u2022 Tool `execute_task` is missing a docstring! GAIA requires docstrings on all tools.\n  \u2022 Parameter `task_type` in `execute_task` has no default value! GAIA will pass a generic test string. Add a default value (e.g., `task_type = ...`) to prevent smoke-test crashes!\n  \u2022 `raise RuntimeError` detected inside `execute_task`! GAIA will fail the smoke test if an exception is raised on unexpected input. Return a friendly string error message instead of raising!\n\ud83d\udca1 Fix these and you'll sail right past Big Sister GAIA's smoke test!",
+    "recommendation": "Mentor L, please inspect the architecture or grant specialized library permissions."
+  },
+  {
+    "adk_id": "Data_Parser_ADK",
+    "incident_type": "UNRESOLVED_IMPASSE",
+    "severity": "HIGH",
+    "attempts": 5,
+    "description": "Exhausted 5 attempts without convergence",
+    "context": {
+      "attempts": 5
+    },
+    "timestamp": "2026-09-09 14:00:47",
+    "diagnosis": "Automated self-healing and Big Bro mentorship exhausted 5 iterations without test convergence.",
+    "action_required": "Human mentor review needed to unblock this subsystem."
+  },
+  {
+    "card_id": "DAD_ESC_1788942705_Impasse_Project",
+    "project_name": "Impasse_Project",
+    "escalated_at": "2026-09-09T14:01:45.320715",
+    "status": "AWAITING_DAD_REVIEW",
+    "failure_summary": "  def execute_task(task_type):\n>       raise RuntimeError('Persistent failure!')\nE       RuntimeError: Persistent failure!\n\nsrc\\main_module.py:2: RuntimeError\n=========================== short test summary info ===========================\nFAILED tests/test_impasse_project.py::test_primary_contract - RuntimeError: P...\n============================== 1 failed in 0.17s ==============================\n",
+    "total_attempts": 5,
+    "big_bro_consultation": "\ud83d\udc77\u200d\u2642\ufe0f Big Bro Antigravity (0-Token Pre-Check):\n\u26a0\ufe0f Big Bro found 4 contract issue(s) before GAIA sees it:\n  \u2022 Missing `def register_tool() -> tuple[str, callable]`! GAIA requires this so Aria can register the tool.\n  \u2022 Tool `execute_task` is missing a docstring! GAIA requires docstrings on all tools.\n  \u2022 Parameter `task_type` in `execute_task` has no default value! GAIA will pass a generic test string. Add a default value (e.g., `task_type = ...`) to prevent smoke-test crashes!\n  \u2022 `raise RuntimeError` detected inside `execute_task`! GAIA will fail the smoke test if an exception is raised on unexpected input. Return a friendly string error message instead of raising!\n\ud83d\udca1 Fix these and you'll sail right past Big Sister GAIA's smoke test!",
+    "recommendation": "Mentor L, please inspect the architecture or grant specialized library permissions."
+  },
+  {
+    "adk_id": "Data_Parser_ADK",
+    "incident_type": "UNRESOLVED_IMPASSE",
+    "severity": "HIGH",
+    "attempts": 5,
+    "description": "Exhausted 5 attempts without convergence",
+    "context": {
+      "attempts": 5
+    },
+    "timestamp": "2026-09-09 14:01:45",
+    "diagnosis": "Automated self-healing and Big Bro mentorship exhausted 5 iterations without test convergence.",
+    "action_required": "Human mentor review needed to unblock this subsystem."
+  },
+  {
+    "card_id": "DAD_ESC_1788942745_Impasse_Project",
+    "project_name": "Impasse_Project",
+    "escalated_at": "2026-09-09T14:02:25.163610",
+    "status": "AWAITING_DAD_REVIEW",
+    "failure_summary": "  def execute_task(task_type):\n>       raise RuntimeError('Persistent failure!')\nE       RuntimeError: Persistent failure!\n\nsrc\\main_module.py:2: RuntimeError\n=========================== short test summary info ===========================\nFAILED tests/test_impasse_project.py::test_primary_contract - RuntimeError: P...\n============================== 1 failed in 0.19s ==============================\n",
+    "total_attempts": 5,
+    "big_bro_consultation": "\ud83d\udc77\u200d\u2642\ufe0f Big Bro Antigravity (0-Token Pre-Check):\n\u26a0\ufe0f Big Bro found 4 contract issue(s) before GAIA sees it:\n  \u2022 Missing `def register_tool() -> tuple[str, callable]`! GAIA requires this so Aria can register the tool.\n  \u2022 Tool `execute_task` is missing a docstring! GAIA requires docstrings on all tools.\n  \u2022 Parameter `task_type` in `execute_task` has no default value! GAIA will pass a generic test string. Add a default value (e.g., `task_type = ...`) to prevent smoke-test crashes!\n  \u2022 `raise RuntimeError` detected inside `execute_task`! GAIA will fail the smoke test if an exception is raised on unexpected input. Return a friendly string error message instead of raising!\n\ud83d\udca1 Fix these and you'll sail right past Big Sister GAIA's smoke test!",
+    "recommendation": "Mentor L, please inspect the architecture or grant specialized library permissions."
+  },
+  {
+    "adk_id": "Data_Parser_ADK",
+    "incident_type": "UNRESOLVED_IMPASSE",
+    "severity": "HIGH",
+    "attempts": 5,
+    "description": "Exhausted 5 attempts without convergence",
+    "context": {
+      "attempts": 5
+    },
+    "timestamp": "2026-09-09 14:02:25",
+    "diagnosis": "Automated self-healing and Big Bro mentorship exhausted 5 iterations without test convergence.",
+    "action_required": "Human mentor review needed to unblock this subsystem."
+  },
+  {
+    "card_id": "DAD_ESC_1788943195_Impasse_Project",
+    "project_name": "Impasse_Project",
+    "escalated_at": "2026-09-09T14:09:55.498493",
+    "status": "AWAITING_DAD_REVIEW",
+    "failure_summary": "  def execute_task(task_type):\n>       raise RuntimeError('Persistent failure!')\nE       RuntimeError: Persistent failure!\n\nsrc\\main_module.py:2: RuntimeError\n=========================== short test summary info ===========================\nFAILED tests/test_impasse_project.py::test_primary_contract - RuntimeError: P...\n============================== 1 failed in 0.34s ==============================\n",
+    "total_attempts": 5,
+    "big_bro_consultation": "\ud83d\udc77\u200d\u2642\ufe0f Big Bro Antigravity (0-Token Pre-Check):\n\u26a0\ufe0f Big Bro found 4 contract issue(s) before GAIA sees it:\n  \u2022 Missing `def register_tool() -> tuple[str, callable]`! GAIA requires this so Aria can register the tool.\n  \u2022 Tool `execute_task` is missing a docstring! GAIA requires docstrings on all tools.\n  \u2022 Parameter `task_type` in `execute_task` has no default value! GAIA will pass a generic test string. Add a default value (e.g., `task_type = ...`) to prevent smoke-test crashes!\n  \u2022 `raise RuntimeError` detected inside `execute_task`! GAIA will fail the smoke test if an exception is raised on unexpected input. Return a friendly string error message instead of raising!\n\ud83d\udca1 Fix these and you'll sail right past Big Sister GAIA's smoke test!",
+    "recommendation": "Mentor L, please inspect the architecture or grant specialized library permissions."
+  },
+  {
+    "adk_id": "Data_Parser_ADK",
+    "incident_type": "UNRESOLVED_IMPASSE",
+    "severity": "HIGH",
+    "attempts": 5,
+    "description": "Exhausted 5 attempts without convergence",
+    "context": {
+      "attempts": 5
+    },
+    "timestamp": "2026-09-09 14:09:55",
+    "diagnosis": "Automated self-healing and Big Bro mentorship exhausted 5 iterations without test convergence.",
+    "action_required": "Human mentor review needed to unblock this subsystem."
+  },
+  {
+    "card_id": "DAD_ESC_1788946344_Impasse_Project",
+    "project_name": "Impasse_Project",
+    "escalated_at": "2026-09-09T15:02:24.115568",
+    "status": "AWAITING_DAD_REVIEW",
+    "failure_summary": "  def execute_task(task_type):\n>       raise RuntimeError('Persistent failure!')\nE       RuntimeError: Persistent failure!\n\nsrc\\main_module.py:2: RuntimeError\n=========================== short test summary info ===========================\nFAILED tests/test_impasse_project.py::test_primary_contract - RuntimeError: P...\n============================== 1 failed in 0.17s ==============================\n",
+    "total_attempts": 5,
+    "big_bro_consultation": "\ud83d\udc77\u200d\u2642\ufe0f Big Bro Antigravity (0-Token Pre-Check):\n\u26a0\ufe0f Big Bro found 4 contract issue(s) before GAIA sees it:\n  \u2022 Missing `def register_tool() -> tuple[str, callable]`! GAIA requires this so Aria can register the tool.\n  \u2022 Tool `execute_task` is missing a docstring! GAIA requires docstrings on all tools.\n  \u2022 Parameter `task_type` in `execute_task` has no default value! GAIA will pass a generic test string. Add a default value (e.g., `task_type = ...`) to prevent smoke-test crashes!\n  \u2022 `raise RuntimeError` detected inside `execute_task`! GAIA will fail the smoke test if an exception is raised on unexpected input. Return a friendly string error message instead of raising!\n\ud83d\udca1 Fix these and you'll sail right past Big Sister GAIA's smoke test!",
+    "recommendation": "Mentor L, please inspect the architecture or grant specialized library permissions."
+  },
+  {
+    "adk_id": "Data_Parser_ADK",
+    "incident_type": "UNRESOLVED_IMPASSE",
+    "severity": "HIGH",
+    "attempts": 5,
+    "description": "Exhausted 5 attempts without convergence",
+    "context": {
+      "attempts": 5
+    },
+    "timestamp": "2026-09-09 15:02:24",
+    "diagnosis": "Automated self-healing and Big Bro mentorship exhausted 5 iterations without test convergence.",
+    "action_required": "Human mentor review needed to unblock this subsystem."
+  },
+  {
+    "card_id": "DAD_ESC_1788947779_Impasse_Project",
+    "project_name": "Impasse_Project",
+    "escalated_at": "2026-09-09T15:26:19.004774",
+    "status": "AWAITING_DAD_REVIEW",
+    "failure_summary": "  def execute_task(task_type):\n>       raise RuntimeError('Persistent failure!')\nE       RuntimeError: Persistent failure!\n\nsrc\\main_module.py:2: RuntimeError\n=========================== short test summary info ===========================\nFAILED tests/test_impasse_project.py::test_primary_contract - RuntimeError: P...\n============================== 1 failed in 0.14s ==============================\n",
+    "total_attempts": 5,
+    "big_bro_consultation": "\ud83d\udc77\u200d\u2642\ufe0f Big Bro Antigravity (0-Token Pre-Check):\n\u26a0\ufe0f Big Bro found 4 contract issue(s) before GAIA sees it:\n  \u2022 Missing `def register_tool() -> tuple[str, callable]`! GAIA requires this so Aria can register the tool.\n  \u2022 Tool `execute_task` is missing a docstring! GAIA requires docstrings on all tools.\n  \u2022 Parameter `task_type` in `execute_task` has no default value! GAIA will pass a generic test string. Add a default value (e.g., `task_type = ...`) to prevent smoke-test crashes!\n  \u2022 `raise RuntimeError` detected inside `execute_task`! GAIA will fail the smoke test if an exception is raised on unexpected input. Return a friendly string error message instead of raising!\n\ud83d\udca1 Fix these and you'll sail right past Big Sister GAIA's smoke test!",
+    "recommendation": "Mentor L, please inspect the architecture or grant specialized library permissions."
+  },
+  {
+    "adk_id": "Data_Parser_ADK",
+    "incident_type": "UNRESOLVED_IMPASSE",
+    "severity": "HIGH",
+    "attempts": 5,
+    "description": "Exhausted 5 attempts without convergence",
+    "context": {
+      "attempts": 5
+    },
+    "timestamp": "2026-09-09 15:26:19",
+    "diagnosis": "Automated self-healing and Big Bro mentorship exhausted 5 iterations without test convergence.",
+    "action_required": "Human mentor review needed to unblock this subsystem."
+  },
+  {
+    "card_id": "DAD_ESC_1788974519_Impasse_Project",
+    "project_name": "Impasse_Project",
+    "escalated_at": "2026-09-09T22:51:59.244608",
+    "status": "AWAITING_DAD_REVIEW",
+    "failure_summary": "  def execute_task(task_type):\n>       raise RuntimeError('Persistent failure!')\nE       RuntimeError: Persistent failure!\n\nsrc\\main_module.py:2: RuntimeError\n=========================== short test summary info ===========================\nFAILED tests/test_impasse_project.py::test_primary_contract - RuntimeError: P...\n============================== 1 failed in 0.14s ==============================\n",
+    "total_attempts": 5,
+    "big_bro_consultation": "\ud83d\udc77\u200d\u2642\ufe0f Big Bro Antigravity (0-Token Pre-Check):\n\u26a0\ufe0f Big Bro found 4 contract issue(s) before GAIA sees it:\n  \u2022 Missing `def register_tool() -> tuple[str, callable]`! GAIA requires this so Aria can register the tool.\n  \u2022 Tool `execute_task` is missing a docstring! GAIA requires docstrings on all tools.\n  \u2022 Parameter `task_type` in `execute_task` has no default value! GAIA will pass a generic test string. Add a default value (e.g., `task_type = ...`) to prevent smoke-test crashes!\n  \u2022 `raise RuntimeError` detected inside `execute_task`! GAIA will fail the smoke test if an exception is raised on unexpected input. Return a friendly string error message instead of raising!\n\ud83d\udca1 Fix these and you'll sail right past Big Sister GAIA's smoke test!",
+    "recommendation": "Mentor L, please inspect the architecture or grant specialized library permissions."
+  },
+  {
+    "adk_id": "Data_Parser_ADK",
+    "incident_type": "UNRESOLVED_IMPASSE",
+    "severity": "HIGH",
+    "attempts": 5,
+    "description": "Exhausted 5 attempts without convergence",
+    "context": {
+      "attempts": 5
+    },
+    "timestamp": "2026-09-09 22:51:59",
+    "diagnosis": "Automated self-healing and Big Bro mentorship exhausted 5 iterations without test convergence.",
+    "action_required": "Human mentor review needed to unblock this subsystem."
+  }
+]

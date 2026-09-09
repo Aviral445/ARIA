@@ -1,0 +1,16 @@
+{
+  "adk_name": "Source_ADK",
+  "version": "1.0.0",
+  "author": "Aria",
+  "description": "Source of data",
+  "created_at": "2026-09-09T13:47:05.980607",
+  "updated_at": "2026-09-09T13:47:05.980607",
+  "status": "active",
+  "tools": [
+    "sample_tool"
+  ],
+  "connected_to": [],
+  "tags": [
+    "source_adk"
+  ]
+}
