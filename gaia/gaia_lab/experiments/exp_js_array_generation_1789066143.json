@@ -1,0 +1,9 @@
+{
+  "success": true,
+  "language": "javascript",
+  "exit_code": 0,
+  "duration_ms": 59.48,
+  "stdout": "0,2,4,6,8,10,12,14,16,18",
+  "stderr": "",
+  "timestamp": "2026-09-11T00:19:03.097048"
+}

@@ -16,13 +16,35 @@ DANGEROUS_PATH_SUBSTRINGS = [
     ".env", "credentials", "id_rsa", "sam", "registry"
 ]
 
-# Blacklisted dangerous imports or functions for autonomous sandbox code
+# Zero-Trust Whitelist: Vetted set of standard and scientific modules tools are allowed to import
+ALLOWED_MODULES = {
+    # Core mathematical and data primitives
+    "math", "json", "datetime", "re", "typing", "dataclasses", "time",
+    "pathlib", "collections", "itertools", "functools", "random", "string",
+    "hashlib", "hmac", "uuid", "copy", "decimal", "fractions", "bisect",
+    "heapq", "enum", "abc", "struct", "io", "urllib", "urllib.parse",
+    "csv", "textwrap", "difflib", "calendar", "numbers", "statistics",
+    "pprint", "operator", "contextlib", "types", "inspect", "wave",
+    "sys", "os", "os.path",
+    # Numerical, scientific & data analysis
+    "numpy", "pandas", "scipy", "matplotlib", "seaborn",
+    # Testing & validation
+    "pytest", "unittest", "pydantic",
+    # Multimedia, imaging & audio
+    "PIL", "pillow", "mido", "soundfile", "pydub",
+    # HTTP & Web client
+    "requests"
+}
+
+# Explicitly dangerous modules (permanent double-defense rejection)
 DANGEROUS_MODULES = [
-    "ctypes", "winreg", "win32api", "win32con", "msvcrt"
+    "ctypes", "winreg", "win32api", "win32con", "msvcrt", "subprocess",
+    "pickle", "shelve", "marshal", "code", "codeop", "pty", "posix",
+    "commands", "importlib", "shutil", "socket", "http.server", "xmlrpc"
 ]
 
 DANGEROUS_BUILTINS = [
-    "__import__"
+    "__import__", "eval", "exec"
 ]
 
 
@@ -47,15 +69,35 @@ class SafetyVisitor(ast.NodeVisitor):
         self.sandbox_dir = os.path.abspath(sandbox_dir).lower()
         self.violations: List[str] = []
 
+    def _is_module_permitted(self, mod_name: Optional[str]) -> Tuple[bool, str]:
+        if not mod_name:
+            return True, ""
+        base = mod_name.split('.')[0]
+        # Check dangerous modules first
+        if base in DANGEROUS_MODULES or mod_name in DANGEROUS_MODULES:
+            return False, f"Forbidden dangerous module import: '{mod_name}'"
+        # Check allowed whitelist or local project imports
+        if mod_name in ALLOWED_MODULES or base in ALLOWED_MODULES:
+            return True, ""
+        if base in ["tools", "system_tools", "core", "gaia", "sandbox", "tests"]:
+            return True, ""
+        return False, f"Zero-Trust Policy Violation: Module '{mod_name}' is not in ALLOWED_MODULES allowlist"
+
     def visit_Import(self, node: ast.Import):
         for alias in node.names:
-            if alias.name.split('.')[0] in DANGEROUS_MODULES:
-                self.violations.append(f"Forbidden module import: '{alias.name}'")
+            ok, reason = self._is_module_permitted(alias.name)
+            if not ok:
+                self.violations.append(reason)
         self.generic_visit(node)
 
     def visit_ImportFrom(self, node: ast.ImportFrom):
-        if node.module and node.module.split('.')[0] in DANGEROUS_MODULES:
-            self.violations.append(f"Forbidden module import: '{node.module}'")
+        if node.level and node.level > 0:
+            # Relative import within package is allowed
+            pass
+        elif node.module:
+            ok, reason = self._is_module_permitted(node.module)
+            if not ok:
+                self.violations.append(reason)
         self.generic_visit(node)
 
     def visit_Call(self, node: ast.Call):

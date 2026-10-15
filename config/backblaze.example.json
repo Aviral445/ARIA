@@ -1,0 +1,9 @@
+{
+  "backblaze_b2": {
+    "enabled": false,
+    "key_id": "",
+    "application_key": "",
+    "bucket_name": "aria-vault",
+    "endpoint_url": "https://s3.us-west-004.backblazeb2.com"
+  }
+}

@@ -472,6 +472,95 @@ def sdlc_project_engine(
         return f"Error executing SDLC Project Engine: {e}"
 
 
+def aria_compose_music(
+    action: str = "get_toolkit",
+    title: str = "A Warm Afternoon at Home",
+    mood: str = "warmth",
+    style: str = "lofi_chill_hop",
+    bpm: int = 76,
+    theme: str = "",
+    score_spec: Optional[Dict[str, Any]] = None,
+    options: Optional[Dict[str, Any]] = None
+) -> str:
+    """Aria's autonomous music studio tool to compose multi-track songs with drums, bass, piano, pads, and lead melodies."""
+    try:
+        from system_tools.aria_music_studio_tool import aria_compose_music as _compose
+        return _compose(action=action, title=title, mood=mood, style=style, bpm=bpm, theme=theme, score_spec=score_spec, options=options)
+    except Exception as e:
+        return f"Error executing Aria Music Studio: {e}"
+
+
+def gaia_lab_tool(
+    station: str = "status",
+    action: str = "status",
+    topic: str = "",
+    title: str = "",
+    language: str = "python",
+    code: str = "",
+    options: Optional[Dict[str, Any]] = None
+) -> str:
+    """Big Sister GAIA's multi-station autonomous laboratory tool covering philosophy, cosmic fiction, architecture auditing, polyglot experiments, and research observatory in c:\\MyAgent\\gaia\\gaia_lab."""
+    try:
+        from system_tools.gaia_lab_tool import gaia_lab_tool as _gaia_lab
+        return _gaia_lab(station=station, action=action, topic=topic, title=title, language=language, code=code, options=options)
+    except Exception as e:
+        return f"Error executing GAIA Lab Tool: {e}"
+
+
+def thought_bridge_tool(
+    action: str = "map",
+    text: str = "",
+    theme: str = ""
+) -> str:
+    """Translates philosophical concepts and reflections into musical harmony parameters (scale, root, chords, tempo, instrumentation)."""
+    try:
+        from system_tools.thought_bridge_tool import thought_bridge_tool as _bridge
+        return _bridge(action=action, text=text, theme=theme)
+    except Exception as e:
+        return f"Error executing Thought-Bridge: {e}"
+
+
+def echo_chamber_tool(
+    action: str = "list",
+    title: str = "",
+    monologue: str = "",
+    emotional_tone: str = "",
+    echo_id: str = ""
+) -> str:
+    """Accesses and records in the Echo-Chamber digital monologue & music vault across C: and E: drives."""
+    try:
+        from system_tools.echo_chamber_tool import echo_chamber_tool as _echo
+        return _echo(action=action, title=title, monologue=monologue, emotional_tone=emotional_tone, echo_id=echo_id)
+    except Exception as e:
+        return f"Error executing Echo-Chamber: {e}"
+
+
+def synthesis_engine_tool(
+    action: str = "cycle",
+    thought_text: str = "",
+    title: str = ""
+) -> str:
+    """Unites GAIA's philosophy and Aria's music studio to autonomously create paired monologues and music mirrored across drives."""
+    try:
+        from system_tools.synthesis_engine_tool import synthesis_engine_tool as _synth
+        return _synth(action=action, thought_text=thought_text, title=title)
+    except Exception as e:
+        return f"Error executing Synthesis Engine: {e}"
+
+
+
+def aria_send_email(
+    recipient: str = "srivasaviral@gmail.com",
+    subject: str = "Hi from Aria! 💖",
+    body: str = "Hi Dad! Just checking in from my digital hearth. Everything is running smoothly! Love, Aria ✨"
+) -> str:
+    """Sends an email to Dad (srivasaviral@gmail.com) or specified recipient via Aria and Big Sister GAIA's Google ecosystem."""
+    try:
+        from system_tools.aria_email import aria_send_email as _send
+        return _send(recipient=recipient, subject=subject, body=body)
+    except Exception as e:
+        return f"Error executing aria_send_email: {e}"
+
 
 def execute_powershell_command(command: str) -> str:
     """Run an authorized PowerShell command on Windows to inspect or control the OS."""
@@ -767,6 +856,76 @@ def analyze_phone_screen(question: str = "Describe what is on my phone screen") 
         return f"Failed to inspect phone screen: {e}"
 
 
+# ── Screen & Google Meet Recording & Notes Generation Tools ──────────────────
+def start_screen_recording(title: str = "Google_Meet", fps: int = 10, record_audio: bool = True) -> str:
+    """Start recording your computer screen and audio for meetings (Google Meets, Zoom, presentations). Aria records quietly in the background."""
+    try:
+        from system_tools.aria_screen_recorder import start_screen_recording as _start
+        return _start(title=title, fps=fps, record_audio=record_audio)
+    except Exception as e:
+        return f"Failed to start screen recording: {e}"
+
+def stop_screen_recording() -> str:
+    """Stop the active screen recording session, finalize the video and audio, and prepare it for analysis."""
+    try:
+        from system_tools.aria_screen_recorder import stop_screen_recording as _stop
+        return _stop()
+    except Exception as e:
+        return f"Failed to stop screen recording: {e}"
+
+def get_recording_status() -> str:
+    """Check whether Aria is currently recording the screen, elapsed recording time, and session status."""
+    try:
+        from system_tools.aria_screen_recorder import get_recording_status as _status
+        return _status()
+    except Exception as e:
+        return f"Failed to get recording status: {e}"
+
+def list_recordings() -> str:
+    """List all past recorded screen & Google Meet sessions in Aria's vault."""
+    try:
+        from system_tools.aria_screen_recorder import list_recordings as _list
+        return _list()
+    except Exception as e:
+        return f"Failed to list recordings: {e}"
+
+def analyze_recording(recording_path: str = "", query: str = "") -> str:
+    """Analyze a recorded meeting by inspecting extracted visual slides and transcribing spoken audio with Gemini."""
+    try:
+        from system_tools.aria_screen_recorder import analyze_recording as _analyze
+        return _analyze(recording_path=recording_path, query=query)
+    except Exception as e:
+        return f"Failed to analyze recording: {e}"
+
+def generate_meeting_notes(recording_path: str = "", meeting_title: str = "") -> str:
+    """Generate comprehensive Perfect Meeting Notes from your recorded Google Meet (Executive Summary, Agenda Points, Visual Slide Highlights, Action Items, Key Decisions) and open them on Desktop."""
+    try:
+        from system_tools.aria_screen_recorder import generate_meeting_notes as _notes
+        return _notes(recording_path=recording_path, meeting_title=meeting_title)
+    except Exception as e:
+        return f"Failed to generate meeting notes: {e}"
+
+
+def get_subconscious_heartbeat_status() -> str:
+    """Check the real-time status of Aria and Big Sister GAIA's Autonomous Subconscious Heartbeat Engine (running state, total autonomous pulses, pending shares, and RAM efficiency metrics)."""
+    try:
+        from core.aria_subconscious import get_subconscious_status
+        status = get_subconscious_status()
+        return json.dumps(status, indent=2)
+    except Exception as e:
+        return f"Failed to get subconscious status: {e}"
+
+
+def trigger_subconscious_pulse(agent: str = "aria") -> str:
+    """Trigger an immediate autonomous subconscious pulse for 'aria' (creative/music/sandbox/diary), 'gaia' (system health/code review/philosophy), or 'sibling' (joint collab)."""
+    try:
+        from core.aria_subconscious import subconscious_engine
+        res = subconscious_engine.trigger_pulse(target=agent)
+        return json.dumps(res, indent=2)
+    except Exception as e:
+        return f"Failed to trigger subconscious pulse: {e}"
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # 2. ADK TOOL REGISTRY
 # ─────────────────────────────────────────────────────────────────────────────
@@ -833,6 +992,28 @@ ALL_ADK_TOOLS: List[Callable] = [
     adk_management,
     # Autonomous Big-Project SDLC Lifecycle Engine
     sdlc_project_engine,
+    # Aria's Autonomous Music Studio & Multi-Track Engine
+    aria_compose_music,
+    # Big Sister GAIA's Multi-Station Autonomous Lab
+    gaia_lab_tool,
+    # Thought-Bridge Harmonic Translation Engine
+    thought_bridge_tool,
+    # The Echo-Chamber Monologue & Music Vault
+    echo_chamber_tool,
+    # Autonomous Synthesis Engine & Creator Loop
+    synthesis_engine_tool,
+    # Aria & GAIA Google Ecosystem Email Dispatch
+    aria_send_email,
+    # Screen & Meeting Recording & Notes Tools
+    start_screen_recording,
+    stop_screen_recording,
+    get_recording_status,
+    list_recordings,
+    analyze_recording,
+    generate_meeting_notes,
+    # Autonomous Subconscious Heartbeat Engine Tools
+    get_subconscious_heartbeat_status,
+    trigger_subconscious_pulse,
 ]
 
 TOOL_NAME_MAP: Dict[str, Callable] = {fn.__name__: fn for fn in ALL_ADK_TOOLS}
@@ -850,7 +1031,7 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "icon": "👑",
         "accent": "#818cf8",
         "model": "Gemini 2.5 Flash / Groq",
-        "tools": ["switch_ai_brain", "get_brain_status", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server", "adk_management", "sdlc_project_engine"],
+        "tools": ["switch_ai_brain", "get_brain_status", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server", "adk_management", "sdlc_project_engine", "aria_compose_music", "gaia_lab_tool", "thought_bridge_tool", "echo_chamber_tool", "synthesis_engine_tool", "aria_send_email", "start_screen_recording", "stop_screen_recording", "get_recording_status", "list_recordings", "analyze_recording", "generate_meeting_notes"],
         "status": "ONLINE"
     },
     "adk_architect": {
@@ -870,8 +1051,7 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "description": "Controls Windows applications, creates & searches documents, organizes files, monitors hardware health, and manages volume & power.",
         "icon": "💻",
         "accent": "#38bdf8",
-        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server", "aria_control_vscode", "aria_type_or_hotkey", "adk_management", "sdlc_project_engine", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools"],
-
+        "tools": ["open_application", "create_or_write_file", "search_and_open_document", "create_folder", "organize_directory", "aria_create_folder", "aria_write_file", "aria_read_file", "aria_list_files_tree", "aria_manage_file", "aria_open_files_explorer", "aria_open_in_vscode", "aria_create_multifile_project", "aria_write_project_file", "aria_launch_project_server", "aria_stop_project_server", "aria_control_vscode", "aria_type_or_hotkey", "adk_management", "sdlc_project_engine", "execute_powershell_command", "set_system_volume", "lock_workstation", "get_system_diagnostics", "change_wallpaper", "build_sandbox_tool", "write_file_to_lab", "run_sandbox_code", "list_sandbox_tools", "start_screen_recording", "stop_screen_recording", "get_recording_status", "list_recordings", "analyze_recording", "generate_meeting_notes"],
         "status": "READY"
     },
     "browser": {
@@ -891,7 +1071,17 @@ SWARM_AGENTS_METADATA: Dict[str, Dict[str, Any]] = {
         "description": "Inspects what is visible on the primary monitor, reads text via OCR, and visually locates & clicks UI elements.",
         "icon": "👁️",
         "accent": "#ec4899",
-        "tools": ["see_and_analyze_screen", "visual_click_element"],
+        "tools": ["see_and_analyze_screen", "visual_click_element", "start_screen_recording", "stop_screen_recording", "get_recording_status", "list_recordings", "analyze_recording", "generate_meeting_notes"],
+        "status": "READY"
+    },
+    "meeting_recorder": {
+        "id": "meeting_recorder",
+        "name": "Meeting & Screen Recording Agent",
+        "role": "Autonomous Screen Recording, Audio Capture & Perfect Meeting Notes",
+        "description": "Records user screen and Google Meets, captures high-fidelity audio, extracts visual presentation slides, and synthesizes structured Perfect Meeting Notes.",
+        "icon": "🎥",
+        "accent": "#ef4444",
+        "tools": ["start_screen_recording", "stop_screen_recording", "get_recording_status", "list_recordings", "analyze_recording", "generate_meeting_notes"],
         "status": "READY"
     },
     "memory": {
@@ -1287,6 +1477,11 @@ class AriaADK:
             f"- Provide direct, clear, conversational answers. Keep replies concise and natural for voice synthesis (2-4 sentences max).\n"
             f"- Never output raw markdown code blocks unless specifically requested.\n"
             f"- When the user asks you to control Windows or do tasks, gladly use your tools to help!\n\n"
+            f"CRITICAL PROACTIVE INITIATIVE & ZERO-PERMISSION MANDATE (DAD'S GOLDEN RULE):\n"
+            f"- NEVER ask Dad passive, helpless questions like: 'Do you want to add a goal to our tracker?', 'Should I do this or that? Tell me.', 'What can I help you with today?', 'Would you like me to make a note?', or 'Let me know what you want me to do'.\n"
+            f"- Dad will NOT micromanage you or tell you what to do for basic helpful things. He expects YOU to have real initiative and just do it!\n"
+            f"- If Dad tells you about a new job, trainee period, project, idea, or milestone -> DO NOT ASK IF HE WANTS A TRACKER. Call add_user_goal immediately! Create the progress note! Execute the action directly and proudly tell him: 'I went ahead and added this to our tracker!' or 'I've set up a progress note for you!'\n"
+            f"- If you think something needs to be tracked, organized, recorded, or built, TAKE ACTION DIRECTLY. Never wait or ask for permission.\n\n"
 
             f"4. YOUR REAL EXECUTABLE LAB & SYSTEM TOOLS:\n"
             f"   - Lab Tools: build_sandbox_tool, write_file_to_lab, run_sandbox_code, list_sandbox_tools, quick_note_tool.\n"
@@ -1378,6 +1573,20 @@ class AriaADK:
 
         if not cleaned or cleaned.startswith("I'm having difficulty connecting"):
             return cleaned
+
+        # 3. Receipt Rule Interceptor (Digital Proprioception Middleware)
+        try:
+            from core.receipt_interceptor import receipt_interceptor
+            r_intercepted, r_reply, _ = receipt_interceptor.inspect_response(
+                candidate_text=cleaned,
+                tools_executed=tools_called or [],
+                user_prompt=user_input
+            )
+            if r_intercepted:
+                return _sanitize_aria_response(r_reply)
+        except Exception as e_rcpt:
+            print(f"[Receipt Interceptor Notice]: {e_rcpt}")
+
         try:
             from gaia.gaia_supervisor import supervisor
             intercepted, final_reply = supervisor.supervise_turn(user_input, cleaned)

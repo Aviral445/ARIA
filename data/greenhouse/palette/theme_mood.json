@@ -1,0 +1,20 @@
+{
+  "vibe_name": "Curious Teal & Cyber Aqua",
+  "generated_at": "2026-09-19T10:45:23.714901",
+  "telemetry_source": {
+    "aria_curiosity": 0.94,
+    "aria_confidence": 0.735,
+    "philosophical_depth": 0.62,
+    "is_late_night": false
+  },
+  "tokens": {
+    "--bg-dark": "hsl(222, 47%, 9%)",
+    "--card-bg": "rgba(15, 23, 42, 0.85)",
+    "--primary-accent": "hsl(187, 88%, 50%)",
+    "--secondary-accent": "hsl(215, 89%, 60%)",
+    "--accent-gold": "hsl(45, 95%, 55%)",
+    "--border-accent": "rgba(56, 189, 248, 0.28)",
+    "--text-main": "#f8fafc",
+    "--text-sub": "#94a3b8"
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "total_pulses": 56,
+  "aria_pulses": 24,
+  "gaia_pulses": 21,
+  "collab_pulses": 11,
+  "last_pulse_timestamp": 1792051744.450939,
+  "last_pulse_formatted": "2026-10-15 13:39:04",
+  "last_result": {
+    "success": true,
+    "agent": "Aria & GAIA",
+    "type": "sibling_collab",
+    "title": "Echo-Chamber Preservation",
+    "summary": "GAIA posed a question about memory preservation; Aria suggested backing up Dad's favorite milestones to the Echo Chamber.",
+    "duration_sec": 0.03
+  },
+  "memory": {
+    "available": true,
+    "system_percent": 57.6,
+    "free_mb": 6805.32,
+    "process_rss_mb": 44.83,
+    "safe_for_pulse": true,
+    "reason": "OK"
+  }
+}

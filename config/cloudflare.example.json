@@ -1,0 +1,15 @@
+{
+  "tunnel": {
+    "enabled": true,
+    "mode": "quick",
+    "named_tunnel_token": "",
+    "local_port": 8000,
+    "custom_domain": ""
+  },
+  "d1_database": {
+    "enabled": false,
+    "database_name": "aria-ledger",
+    "database_id": "",
+    "account_id": ""
+  }
+}

@@ -35,10 +35,15 @@ from core.aria_sdlc_engine import (
 )
 from system_tools.sdlc_project_engine import sdlc_project_engine
 from gaia.gaia_supervisor import supervisor
+from core.aria_security import unlock_for_gaia_teardown
 
 
 def _remove_readonly(func, path, excinfo):
-    """Clear the read-only bit on Windows and re-attempt removal."""
+    """Clear the read-only bit and OS ACL lock on Windows and re-attempt removal."""
+    try:
+        unlock_for_gaia_teardown(path)
+    except Exception:
+        pass
     try:
         os.chmod(path, stat.S_IWRITE)
         func(path)
@@ -161,8 +166,8 @@ class TestSDLCPhase1To3:
         # On Windows, read-only means write permissions are disabled
         assert not (mode & stat.S_IWUSR)
 
-        # Clear read-only so subsequent teardown works
-        os.chmod(test_path, stat.S_IWRITE)
+        # Clear read-only and remove OS ACL lock so subsequent teardown works
+        unlock_for_gaia_teardown(test_path)
 
     def test_part_3_rejects_tautological_test(self, temp_engine):
         temp_engine.scaffold_blueprints("Tautology_Proj")

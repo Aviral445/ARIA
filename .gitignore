@@ -47,6 +47,7 @@ data/active_project_lock.json
 tools/mood_log.txt
 smart_home.json
 config/smart_home.json
+config/smart_bulb.json
 !smart_home.example.json
 !config/smart_home.example.json
 
@@ -63,6 +64,7 @@ models/piper_models/*.onnx
 piper_models/
 piper_models/*.onnx
 tools/platform-tools/
+tools/bin/
 system_tools/platform-tools/
 platform-tools/
 *.exe

@@ -97,8 +97,13 @@ def _atomic_write_file(file_path: str, content: str) -> bool:
 
 
 def _remove_readonly(func, path, excinfo):
-    """Clear the read-only bit and retry deletion (busting Windows WinError 5)."""
+    """Clear the read-only bit and Windows deny ACLs, then retry deletion (busting Windows WinError 5)."""
     try:
+        try:
+            from core.aria_security import unlock_for_gaia_teardown
+            unlock_for_gaia_teardown(path)
+        except Exception:
+            pass
         os.chmod(path, stat.S_IWRITE)
         func(path)
     except Exception:
@@ -217,9 +222,14 @@ class AriaADKManager:
         _atomic_write_file(test_path, default_test)
         _atomic_write_file(manifest_path, json.dumps(manifest, indent=2))
         
-        # Initial receipt log
-        receipt_entry = f"[{now_str}] CREATED ADK '{clean_name}' by {author}. Tools: {', '.join(tool_names)}\n"
-        _atomic_write_file(receipt_path, receipt_entry)
+        # Initial hash-chained receipt log
+        from core.aria_receipts import append_chained_receipt
+        append_chained_receipt(
+            receipt_path,
+            action="CREATE_ADK",
+            author=author,
+            details=f"Created ADK '{clean_name}'. Tools: {', '.join(tool_names)}"
+        )
 
         return {
             "success": True,
@@ -381,10 +391,15 @@ class AriaADKManager:
                 except Exception:
                     pass
 
-            # Log to receipts
+            # Log to hash-chained receipts
             receipt_path = os.path.join(adk_path, "receipts.log")
-            with open(receipt_path, "a", encoding="utf-8") as rf:
-                rf.write(f"[{datetime.now().isoformat()}] UPDATED '{filename}' ({len(content.splitlines())} lines)\n")
+            from core.aria_receipts import append_chained_receipt
+            append_chained_receipt(
+                receipt_path,
+                action="UPDATE_FILE",
+                author="Aria",
+                details=f"Updated '{filename}' ({len(content.splitlines())} lines)"
+            )
 
             return {
                 "success": True,
@@ -659,6 +674,16 @@ class AriaADKManager:
             "adk_name": adk_name,
             "message": f"🚨 Dispatched Incident Report to GAIA Supervisor for ADK '{adk_name}'."
         }
+
+    def verify_adk_receipts(self, adk_name: str, custom_base_dir: Optional[str] = None) -> Dict[str, Any]:
+        """Cryptographically verifies the SHA-256 hash-chain of an ADK's receipts.log."""
+        try:
+            adk_path = _resolve_adk_dir(adk_name, custom_base_dir)
+            receipt_path = os.path.join(adk_path, "receipts.log")
+            from core.aria_receipts import verify_receipt_chain
+            return verify_receipt_chain(receipt_path)
+        except Exception as e:
+            return {"valid": False, "entries_count": 0, "errors": [str(e)]}
 
 
 # Singleton Engine Instance

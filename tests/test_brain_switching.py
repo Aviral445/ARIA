@@ -10,9 +10,11 @@ from unittest.mock import patch, MagicMock
 
 # Ensure root is in sys.path
 _ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-for _p in [_ROOT, os.path.join(_ROOT, "core"), os.path.join(_ROOT, "gaia"), os.path.join(_ROOT, "tools")]:
+if _ROOT not in sys.path:
+    sys.path.insert(0, _ROOT)
+for _p in [os.path.join(_ROOT, "core"), os.path.join(_ROOT, "gaia")]:
     if _p not in sys.path:
-        sys.path.insert(0, _p)
+        sys.path.append(_p)
 
 from core.aria_brains import (
     BRAIN_CATALOG,

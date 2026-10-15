@@ -74,6 +74,17 @@ def _atomic_write(file_path: str, content: str) -> bool:
             f.write(content)
             f.flush()
             os.fsync(f.fileno())
+        # If destination file already exists and is locked or read-only on Windows, unlock it first
+        if os.path.exists(file_path):
+            try:
+                from core.aria_security import unlock_for_gaia_teardown
+                unlock_for_gaia_teardown(file_path)
+            except Exception:
+                pass
+            try:
+                os.chmod(file_path, stat.S_IWRITE)
+            except Exception:
+                pass
         os.replace(tmp_path, file_path)
         return True
     except Exception as e:
@@ -104,19 +115,50 @@ class AriaSDLCEngine:
     # ─────────────────────────────────────────────────────────────────────────
 
     def get_lock_status(self) -> Dict[str, Any]:
-        """Returns the active project concurrency lock state."""
+        """Returns the active project concurrency lock state, with liveness and staleness checking."""
         if not os.path.exists(CONCURRENCY_LOCK_FILE):
             return {"is_locked": False, "active_project": None}
         try:
             with open(CONCURRENCY_LOCK_FILE, "r", encoding="utf-8") as f:
                 lock_data = json.load(f)
-                is_locked = (lock_data.get("status") == "IN_PROGRESS")
-                return {**lock_data, "is_locked": is_locked}
+                
+            if lock_data.get("status") == "IN_PROGRESS":
+                stored_pid = lock_data.get("pid")
+                acquired_at = lock_data.get("acquired_at")
+
+                # 1. PID Liveness Check
+                is_pid_alive = True
+                if stored_pid:
+                    try:
+                        import psutil
+                        is_pid_alive = psutil.pid_exists(int(stored_pid))
+                    except Exception:
+                        is_pid_alive = True
+
+                # 2. Timestamp Staleness Check (Max 2 hours)
+                is_stale = False
+                if acquired_at:
+                    try:
+                        dt = datetime.fromisoformat(acquired_at)
+                        if (datetime.now() - dt).total_seconds() > 7200:
+                            is_stale = True
+                    except Exception:
+                        pass
+
+                if not is_pid_alive or is_stale:
+                    # Auto-release dead/stale lock
+                    reason = f"STALE_LOCK_AUTO_RELEASED (PID alive: {is_pid_alive}, Stale: {is_stale})"
+                    self.release_lock(reason=reason)
+                    return {"is_locked": False, "active_project": None, "auto_released": True, "reason": reason}
+
+                return {**lock_data, "is_locked": True}
+                
+            return {**lock_data, "is_locked": False}
         except Exception:
             return {"is_locked": False, "active_project": None}
 
     def acquire_lock(self, project_name: str, topic: str = "") -> Tuple[bool, str]:
-        """Acquires the Single-Project Concurrency Lock. Rejects if another project is active."""
+        """Acquires the Single-Project Concurrency Lock. Rejects if another active project is in progress."""
         status = self.get_lock_status()
         clean_name = _sanitize_project_name(project_name)
 
@@ -394,6 +436,14 @@ class AriaSDLCEngine:
             f'    assert "receipt" in res, "Missing receipt in task execution result!"\n'
         )
 
+        # Unlock previous test file if it exists so writing/replacing never throws WinError 5
+        if os.path.exists(test_path):
+            try:
+                from core.aria_security import unlock_for_gaia_teardown
+                unlock_for_gaia_teardown(test_path)
+            except Exception:
+                pass
+
         # Write test file atomically
         _atomic_write(test_path, default_test)
 
@@ -410,11 +460,15 @@ class AriaSDLCEngine:
             }
 
         # ── TEST IMMUTABILITY (ROLE BOUNDARY) ────────────────────────────────
-        # Set Windows read-only flag on test file so Aria cannot modify it
+        # Set OS-enforced NTFS ACL and read-only flag on test file so Aria cannot modify it
         try:
-            os.chmod(test_path, stat.S_IREAD)
+            from core.aria_security import set_test_immutability
+            set_test_immutability(test_path)
         except Exception:
-            pass
+            try:
+                os.chmod(test_path, stat.S_IREAD)
+            except Exception:
+                pass
 
         # Update Project Ledger
         db_dir = os.path.join(project_dir, "database")
@@ -739,7 +793,16 @@ class AriaSDLCEngine:
                     except Exception:
                         pass
 
-        # 3. Final memory & process flush
+        # 3. Unlock test directory so future runs or manual edits are completely unblocked
+        tests_dir = os.path.join(project_dir, "tests")
+        if os.path.exists(tests_dir):
+            try:
+                from core.aria_security import unlock_for_gaia_teardown
+                unlock_for_gaia_teardown(tests_dir)
+            except Exception:
+                pass
+
+        # 4. Final memory & process flush
         gc.collect()
 
         return {

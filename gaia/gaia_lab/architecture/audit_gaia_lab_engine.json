@@ -1,0 +1,31 @@
+{
+  "file": "C:\\MyAgent\\tools\\gaia_lab_engine.py",
+  "lines_of_code": 336,
+  "classes": [
+    "GaiaLabEngine"
+  ],
+  "functions": [
+    "ensure_gaia_lab_dirs",
+    "_write_dual_lab_file",
+    "__init__",
+    "get_lab_status",
+    "run_socratic_inquiry",
+    "author_cosmic_fiction",
+    "audit_code_architecture",
+    "run_polyglot_experiment",
+    "synthesize_research_brief",
+    "write_journal_entry"
+  ],
+  "imports": [
+    "typing",
+    "subprocess",
+    "ast",
+    "sys",
+    "os",
+    "json",
+    "time",
+    "datetime"
+  ],
+  "complexity_rating": "HEALTHY",
+  "audited_at": "2026-09-11T00:19:02.959748"
+}

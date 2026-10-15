@@ -31,6 +31,11 @@ from core.paths import CORE_DIR, SYSTEM_TOOLS_DIR, SERVER_DIR, GUI_DIR, DATA_DIR
 
 def launch_agent(extra_args):
     """Launches the Aria CLI agent."""
+    try:
+        from core.aria_subconscious import start_subconscious_heartbeat
+        start_subconscious_heartbeat()
+    except Exception:
+        pass
     from core.agent import main
     sys.argv = ["agent.py"] + extra_args
     main()

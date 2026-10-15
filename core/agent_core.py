@@ -638,6 +638,71 @@ def _tool_whatsapp(text):
 
 
 
+@tool("screen_recording")
+def _tool_screen_recording(text):
+    text_lower = text.lower().strip()
+
+    # 1. Stop recording intent
+    if any(k in text_lower for k in ["stop recording", "stop screen recording", "end recording", "finish recording", "stop record", "halt recording"]):
+        from system_tools.aria_screen_recorder import stop_screen_recording
+        return True, stop_screen_recording()
+
+    # 2. Recording status intent
+    if any(k in text_lower for k in ["recording status", "are you recording", "is recording on", "check recording", "am i recording"]):
+        from system_tools.aria_screen_recorder import get_recording_status
+        return True, get_recording_status()
+
+    # 3. List recordings intent
+    if any(k in text_lower for k in ["list recordings", "show recordings", "my recordings", "view recordings", "show meet recordings"]):
+        from system_tools.aria_screen_recorder import list_recordings
+        return True, list_recordings()
+
+    # 4. Start recording intent
+    start_triggers = [
+        "record my screen", "record screen", "start screen recording", "start recording my screen",
+        "record my google meet", "record google meet", "record the meet", "record meet",
+        "start recording", "start recording meet", "start recording google meet",
+        "record this call", "record this meeting", "record meeting"
+    ]
+    if any(k in text_lower for k in start_triggers) or (text_lower.startswith("record ") and any(w in text_lower for w in ["meet", "screen", "presentation", "session", "call"])):
+        from system_tools.aria_screen_recorder import start_screen_recording
+        m_title = re.search(r"(?:for|called|named|title)\s+([a-zA-Z0-9_\-\s]+)", text, re.IGNORECASE)
+        meeting_title = m_title.group(1).strip() if m_title else "Google Meet Session"
+        return True, start_screen_recording(title=meeting_title, fps=10, record_audio=True)
+
+    return False, ""
+
+
+@tool("meeting_notes")
+def _tool_meeting_notes(text):
+    text_lower = text.lower().strip()
+
+    # Generate Perfect Meeting Notes
+    note_triggers = [
+        "generate meeting notes", "create meeting notes", "make meeting notes",
+        "create perfect notes", "perfect notes", "make notes from recording",
+        "generate notes from recording", "take notes from recording", "generate notes",
+        "meeting notes", "create notes for my meet", "summarize meeting recording"
+    ]
+    if any(k in text_lower for k in note_triggers):
+        from system_tools.aria_screen_recorder import generate_meeting_notes
+        m_title = re.search(r"(?:for|called|named|title)\s+([a-zA-Z0-9_\-\s]+)", text, re.IGNORECASE)
+        meeting_title = m_title.group(1).strip() if m_title else ""
+        res = generate_meeting_notes(meeting_title=meeting_title)
+        return True, res
+
+    # Analyze recording intent
+    analyze_triggers = [
+        "analyze recording", "analyse recording", "analyze my meet", "analyse my meet",
+        "analyze screen recording", "what happened in the recording", "analyze the meeting"
+    ]
+    if any(k in text_lower for k in analyze_triggers):
+        from system_tools.aria_screen_recorder import analyze_recording
+        return True, analyze_recording(query=text)
+
+    return False, ""
+
+
 @tool("typing_automation")
 def _tool_typing(text):
     m = re.search(r"^(?:type|write|enter text)\s+(.+)$", text, re.IGNORECASE)
@@ -1279,7 +1344,14 @@ def _tool_logs(text):
 
 @tool("smart_home")
 def _tool_smart_home(text):
-    if any(k in text for k in ["turn on", "turn off", "toggle"]) and any(k in text for k in ["light", "lamp", "switch", "plug"]):
+    text_lower = text.lower()
+    has_action = (
+        any(k in text_lower for k in ["turn on", "turn off", "switch on", "switch off", "toggle", "turn it on", "turn it off", "switch it on", "switch it off"])
+        or (any(a in text_lower for a in ["turn", "switch", "toggle"]) and any(d in text_lower for d in [" on", " off"]))
+    )
+    has_target = any(k in text_lower for k in ["light", "lamp", "switch", "plug", "bulb"])
+    if has_action and has_target:
+        import aria_extended
         return True, aria_extended.trigger_smart_device(text)
     return False, ""
 
@@ -1287,6 +1359,7 @@ def _tool_smart_home(text):
 def _tool_notify(text):
     if "notify me" in text or "popup notification" in text:
         msg = re.sub(r"notify me (?:to|that)?\s*", "", text, flags=re.IGNORECASE).strip()
+        import aria_extended
         aria_extended.show_toast_notification("Aria Notification", msg or "Alert from Aria")
         return True, f"Dispatched toast notification: '{msg}'"
     return False, ""
@@ -1566,6 +1639,13 @@ def _ollama_chat(system: str, messages: list, user_input: str) -> str:
 
 def chat_with_ai(user_input: str, recent: list, profile: dict,
                  mcp_client=None) -> str:
+    # ── Record user activity for subconscious heartbeat daemon ────────────────
+    try:
+        from core.aria_subconscious import subconscious_engine
+        subconscious_engine.record_user_activity()
+    except Exception:
+        pass
+
     # ── Try ADK (Agent Development Kit) Engine First ──────────────────────────
     try:
         import aria_adk

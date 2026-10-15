@@ -7,7 +7,7 @@ Handles:
 - Session token generation & verification
 """
 
-import os, json, time, hashlib, secrets, socket
+import os, json, time, hashlib, secrets, socket, hmac
 
 try:
     from core.paths import get_config_file
@@ -103,8 +103,10 @@ def authenticate_user(username: str, password: str, device_name: str = "Mobile D
     u_clean = username.strip()
     p_clean = password.strip()
     
-    # 1. Master Admin verification
-    if u_clean.lower() == MASTER_ADMIN_USER.lower() and p_clean == MASTER_ADMIN_PASS:
+    # 1. Master Admin verification (constant-time comparison)
+    is_master_u = hmac.compare_digest(u_clean.lower(), MASTER_ADMIN_USER.lower())
+    is_master_p = hmac.compare_digest(p_clean, MASTER_ADMIN_PASS)
+    if is_master_u and is_master_p:
         token = "admin_" + secrets.token_hex(16)
         session_data = {
             "token": token,
@@ -132,7 +134,9 @@ def authenticate_user(username: str, password: str, device_name: str = "Mobile D
     store = _load_auth_store()
     user_rec = store.get("users", {}).get(u_clean)
     if user_rec:
-        if user_rec.get("password_hash") == _hash_pass(p_clean):
+        saved_hash = str(user_rec.get("password_hash", ""))
+        calc_hash = _hash_pass(p_clean)
+        if hmac.compare_digest(saved_hash, calc_hash):
             role = user_rec.get("role", "user")
             token = "usr_" + secrets.token_hex(16)
             session_data = {
@@ -164,7 +168,7 @@ def register_new_profile(username: str, password: str) -> dict:
     p_clean = password.strip()
     if not u_clean or not p_clean:
         return {"success": False, "message": "Username and password required."}
-    if u_clean.lower() == "l":
+    if hmac.compare_digest(u_clean.lower(), "l"):
         return {"success": False, "message": "Username 'L' is reserved for Master Admin."}
         
     store = _load_auth_store()
@@ -182,40 +186,36 @@ def register_new_profile(username: str, password: str) -> dict:
     return {"success": True, "message": f"Profile '{u_clean}' created successfully! You can now log in."}
 
 def verify_session(token: str, client_ip: str = "127.0.0.1") -> dict:
-    """Validates an active session token or local host workstation access."""
+    """Validates an active session token or local host workstation access using constant-time comparisons."""
     is_local_host = client_ip in ("127.0.0.1", "::1", "localhost", "testclient", None)
 
     # If token is empty or desktop master token from the host PC itself:
-    if not token or token in ("admin_master_host_pc", "desktop", "default_desktop"):
-        if is_local_host or token == "admin_master_host_pc":
+    if not token or any(hmac.compare_digest(token, t) for t in ("admin_master_host_pc", "desktop", "default_desktop")):
+        if is_local_host or (token and hmac.compare_digest(token, "admin_master_host_pc")):
             return {"authenticated": True, "role": "admin", "is_admin": True, "username": "L"}
         return {"authenticated": False, "role": "guest", "is_admin": False, "username": "Guest"}
 
-    # Check active in-memory and persisted sessions
-    if token in _ACTIVE_SESSIONS:
-        sess = _ACTIVE_SESSIONS[token]
-        return {
-            "authenticated": True,
-            "role": sess.get("role", "admin" if sess.get("is_admin") else "user"),
-            "is_admin": sess.get("is_admin", False),
-            "username": sess.get("username", "L" if sess.get("is_admin") else "User")
-        }
+    # Check active in-memory and persisted sessions with constant-time matching
+    for act_token, sess in list(_ACTIVE_SESSIONS.items()):
+        if hmac.compare_digest(token, act_token):
+            return {
+                "authenticated": True,
+                "role": sess.get("role", "admin" if sess.get("is_admin") else "user"),
+                "is_admin": sess.get("is_admin", False),
+                "username": sess.get("username", "L" if sess.get("is_admin") else "User")
+            }
 
     # Check persisted store on disk
     store = _load_auth_store()
-    if token in store.get("active_sessions", {}):
-        sess = store["active_sessions"][token]
-        _ACTIVE_SESSIONS[token] = sess
-        return {
-            "authenticated": True,
-            "role": sess.get("role", "admin" if sess.get("is_admin") else "user"),
-            "is_admin": sess.get("is_admin", False),
-            "username": sess.get("username", "L" if sess.get("is_admin") else "User")
-        }
-
-    # Admin prefix check
-    if token.startswith("admin_"):
-        return {"authenticated": True, "role": "admin", "is_admin": True, "username": "L"}
+    for disk_token, sess in store.get("active_sessions", {}).items():
+        if hmac.compare_digest(token, disk_token):
+            _ACTIVE_SESSIONS[token] = sess
+            return {
+                "authenticated": True,
+                "role": sess.get("role", "admin" if sess.get("is_admin") else "user"),
+                "is_admin": sess.get("is_admin", False),
+                "username": sess.get("username", "L" if sess.get("is_admin") else "User")
+            }
 
     # Local loopback fallback for host desktop shell
     if is_local_host:

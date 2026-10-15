@@ -314,10 +314,37 @@ def manage_structured_path(action: str, path: str, target: str = "") -> str:
         elif act in ("delete", "remove"):
             if os.path.normcase(src) == os.path.normcase(ARIA_FILES_DIR):
                 return "Security Error: Cannot delete the root E:\\ARIA FILES workspace."
+
+            def _remove_readonly_fs(func, path_item, excinfo):
+                try:
+                    from core.aria_security import unlock_for_gaia_teardown
+                    unlock_for_gaia_teardown(path_item)
+                except Exception:
+                    pass
+                try:
+                    os.chmod(path_item, stat.S_IWRITE)
+                    func(path_item)
+                except Exception:
+                    pass
+
             if os.path.isdir(src):
-                shutil.rmtree(src)
+                try:
+                    from core.aria_security import unlock_for_gaia_teardown
+                    unlock_for_gaia_teardown(src)
+                except Exception:
+                    pass
+                shutil.rmtree(src, onerror=_remove_readonly_fs)
                 return f"🗑 Removed directory '{path}' and all contents from E:\\ARIA FILES."
             else:
+                try:
+                    from core.aria_security import unlock_for_gaia_teardown
+                    unlock_for_gaia_teardown(src)
+                except Exception:
+                    pass
+                try:
+                    os.chmod(src, stat.S_IWRITE)
+                except Exception:
+                    pass
                 os.remove(src)
                 return f"🗑 Deleted file '{path}' from E:\\ARIA FILES."
 

@@ -450,11 +450,16 @@ from core.paths import get_config_file
 SMART_HOME_CONFIG = get_config_file("smart_home.json")
 
 def trigger_smart_device(device_or_action: str) -> str:
-    """Triggers configured Home Assistant or Webhook endpoints for smart switches/lights."""
+    """Triggers configured Home Assistant, IFTTT, Tuya, or Webhook endpoints for smart switches/lights."""
     if not os.path.exists(SMART_HOME_CONFIG):
         default_cfg = {
             "bedroom light": "http://192.168.1.100/api/switch/bedroom_light/toggle",
-            "study lamp": "http://192.168.1.100/api/switch/study_lamp/toggle"
+            "study lamp": "http://192.168.1.100/api/switch/study_lamp/toggle",
+            "bulb": {
+                "on": "http://192.168.1.100/api/switch/bulb/turn_on",
+                "off": "http://192.168.1.100/api/switch/bulb/turn_off",
+                "toggle": "http://192.168.1.100/api/switch/bulb/toggle"
+            }
         }
         with open(SMART_HOME_CONFIG, "w", encoding="utf-8") as f:
             json.dump(default_cfg, f, indent=2)
@@ -464,14 +469,60 @@ def trigger_smart_device(device_or_action: str) -> str:
             cfg = json.load(f)
             
         dev_clean = device_or_action.lower().strip()
-        for dev_name, url in cfg.items():
-            if dev_name in dev_clean:
-                req = urllib.request.Request(url, method="POST" if not url.startswith("http") else "GET")
+        
+        # Determine intent: on, off, or toggle
+        action = "toggle"
+        if any(w in dev_clean for w in ["turn off", "switch off", "power off", "cut off", " shut", " off"]):
+            action = "off"
+        elif any(w in dev_clean for w in ["turn on", "switch on", "power on", "activate", " on"]):
+            action = "on"
+
+        # Check local Tuya bulb controller first if targeting bulb
+        if "bulb" in dev_clean:
+            try:
+                import system_tools.aria_bulb as ab
+                bulb_cfg = ab.load_bulb_config()
+                if bulb_cfg.get("local_key"):
+                    success, msg = ab.control_bulb(action)
+                    if success:
+                        return msg
+                elif not cfg.get("bulb") or "YOUR_IFTTT_KEY" in json.dumps(cfg.get("bulb")):
+                    # No active webhook either, return local bulb diagnostic
+                    _, msg = ab.control_bulb(action)
+                    return msg
+            except Exception as e:
+                pass
+
+        for dev_name, target in cfg.items():
+            if dev_name.lower() in dev_clean:
+                target_url = None
+                headers = {"User-Agent": "ARIA-SmartHome/1.0"}
+                data = None
+
+                if isinstance(target, dict):
+                    # Check for action-specific URL
+                    target_url = target.get(action) or target.get("toggle") or target.get("url")
+                    if isinstance(target_url, dict):
+                        headers.update(target_url.get("headers", {}))
+                        data = target_url.get("body")
+                        target_url = target_url.get("url")
+                elif isinstance(target, str):
+                    target_url = target
+
+                if not target_url:
+                    return f"No endpoint configured for action '{action}' on device '{dev_name}'."
+
+                req_method = "POST" if (not target_url.startswith("http") or "webhook" in target_url.lower() or "maker.ifttt.com" in target_url.lower()) else "GET"
+                body_bytes = json.dumps(data).encode("utf-8") if data else None
+                if body_bytes:
+                    headers["Content-Type"] = "application/json"
+
+                req = urllib.request.Request(target_url, data=body_bytes, headers=headers, method=req_method)
                 try:
-                    urllib.request.urlopen(req, timeout=3)
-                    return f"Sent command to smart device '{dev_name}' successfully."
+                    with urllib.request.urlopen(req, timeout=4) as response:
+                        return f"Turned {action.upper()} smart device '{dev_name}' successfully."
                 except Exception as e:
-                    return f"Triggered '{dev_name}', but received network response: {e}"
+                    return f"Triggered '{dev_name}' ({action}), but received network response: {e}"
                     
         return f"Device '{device_or_action}' not configured in smart_home.json."
     except Exception as e:

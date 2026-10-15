@@ -315,6 +315,9 @@ window.AriaAdmin = {
       } else if (targetTab === 'tokens') {
         this.loadTokenTelemetry();
         setTimeout(() => this.renderTabCharts(targetTab), 60);
+      } else if (targetTab === 'adks') {
+        this.loadAdkTelemetry();
+        setTimeout(() => this.renderTabCharts(targetTab), 60);
       } else {
         setTimeout(() => this.renderTabCharts(targetTab), 60);
       }
@@ -1482,6 +1485,63 @@ window.AriaAdmin = {
     };
   },
 
+  async loadAdkTelemetry() {
+    try {
+      if (window.ariaApi && typeof window.ariaApi.getAdks === 'function') {
+        const adkRes = await window.ariaApi.getAdks();
+        if (adkRes && adkRes.success && Array.isArray(adkRes.adks)) {
+          const listEl = document.getElementById('aria-mounted-adks-list');
+          const badgeEl = document.getElementById('aria-adk-count-badge');
+          if (badgeEl) badgeEl.textContent = `● ${adkRes.adks.length} MOUNTED`;
+
+          if (listEl) {
+            if (adkRes.adks.length === 0) {
+              listEl.innerHTML = '<div style="font-size:0.7rem; color:#94a3b8;">No custom ADKs currently mounted. Swarm is in clean-slate idle.</div>';
+            } else {
+              listEl.innerHTML = adkRes.adks.map(adk => `
+                <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(56, 189, 248, 0.2); border-radius: 6px; padding: 6px 8px; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600; font-size: 0.75rem; color: #f8fafc;">📦 ${adk.name || adk.adk_name}</div>
+                    <div style="font-size: 0.65rem; color: #94a3b8;">Tools: ${(adk.tools || []).join(', ') || 'Ready'}</div>
+                  </div>
+                  <div style="font-size: 0.65rem; padding: 2px 6px; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; font-weight: 600;">ACTIVE</div>
+                </div>
+              `).join('');
+            }
+          }
+        }
+      }
+
+      if (window.ariaApi && typeof window.ariaApi.getSdlcStatus === 'function') {
+        const sdlcRes = await window.ariaApi.getSdlcStatus();
+        if (sdlcRes && sdlcRes.success && sdlcRes.status) {
+          const st = sdlcRes.status;
+          const projEl = document.getElementById('sdlc-active-proj');
+          const phaseEl = document.getElementById('sdlc-active-phase');
+          const badgeEl = document.getElementById('gaia-sdlc-lock-badge');
+
+          if (st.is_locked) {
+            if (badgeEl) {
+              badgeEl.textContent = '🔒 MUTEX LOCKED';
+              badgeEl.style.color = '#fbbf24';
+            }
+            if (projEl) projEl.textContent = st.active_project || 'Active Project';
+            if (phaseEl) phaseEl.textContent = st.current_phase || 'In Progress';
+          } else {
+            if (badgeEl) {
+              badgeEl.textContent = '● MUTEX IDLE';
+              badgeEl.style.color = '#c084fc';
+            }
+            if (projEl) projEl.textContent = 'None (Ready for Dad\'s Next Project)';
+            if (phaseEl) phaseEl.textContent = 'Clean Slate (Idle)';
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('[AriaAdmin] ADK telemetry fetch notice:', err);
+    }
+  },
+
   onAdminEnter() {
     console.log('[AriaAdmin] Entered Master Admin Console Mode.');
     if (typeof window.switchAdminTab === 'function') {
@@ -1492,6 +1552,8 @@ window.AriaAdmin = {
       this.loadWebFeed();
     } else if (this.currentTab === 'tokens') {
       this.loadTokenTelemetry();
+    } else if (this.currentTab === 'adks') {
+      this.loadAdkTelemetry();
     }
   },
 

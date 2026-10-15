@@ -29,7 +29,7 @@ for _sub in [_ROOT_DIR, os.path.join(_ROOT_DIR, "core"), os.path.join(_ROOT_DIR,
         sys.path.insert(0, _sub)
 
 from fastapi import FastAPI, Request, Body, Header, Depends
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 import aria_system_context
@@ -1347,6 +1347,57 @@ def execute_command(data: dict = Body(...), request: Request = None):
             reply = aria_extended.minimize_all_windows()
             return {"handled": True, "type": "tool", "response": reply}
 
+        # Intent: Screen Recording & Google Meet Capture
+        if any(k in cmd_lower for k in [
+            "stop recording", "stop screen recording", "end recording", "finish recording",
+            "meeting ended", "end meeting", "meeting over", "meeting is over", "meeting finished",
+            "stop meet recording", "done recording"
+        ]):
+            from system_tools.aria_screen_recorder import stop_screen_recording
+            reply = stop_screen_recording()
+            return {"handled": True, "type": "tool", "response": reply}
+
+        if any(k in cmd_lower for k in ["recording status", "are you recording", "is recording on", "check recording"]):
+            from system_tools.aria_screen_recorder import get_recording_status
+            reply = get_recording_status()
+            return {"handled": True, "type": "tool", "response": reply}
+
+        if any(k in cmd_lower for k in ["list recordings", "my recordings", "view recordings", "show meet recordings"]):
+            from system_tools.aria_screen_recorder import list_recordings
+            reply = list_recordings()
+            return {"handled": True, "type": "tool", "response": reply}
+
+        start_rec_triggers = [
+            "record my screen", "record screen", "start screen recording", "start recording my screen",
+            "record my google meet", "record google meet", "record the meet", "record meet",
+            "start recording", "record this call", "record this meeting", "record meeting"
+        ]
+        if any(k in cmd_lower for k in start_rec_triggers) or (cmd_lower.startswith("record ") and any(w in cmd_lower for w in ["meet", "screen", "presentation", "session", "call"])):
+            from system_tools.aria_screen_recorder import start_screen_recording
+            m_title = re.search(r"(?:for|called|named|title)\s+([a-zA-Z0-9_\-\s]+)", cmd_clean, re.IGNORECASE)
+            meeting_title = m_title.group(1).strip() if m_title else "Google Meet Session"
+            reply = start_screen_recording(title=meeting_title, fps=10, record_audio=True)
+            return {"handled": True, "type": "tool", "response": reply}
+
+        # Intent: Generate Perfect Meeting Notes & Analyze Recording
+        notes_triggers = [
+            "generate meeting notes", "create meeting notes", "make meeting notes",
+            "create perfect notes", "perfect notes", "make notes from recording",
+            "generate notes from recording", "take notes from recording", "meeting notes",
+            "summarize meeting recording"
+        ]
+        if any(k in cmd_lower for k in notes_triggers):
+            from system_tools.aria_screen_recorder import generate_meeting_notes
+            m_title = re.search(r"(?:for|called|named|title)\s+([a-zA-Z0-9_\-\s]+)", cmd_clean, re.IGNORECASE)
+            meeting_title = m_title.group(1).strip() if m_title else ""
+            reply = generate_meeting_notes(meeting_title=meeting_title)
+            return {"handled": True, "type": "tool", "response": reply}
+
+        if any(k in cmd_lower for k in ["analyze recording", "analyse recording", "analyze my meet", "analyse my meet", "analyze screen recording"]):
+            from system_tools.aria_screen_recorder import analyze_recording
+            reply = analyze_recording(query=cmd_clean)
+            return {"handled": True, "type": "tool", "response": reply}
+
         # Intent: Create / Write File on Desktop, Drives (D:, C:, E:) or Documents
         if any(k in cmd_lower for k in ["make a", "create a", "write a", "new file", "new document", "save a file", "make text file", "make .txt", "create file", "make file", "create .txt"]):
             import aria_tools
@@ -2390,6 +2441,379 @@ async def execute_sdlc_action(request: Request):
         return {"success": True, "result": json.loads(res) if res.startswith("{") else res}
     except Exception as e:
         return {"success": False, "error": str(e)}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# DIGITAL GREENHOUSE API (MUSIC, PHILOSOPHY & PALETTE)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/greenhouse/palette")
+def get_greenhouse_palette():
+    """Returns the dynamic mood-to-palette HSL theme tokens."""
+    try:
+        from tools.mood_palette_generator import mood_palette_generator
+        return mood_palette_generator.synthesize_palette()
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/greenhouse/status")
+def get_greenhouse_status():
+    """Returns sanctuary overview across music, philosophy, and journals."""
+    try:
+        from tools.aria_music_studio import C_GREENHOUSE, E_GREENHOUSE
+        base = E_GREENHOUSE if os.path.exists(E_GREENHOUSE) else C_GREENHOUSE
+        music_files = os.listdir(os.path.join(base, "music")) if os.path.exists(os.path.join(base, "music")) else []
+        journals = os.listdir(os.path.join(base, "journals")) if os.path.exists(os.path.join(base, "journals")) else []
+        philosophy = os.listdir(os.path.join(base, "philosophy")) if os.path.exists(os.path.join(base, "philosophy")) else []
+        
+        return {
+            "success": True,
+            "sanctuary_path": base,
+            "music": music_files,
+            "journals": journals,
+            "philosophy": philosophy,
+            "modules": {
+                "music_studio": "Active (MIDI + 44.1kHz WAV)",
+                "philosophy_lab": "Active (Socratic Inquiry & Cosmic Fiction)",
+                "mood_palette": "Active (Dynamic HSL Tokens)"
+            }
+        }
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/greenhouse/music/toolkit")
+def get_greenhouse_music_toolkit():
+    """Returns Aria's complete musical palette: instruments, drums, rhythms, and scales."""
+    try:
+        from tools.aria_music_studio import aria_composer
+        return aria_composer.get_toolkit()
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/greenhouse/music/audio")
+def get_greenhouse_audio(file: str = "a_warm_afternoon_at_home.wav"):
+    """Serves synthesized WAV audio file for in-browser playback."""
+    from tools.aria_music_studio import C_GREENHOUSE, E_GREENHOUSE
+    for base in [E_GREENHOUSE, C_GREENHOUSE]:
+        fp = os.path.join(base, "music", file)
+        if os.path.exists(fp):
+            return FileResponse(fp, media_type="audio/wav", filename=file)
+    return JSONResponse(status_code=404, content={"error": f"Audio file '{file}' not found."})
+
+@app.post("/api/greenhouse/music/compose")
+async def trigger_greenhouse_composition(request: Request):
+    """Triggers autonomous or custom multi-track composition with Aria's music studio."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        from tools.aria_music_studio import aria_composer, compose_warm_afternoon_at_home
+        
+        if not body:
+            return compose_warm_afternoon_at_home()
+
+        title = body.get("title", "A Warm Afternoon at Home")
+        mood = body.get("mood", "warmth")
+        style = body.get("style", "lofi_chill_hop")
+        bpm = int(body.get("bpm", 76))
+        theme = body.get("theme", "")
+        score_spec = body.get("score_spec")
+
+        if score_spec:
+            safe_name = title.lower().replace(" ", "_")
+            return aria_composer.render_score(score_spec, f"{safe_name}.wav")
+        else:
+            return aria_composer.compose_autonomous(
+                title=title,
+                theme=theme or f"{mood.capitalize()} piece composed by Aria",
+                mood=mood,
+                style=style,
+                bpm=bpm
+            )
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BIG SISTER GAIA AUTONOMOUS LAB API
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/gaia/lab/status")
+def get_gaia_lab_status():
+    """Returns the inventory and status across GAIA's 6 lab stations."""
+    try:
+        from tools.gaia_lab_engine import gaia_lab
+        return gaia_lab.get_lab_status()
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/gaia/lab/action")
+async def execute_gaia_lab_action(request: Request):
+    """Executes an action across any of GAIA's 6 lab stations."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        station = body.get("station", "status")
+        action = body.get("action", "status")
+        topic = body.get("topic", "")
+        title = body.get("title", "")
+        language = body.get("language", "python")
+        code = body.get("code", "")
+        options = body.get("options", {})
+
+        from system_tools.gaia_lab_tool import gaia_lab_tool
+        res_str = gaia_lab_tool(
+            station=station,
+            action=action,
+            topic=topic,
+            title=title,
+            language=language,
+            code=code,
+            options=options
+        )
+        return json.loads(res_str) if res_str.startswith("{") else {"success": True, "result": res_str}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# BIG SISTER GAIA DIRECT CHAT API
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/api/gaia/chat")
+async def gaia_chat_endpoint(request: Request):
+    """Processes a conversational turn with Big Sister GAIA."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        message = body.get("message", "").strip()
+        session_id = body.get("session_id", "default-gaia").strip() or "default-gaia"
+        user_name = body.get("user_name", "Dad L").strip() or "Dad L"
+
+        import importlib
+        import gaia.gaia_chat_engine
+        importlib.reload(gaia.gaia_chat_engine)
+        from gaia.gaia_chat_engine import gaia_chat_engine
+        result = gaia_chat_engine.chat_with_gaia(
+            message=message,
+            session_id=session_id,
+            user_name=user_name
+        )
+        return {"success": True, **result}
+    except Exception as e:
+        return {"success": False, "error": str(e), "response": f"GAIA encountered a cognitive reflection error: {e}"}
+
+@app.get("/api/gaia/chat/history")
+def get_gaia_chat_history(session_id: str = "default-gaia"):
+    """Returns conversation history for a GAIA chat session."""
+    try:
+        from gaia.gaia_chat_engine import gaia_chat_engine
+        history = gaia_chat_engine.get_session_history(session_id)
+        return {"success": True, "session_id": session_id, "history": history}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/gaia/chat/clear")
+async def clear_gaia_chat(request: Request):
+    """Clears conversation history for a GAIA chat session."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        session_id = body.get("session_id", "default-gaia").strip() or "default-gaia"
+        from gaia.gaia_chat_engine import gaia_chat_engine
+        gaia_chat_engine.clear_session_history(session_id)
+        return {"success": True, "session_id": session_id, "message": "GAIA chat session history cleared."}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ARIA & GAIA AUTONOMOUS CREATION & ECHO-CHAMBER API
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.post("/api/creative/sync_drives")
+def sync_drives_endpoint():
+    """Mirrors c:\\MyAgent to E:\\MyAgent."""
+    try:
+        from tools.drive_sync_mirror import sync_drive_mirror
+        return sync_drive_mirror()
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/creative/thought_bridge/map")
+async def thought_bridge_map_endpoint(request: Request):
+    """Maps philosophical text into musical harmony parameters."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        text = body.get("text", "").strip()
+        from tools.thought_bridge import thought_bridge
+        return {"success": True, "profile": thought_bridge.map_thought_to_harmonic_profile(text)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/creative/echo_chamber/list")
+def list_echo_chamber_endpoint(limit: int = 20):
+    """Returns recent entries from the Echo-Chamber vault."""
+    try:
+        from tools.echo_chamber import echo_chamber
+        return {"success": True, "echoes": echo_chamber.list_echoes(limit=limit)}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/creative/synthesis/run")
+async def run_creative_cycle_endpoint(request: Request):
+    """Executes a full autonomous creative session loop with dual-drive mirroring."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        title = body.get("title")
+        reflection = body.get("reflection")
+        from tools.autonomous_creative_cycle import run_autonomous_creative_cycle
+        return run_autonomous_creative_cycle(theme_title=title, custom_reflection=reflection)
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ARIA ON-DEMAND SCREEN & GOOGLE MEET RECORDING API
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.get("/api/record/status")
+def record_status_endpoint():
+    """Returns whether Aria is currently recording, elapsed duration, and active session info."""
+    from system_tools.aria_screen_recorder import AriaScreenRecorder
+    return AriaScreenRecorder().get_status()
+
+@app.post("/api/record/start")
+async def record_start_endpoint(request: Request):
+    """Starts screen & audio recording strictly on demand."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        title = body.get("title", "Google Meet Session")
+        fps = int(body.get("fps", 10))
+        record_audio = bool(body.get("record_audio", True))
+        from system_tools.aria_screen_recorder import AriaScreenRecorder
+        return AriaScreenRecorder().start_recording(title=title, fps=fps, record_audio=record_audio)
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/record/stop")
+def record_stop_endpoint():
+    """Stops the active screen recording and finalizes media."""
+    try:
+        from system_tools.aria_screen_recorder import AriaScreenRecorder
+        return AriaScreenRecorder().stop_recording()
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/record/list")
+def record_list_endpoint():
+    """Returns past recorded sessions."""
+    try:
+        from system_tools.aria_screen_recorder import AriaScreenRecorder
+        return {"success": True, "recordings": AriaScreenRecorder().list_all_recordings()}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/record/notes")
+async def record_notes_endpoint(request: Request):
+    """Generates comprehensive Perfect Meeting Notes from a recorded session."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        session_id = body.get("session_id", "")
+        title = body.get("title", "")
+        from system_tools.aria_screen_recorder import AriaMeetingAnalyzer
+        return AriaMeetingAnalyzer.generate_meeting_notes(session_id_or_path=session_id, meeting_title=title)
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/record/analyze")
+async def record_analyze_endpoint(request: Request):
+    """Analyzes a recorded session with multimodal Gemini."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        session_id = body.get("session_id", "")
+        query = body.get("query", "")
+        from system_tools.aria_screen_recorder import AriaMeetingAnalyzer
+        reply = AriaMeetingAnalyzer.analyze_recording(session_id_or_path=session_id, query=query)
+        return {"success": True, "response": reply}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# AUTONOMOUS SUBCONSCIOUS HEARTBEAT ENDPOINTS (ARIA & GAIA)
+# ─────────────────────────────────────────────────────────────────────────────
+
+@app.on_event("startup")
+def startup_subconscious_daemon():
+    """Starts Aria & GAIA's subconscious heartbeat engine on server boot."""
+    try:
+        from core.aria_subconscious import start_subconscious_heartbeat
+        start_subconscious_heartbeat()
+    except Exception as e:
+        print(f"[API] Failed to start subconscious daemon: {e}")
+
+@app.on_event("shutdown")
+def shutdown_subconscious_daemon():
+    """Stops the subconscious heartbeat daemon cleanly on server shutdown."""
+    try:
+        from core.aria_subconscious import stop_subconscious_heartbeat
+        stop_subconscious_heartbeat()
+    except Exception as e:
+        print(f"[API] Error stopping subconscious daemon: {e}")
+
+@app.get("/api/subconscious/status")
+def subconscious_status_endpoint():
+    """Returns real-time status and memory telemetry of the subconscious engine."""
+    try:
+        from core.aria_subconscious import get_subconscious_status
+        return {"success": True, "status": get_subconscious_status()}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/subconscious/start")
+def subconscious_start_endpoint():
+    """Starts the subconscious heartbeat daemon."""
+    try:
+        from core.aria_subconscious import start_subconscious_heartbeat, get_subconscious_status
+        start_subconscious_heartbeat()
+        return {"success": True, "status": get_subconscious_status()}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/subconscious/stop")
+def subconscious_stop_endpoint():
+    """Stops the subconscious heartbeat daemon."""
+    try:
+        from core.aria_subconscious import stop_subconscious_heartbeat, get_subconscious_status
+        stop_subconscious_heartbeat()
+        return {"success": True, "status": get_subconscious_status()}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/subconscious/trigger")
+async def subconscious_trigger_endpoint(request: Request):
+    """Triggers an immediate autonomous pulse for aria, gaia, or sibling collab."""
+    try:
+        body = await request.json() if request.headers.get("content-type") == "application/json" else {}
+        agent = body.get("agent", "aria")
+        from core.aria_subconscious import subconscious_engine
+        result = subconscious_engine.trigger_pulse(target=agent)
+        return {"success": True, "pulse_result": result}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.get("/api/subconscious/shares")
+def subconscious_shares_endpoint():
+    """Fetches unread autonomous accomplishments ready to share with Dad."""
+    try:
+        from core.aria_subconscious import subconscious_engine
+        unread = subconscious_engine.shares_store.get_unread()
+        greeting = subconscious_engine.shares_store.get_greeting_snippet()
+        return {"success": True, "shares": unread, "greeting_snippet": greeting}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
+@app.post("/api/subconscious/shares/mark_read")
+def subconscious_shares_mark_read_endpoint():
+    """Marks pending autonomous accomplishments as read."""
+    try:
+        from core.aria_subconscious import subconscious_engine
+        count = subconscious_engine.shares_store.mark_all_read()
+        return {"success": True, "marked_count": count}
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+
 
 if __name__ == "__main__":
     import uvicorn

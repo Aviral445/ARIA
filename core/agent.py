@@ -1358,7 +1358,14 @@ def _tool_logs(text):
 
 @tool("smart_home")
 def _tool_smart_home(text):
-    if any(k in text for k in ["turn on", "turn off", "toggle"]) and any(k in text for k in ["light", "lamp", "switch", "plug"]):
+    text_lower = text.lower()
+    has_action = (
+        any(k in text_lower for k in ["turn on", "turn off", "switch on", "switch off", "toggle", "turn it on", "turn it off", "switch it on", "switch it off"])
+        or (any(a in text_lower for a in ["turn", "switch", "toggle"]) and any(d in text_lower for d in [" on", " off"]))
+    )
+    has_target = any(k in text_lower for k in ["light", "lamp", "switch", "plug", "bulb"])
+    if has_action and has_target:
+        import aria_extended
         return True, aria_extended.trigger_smart_device(text)
     return False, ""
 
@@ -1366,6 +1373,7 @@ def _tool_smart_home(text):
 def _tool_notify(text):
     if "notify me" in text or "popup notification" in text:
         msg = re.sub(r"notify me (?:to|that)?\s*", "", text, flags=re.IGNORECASE).strip()
+        import aria_extended
         aria_extended.show_toast_notification("Aria Notification", msg or "Alert from Aria")
         return True, f"Dispatched toast notification: '{msg}'"
     return False, ""
@@ -2035,6 +2043,15 @@ def chat_with_ai(user_input: str, recent: list, profile: dict,
                 pass
         if not raw_reply:
             raw_reply = _ollama_chat(system, recent, user_input)
+
+        # Receipt Rule Interceptor (Digital Proprioception Middleware)
+        try:
+            from core.receipt_interceptor import receipt_interceptor
+            r_intercepted, r_reply, _ = receipt_interceptor.inspect_response(raw_reply, user_prompt=user_input)
+            if r_intercepted:
+                raw_reply = r_reply
+        except Exception:
+            pass
 
         # Supervise turn through Big Sister GAIA reality check
         try:

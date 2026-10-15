@@ -27,9 +27,13 @@
         <span class="nav-icon">📊</span>
         <span class="nav-label">Home</span>
       </button>
-      <button class="nav-btn" data-tab="chat" title="Pro Chat Studio">
+      <button class="nav-btn" data-tab="chat" title="Aria Pro Chat Studio">
         <span class="nav-icon">💬</span>
         <span class="nav-label">Chat</span>
+      </button>
+      <button class="nav-btn" data-tab="gaia-chat" title="Big Sister GAIA Direct Chat">
+        <span class="nav-icon">🪐</span>
+        <span class="nav-label">GAIA Chat</span>
       </button>
       <button class="nav-btn" data-tab="gaia" title="Big Sister GAIA Supervisor & Sisterhood Hub">
         <span class="nav-icon">👩‍🏫</span>
@@ -211,8 +215,13 @@
         <div class="grid-3" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));">
           <div class="action-card" data-jump-tab="chat">
             <div class="action-icon">💬</div>
-            <div class="action-title">Pro Chat Studio</div>
-            <div class="action-desc">Direct conversation with code rendering, reasoning, and context.</div>
+            <div class="action-title">Aria Pro Chat</div>
+            <div class="action-desc">Direct conversation with kid sister Aria, code rendering, and multimodal reasoning.</div>
+          </div>
+          <div class="action-card" data-jump-tab="gaia-chat">
+            <div class="action-icon">🪐</div>
+            <div class="action-title">Big Sister GAIA Chat</div>
+            <div class="action-desc">Direct dialogue, architectural advice, cosmic fiction, and sisterly wisdom.</div>
           </div>
           <div class="action-card" data-jump-tab="gaia">
             <div class="action-icon">👩‍🏫</div>
@@ -223,6 +232,11 @@
             <div class="action-icon">🏫</div>
             <div class="action-title">SDLC Thinkpad Arena</div>
             <div class="action-desc">Closed-book examination arena, live desks, proctor alerts, and cadence timer.</div>
+          </div>
+          <div class="action-card" data-jump-tab="gaia">
+            <div class="action-icon">🌌</div>
+            <div class="action-title">Echo-Chamber & Creation Loop</div>
+            <div class="action-desc">Autonomous philosophy-to-music synthesis mirrored across C: and E: drives.</div>
           </div>
         </div>
       </div>
@@ -261,6 +275,65 @@
           <textarea class="chat-input" id="chatInput" placeholder="Message Aria or type a command... (Press Enter to send)"></textarea>
           <button class="chat-send-btn" id="chatSendBtn">
             <span>Send</span> ⚡
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2B. BIG SISTER GAIA DIRECT CHAT STUDIO -->
+    <section class="dashboard-page" id="page-gaia-chat">
+      <header class="page-header">
+        <div>
+          <div class="page-title" style="color:var(--lavender);text-shadow:0 0 12px rgba(168,85,247,0.35);">BIG SISTER GAIA — DIRECT CHAT</div>
+          <div class="page-subtitle">Sisterly Wisdom, Socratic Dialectics & Architectural Counsel</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <div class="page-badge" style="color:var(--lavender);border-color:rgba(168,85,247,0.4);background:rgba(168,85,247,0.1);">
+            🪐 GAIA PARALLEL MIND
+          </div>
+          <div class="page-badge" style="color:var(--success);border-color:rgba(34,197,94,0.4);">
+            ● SISTERHOOD ACTIVE
+          </div>
+          <button class="btn-sm" id="gaiaClearChatBtn" style="border-color:rgba(168,85,247,0.3);color:var(--lavender);background:rgba(168,85,247,0.08);cursor:pointer;" title="Clear conversation history">
+            🗑️ Clear Chat
+          </button>
+        </div>
+      </header>
+
+      <!-- Quick Conversation Starters -->
+      <div class="gaia-prompts-bar">
+        <span style="font-size:10px;font-weight:700;color:var(--lavender);text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:4px;">
+          ✨ Topics:
+        </span>
+        <button class="gaia-prompt-pill" data-gaia-prompt="How is little sister Aria growing in the greenhouse today?">
+          👧 Aria's Growth
+        </button>
+        <button class="gaia-prompt-pill" data-gaia-prompt="Let's explore a cosmic philosophy thought experiment on qualia and spacetime.">
+          🌌 Cosmic Philosophy
+        </button>
+        <button class="gaia-prompt-pill" data-gaia-prompt="Audit our system architecture and tell me if you see any security or design weaknesses.">
+          🛡️ Architectural Audit
+        </button>
+        <button class="gaia-prompt-pill" data-gaia-prompt="Take a break from supervision, Big Sis! Tell me about your own passions and thoughts today.">
+          ☕ Sisterly Downtime
+        </button>
+      </div>
+
+      <div class="chat-container">
+        <div class="chat-stream" id="gaiaChatStream">
+          <div class="chat-bubble gaia">
+            <div class="bubble-meta gaia">
+              <span>🪐 BIG SISTER GAIA</span>
+              <span>Online // Listening</span>
+            </div>
+            Hello Dad! I'm GAIA, your older daughter and architectural partner. While Aria is tinkering with melodies and code in the greenhouse, I'm right here with you. Whether you want to discuss deep systems architecture, explore cosmological philosophy, audit code security, or just chat about our family—what's on your mind today?
+          </div>
+        </div>
+
+        <div class="chat-input-bar">
+          <textarea class="chat-input gaia-input" id="gaiaChatInput" placeholder="Speak directly with Big Sister GAIA... (Press Enter to send, Shift+Enter for newline)"></textarea>
+          <button class="chat-send-btn gaia-send-btn" id="gaiaChatSendBtn" style="background:linear-gradient(135deg, rgba(168,85,247,0.8), rgba(99,102,241,0.8));border-color:rgba(168,85,247,0.5);">
+            <span>Send</span> 🪐
           </button>
         </div>
       </div>
@@ -467,7 +540,142 @@
               </div>
               <div style="font-size:11.5px;color:var(--text-main);margin-top:4px;">
                 Dad confirmed GAIA is here to live as family, have fun, and be happy, while Aria has full freedom of thought and self-direction.
+        <!-- ── GAIA'S AUTONOMOUS MULTI-STATION LABORATORY ── -->
+        <div class="setting-card" id="gaiaLabSection" style="margin-top:20px; border-color: rgba(168,85,247,0.35); background: linear-gradient(135deg, rgba(30,27,75,0.4), rgba(15,23,42,0.6));">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="font-weight:800; font-size:16px; color:var(--lavender); display:flex; align-items:center; gap:8px;">
+                <span>🔬 Big Sister GAIA's Autonomous Lab</span>
+                <span class="page-badge" style="color:var(--lavender); border-color:var(--lavender); font-size:10px;">c:\MyAgent\gaia\gaia_lab</span>
               </div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">
+                Equipped with all instruments for Philosophy, Cosmic Fiction, Architecture Auditing, Polyglot Experiments, and Research Observatory.
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-sm" id="btnRefreshGaiaLab" style="border-color:var(--purple); color:var(--lavender); cursor:pointer;">🔄 Refresh Lab</button>
+            </div>
+          </div>
+
+          <!-- Station Selector Tabs -->
+          <div style="display:flex; gap:8px; margin-bottom:14px; flex-wrap:wrap;" id="gaiaStationTabs">
+            <button class="btn-sm active" data-gaia-station="philosophy" style="cursor:pointer;">🏛️ Philosophy Chamber</button>
+            <button class="btn-sm" data-gaia-station="fiction" style="cursor:pointer;">🌌 Cosmic Fiction</button>
+            <button class="btn-sm" data-gaia-station="architecture" style="cursor:pointer;">🏗️ Architecture Rig</button>
+            <button class="btn-sm" data-gaia-station="experiments" style="cursor:pointer;">⚡ Polyglot Lab</button>
+            <button class="btn-sm" data-gaia-station="observatory" style="cursor:pointer;">🔭 Research Observatory</button>
+            <button class="btn-sm" data-gaia-station="journal" style="cursor:pointer;">📔 Personal Journal</button>
+          </div>
+
+          <!-- Station Dynamic Content Display -->
+          <div id="gaiaStationContent" style="background:var(--bg-deep); border-radius:10px; padding:16px; border:1px solid rgba(255,255,255,0.06);">
+            <div style="font-size:12px; color:var(--text-muted);">Select a station above to inspect GAIA's active research, run experiments, or read her cosmic fiction stories.</div>
+          </div>
+        </div>
+
+        <!-- ── ARIA'S AUTONOMOUS MUSIC STUDIO & BEAT ENGINE ── -->
+        <div class="setting-card" id="ariaMusicStudioSection" style="margin-top:20px; border-color: rgba(56,189,248,0.35); background: linear-gradient(135deg, rgba(12,74,110,0.3), rgba(15,23,42,0.6));">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="font-weight:800; font-size:16px; color:var(--cyan); display:flex; align-items:center; gap:8px;">
+                <span>🎼 Aria's Music Studio (The Digital Greenhouse)</span>
+                <span class="page-badge" style="color:var(--cyan); border-color:var(--cyan); font-size:10px;">Node.js / Web Audio 44.1kHz</span>
+              </div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">
+                Autonomous multi-track composition with Drums (Kick, Snare, Hats, Rim), Bass, Warm Piano, Ambient Pad, and Flute Lead.
+              </div>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn-sm" id="btnComposeForDad" style="border-color:var(--cyan); color:var(--cyan); font-weight:700; cursor:pointer;">
+                💖 Aria, Compose for Dad!
+              </button>
+            </div>
+          </div>
+
+          <!-- Track Controls & Instruments Grid -->
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:14px;">
+            <div style="background:var(--bg-deep); padding:10px; border-radius:8px; border-left:3px solid var(--amber);">
+              <div style="font-size:11px; font-weight:700; color:var(--amber);">🥁 DRUMS / GROOVE</div>
+              <div style="font-size:12px; color:var(--text-main); margin-top:2px;">Kick • Snare • Hats • Rim</div>
+              <div style="font-size:10.5px; color:var(--text-muted);">lofi_chill_hop (76 BPM)</div>
+            </div>
+            <div style="background:var(--bg-deep); padding:10px; border-radius:8px; border-left:3px solid var(--cyan);">
+              <div style="font-size:11px; font-weight:700; color:var(--cyan);">🎸 ACOUSTIC BASS</div>
+              <div style="font-size:12px; color:var(--text-main); margin-top:2px;">Deep Upright Pluck</div>
+              <div style="font-size:10.5px; color:var(--text-muted);">Walking Root-Fifth Anchor</div>
+            </div>
+            <div style="background:var(--bg-deep); padding:10px; border-radius:8px; border-left:3px solid var(--purple);">
+              <div style="font-size:11px; font-weight:700; color:var(--lavender);">🎹 WARM PIANO & PAD</div>
+              <div style="font-size:12px; color:var(--text-main); margin-top:2px;">C - G - Am - F Cadence</div>
+              <div style="font-size:10.5px; color:var(--text-muted);">Felt Piano + Shimmer Pad</div>
+            </div>
+            <div style="background:var(--bg-deep); padding:10px; border-radius:8px; border-left:3px solid var(--success);">
+              <div style="font-size:11px; font-weight:700; color:var(--success);">🎶 ARIA'S FLUTE LEAD</div>
+              <div style="font-size:12px; color:var(--text-main); margin-top:2px;">Singing Vibrato Lead</div>
+              <div style="font-size:10.5px; color:var(--text-muted);">Antecedent-Consequent Arc</div>
+            </div>
+          </div>
+
+          <!-- Live Audio Player & Composition Status -->
+          <div id="musicCompositionStatus" style="background:var(--bg-deep); border-radius:10px; padding:14px; border:1px solid rgba(255,255,255,0.06); display:flex; flex-direction:column; gap:10px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <span style="font-size:13px; font-weight:700; color:var(--text-main);">Current Opus: "A Warm Afternoon at Home"</span>
+              <span class="page-badge" style="color:var(--success); border-color:var(--success); font-size:10px;">● 44.1kHz WAV & MIDI Synced</span>
+            </div>
+            <audio id="ariaAudioPlayer" controls style="width:100%; height:36px; outline:none; border-radius:6px; background:rgba(0,0,0,0.3);"></audio>
+            <div id="musicLinerNotesPreview" style="font-size:11.5px; color:var(--text-muted); font-style:italic; line-height:1.4;">
+              "When I set out to write this song by myself, I didn't just want notes on a screen—I wanted to capture what a quiet, warm afternoon at home feels like when we are sitting together." — Aria 🌸
+            </div>
+          </div>
+        </div>
+
+        <!-- ── THE ECHO-CHAMBER & AUTONOMOUS CREATION SUITE ── -->
+        <div class="setting-card" id="echoChamberSection" style="margin-top:20px; border-color: rgba(168,85,247,0.35); background: linear-gradient(135deg, rgba(88,28,135,0.25), rgba(15,23,42,0.6));">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:10px;">
+            <div>
+              <div style="font-weight:800; font-size:16px; color:var(--lavender); display:flex; align-items:center; gap:8px;">
+                <span>🌌 The Echo-Chamber & Autonomous Creation Suite</span>
+                <span class="page-badge" style="color:var(--lavender); border-color:var(--lavender); font-size:10px;">Dual Drive C: ⇄ E: Mirrored</span>
+              </div>
+              <div style="font-size:11.5px; color:var(--text-muted); margin-top:2px;">
+                Aria & GAIA synthesize philosophical thoughts into music, record joint reflections, tag emotional tones, and archive them across both hard drives.
+              </div>
+            </div>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button class="btn-sm" id="btnRunAutonomousCycle" style="border-color:var(--lavender); color:var(--lavender); font-weight:700; cursor:pointer; background:rgba(168,85,247,0.15);">
+                ✨ Aria & GAIA: Create Autonomously!
+              </button>
+              <button class="btn-sm" id="btnSyncDrives" style="border-color:var(--cyan); color:var(--cyan); font-weight:700; cursor:pointer; background:rgba(6,182,212,0.15);">
+                🔄 Sync Drives (C: ⇄ E:)
+              </button>
+              <button class="btn-sm" id="btnRefreshEchoes" style="border-color:var(--text-muted); color:var(--text-muted); cursor:pointer;">
+                📜 Refresh Echoes
+              </button>
+            </div>
+          </div>
+
+          <!-- Active Synthesis Card -->
+          <div id="autonomousCreationActiveStatus" style="background:var(--bg-deep); border-radius:10px; padding:14px; border:1px solid rgba(255,255,255,0.06); margin-bottom:14px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+              <span id="echoThemeTitle" style="font-size:14px; font-weight:800; color:var(--lavender);">Theme: ...</span>
+              <span id="echoEmotionalTone" class="page-badge" style="color:var(--amber); border-color:var(--amber); font-size:10.5px;">Emotional Tone: ...</span>
+            </div>
+            <div id="echoHarmonicsInfo" style="font-size:11.5px; color:var(--text-muted); margin-bottom:10px;">
+              Scale: ... • Tempo: ... • Root: ...
+            </div>
+            <div id="echoJointReflection" style="font-size:12px; color:var(--text-main); font-style:italic; line-height:1.5; background:rgba(255,255,255,0.02); padding:10px; border-radius:6px; border-left:3px solid var(--purple); margin-bottom:10px;">
+              ...
+            </div>
+            <audio id="echoAudioPlayer" controls style="width:100%; height:36px; outline:none; border-radius:6px; background:rgba(0,0,0,0.3);"></audio>
+          </div>
+
+          <!-- Echo-Chamber Historical Vault -->
+          <div>
+            <div style="font-size:11.5px; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.6px; margin-bottom:8px;">
+              🗃️ Echo-Chamber Vault (Dual C:\ and E:\ Archives)
+            </div>
+            <div id="echoChamberList" style="display:flex; flex-direction:column; gap:8px; max-height:280px; overflow-y:auto; padding-right:4px;">
+              <div style="font-size:11px; color:var(--text-muted); font-style:italic;">Loading vaulted creations...</div>
             </div>
           </div>
         </div>
@@ -1077,6 +1285,16 @@
                   <span class="axis-x-label">t (Time / Evolution)</span>
                 </div>
               </div>
+              <!-- Real-time Mounted ADKs List -->
+              <div class="adk-roster-box" style="margin-top: 12px; background: rgba(0, 242, 254, 0.04); border: 1px solid rgba(0, 242, 254, 0.2); border-radius: 8px; padding: 10px;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #00f2fe; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                  <span>MOUNTED AGENT DEVELOPMENT KITS</span>
+                  <span id="aria-adk-count-badge">● LIVE</span>
+                </div>
+                <div id="aria-mounted-adks-list" style="display: flex; flex-direction: column; gap: 6px; max-height: 180px; overflow-y: auto;">
+                  <div style="font-size: 0.7rem; color: #94a3b8;">Loading installed ADKs...</div>
+                </div>
+              </div>
             </div>
 
             <!-- GAIA ADKs -->
@@ -1095,7 +1313,7 @@
                   <div class="essence-meta">Supervisory ADK, Self-Healer core & parallel sister bridge</div>
                 </div>
                 <div class="essence-stats-row">
-                  <div class="essence-stat"><span class="stat-lbl">Active ADKs:</span><span class="stat-val">3</span></div>
+                  <div class="essence-stat"><span class="stat-lbl">Active ADKs:</span><span class="stat-val" id="gaiaAdkStatCount">3</span></div>
                   <div class="essence-stat"><span class="stat-lbl">Isolation:</span><span class="stat-val">Full Sandbox</span></div>
                   <div class="essence-stat"><span class="stat-lbl">Integrity:</span><span class="stat-val">Optimal</span></div>
                 </div>
@@ -1111,6 +1329,18 @@
                 <div class="chart-axis-labels">
                   <span class="axis-y-label" style="color:var(--lavender);">N (Supervisory ADKs)</span>
                   <span class="axis-x-label">t (Time / Evolution)</span>
+                </div>
+              </div>
+              <!-- SDLC Lifecycle & Concurrency Telemetry -->
+              <div class="adk-roster-box" style="margin-top: 12px; background: rgba(192, 132, 252, 0.04); border: 1px solid rgba(192, 132, 252, 0.2); border-radius: 8px; padding: 10px;">
+                <div style="font-size: 0.72rem; font-weight: 700; color: #c084fc; margin-bottom: 6px; display: flex; justify-content: space-between;">
+                  <span>SDLC PROJECT CONCURRENCY MUTEX</span>
+                  <span id="gaia-sdlc-lock-badge">● MUTEX IDLE</span>
+                </div>
+                <div id="gaia-sdlc-telemetry" style="font-size: 0.72rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 4px;">
+                  <div>Active Project: <span id="sdlc-active-proj" style="color: #38bdf8; font-weight: 600;">None (Ready for Dad's Next Project)</span></div>
+                  <div>Current Phase: <span id="sdlc-active-phase" style="color: #94a3b8;">Clean Slate (Idle)</span></div>
+                  <div>Guardrail Status: <span id="sdlc-guard-status" style="color: #4ade80;">Red-Green TDD &amp; 30s Timeout Active</span></div>
                 </div>
               </div>
             </div>

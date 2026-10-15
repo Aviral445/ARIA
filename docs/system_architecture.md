@@ -117,7 +117,7 @@ graph TD
 
     %% 6. Infrastructure & Hardware Foundations
     subgraph L6["6. Infrastructure & Hardware Foundations"]
-        Orchestration["Container Orchestration (Kubernetes / Docker)"]:::infra
+        Orchestration["Zero-Docker Orchestration (Cloudflare Tunnel + OS Subprocess Sandbox)"]:::infra
         OS["Host Kernel / OS (Linux / Windows Enterprise)"]:::infra
         Hardware["Bare Metal / Hypervisor / Cloud Compute (vCPU, RAM, NVMe)"]:::infra
     end
@@ -155,24 +155,24 @@ graph TD
 |---|---|---|---|---|
 | **L1: Client** | `Desktop` | Cyberpunk Holographic HUD | `electron/` (Chromium + Node.js shell) | Electron Windows / macOS App |
 | | `Mobile` | Mobile Remote Companion | `tools/aria_android.py` (ADB over Wi-Fi) | Flutter / React Native App |
-| | `Web` | Browser Web Interface | Web portal bound to `aria_api.py:8000` | Next.js / React SPA on Vercel |
+| | `Web` | Browser Web Interface | Web portal bound to `aria_api.py:8000` | Next.js / React SPA on Cloudflare Pages |
 | | `IoT` | Smart Home & Hardware | `aria_extended.py` (Home Assistant Webhooks) | MQTT / Zigbee Gateway |
-| **L2: Edge** | `APIGW` | API Gateway & Routing | `core/aria_api.py` (FastAPI routing & CORS) | Kong Gateway / NGINX Ingress |
-| | `Auth` | Authentication & RBAC | `core/aria_auth.py` (Admin `L` vs Guest token) | Keycloak / Auth0 OAuth2 OIDC |
-| | `WAF / CDN` | Edge Protection & Speed | FastAPI rate limiters & static caching | Cloudflare Enterprise WAF |
-| **L3: Compute** | `AgentOrch` | Agentic & AI Orchestrator | `core/aria_adk.py` & `aria_adk_manager.py` | Ray / Celery Agent Cluster |
-| | `CoreAPI` | Business & Assistant Logic | `core/aria_api.py` (:8000) & `agent_core.py` | FastAPI Microservices in K8s |
-| | `WorkerFleet`| Subprocesses & TDD | `core/aria_sdlc_engine.py` (30s isolated workers) | Kubernetes Jobs / Temporal Workers |
+| **L2: Edge** | `APIGW` | API Gateway & Routing | `core/aria_api.py` (FastAPI routing & CORS) | Cloudflare Tunnel (`cloudflared`) + Workers |
+| | `Auth` | Authentication & RBAC | `core/aria_auth.py` (Admin `L` vs Guest token) | Cloudflare Zero Trust Access / OAuth2 OIDC |
+| | `WAF / CDN` | Edge Protection & Speed | FastAPI rate limiters & static caching | Cloudflare Enterprise WAF & Edge Cache |
+| **L3: Compute** | `AgentOrch` | Agentic & AI Orchestrator | `core/aria_adk.py` & `aria_adk_manager.py` | Ray / Celery Agent Cluster / Cloudflare Workers |
+| | `CoreAPI` | Business & Assistant Logic | `core/aria_api.py` (:8000) & `agent_core.py` | FastAPI Microservices + Cloudflare Serverless |
+| | `WorkerFleet`| Subprocesses & TDD | `core/aria_sdlc_engine.py` (30s isolated workers) | Temporal Workers / Pyodide & Wasm Isolates |
 | | `Ingestion` | Live Telemetry Ingestion | `gaia/gaia_bus.py` in-memory event streaming | Vector / Logstash Ingestion |
 | **L4: State** | `StateLock` | Concurrency Lock | `data/active_project_lock.json` | Redis Distributed Redlock |
-| | `Queue` | Event Bus & Messaging | `gaia/gaia_bus.py` & `core/big_bro_bridge.py` | Apache Kafka / RabbitMQ |
-| | `Cache` | In-Memory Hot Cache | `core/aria_skills_manager.py` mtime cache | Redis Cluster (ElastiCache) |
-| **L5: Storage** | `VectorDB` | Embeddings & RAG | `data/chroma/` (ChromaDB + all-MiniLM-L6-v2) | Managed Pinecone / Chroma Cluster |
-| | `NoSQL` | Document State & Ledgers | `data/chat_sessions.json`, `project_ledger.json` | MongoDB / DynamoDB |
-| | `RDBMS` | ACID Structured Data | SQLite / Structured Python Schemas | Amazon RDS PostgreSQL |
-| | `ObjStore` | Artifacts & Receipts | `E:\ARIA FILES\` & Feature #54 Receipts | AWS S3 / MinIO Object Storage |
+| | `Queue` | Event Bus & Messaging | `gaia/gaia_bus.py` & `core/big_bro_bridge.py` | Apache Kafka / Cloudflare Queues |
+| | `Cache` | In-Memory Hot Cache | `core/aria_skills_manager.py` mtime cache | Redis Cluster / Cloudflare KV |
+| **L5: Storage** | `VectorDB` | Embeddings & RAG | `data/chroma/` (ChromaDB + all-MiniLM-L6-v2) | Managed Pinecone / Cloudflare Vectorize |
+| | `NoSQL` | Document State & Ledgers | `data/chat_sessions.json`, `project_ledger.json` | Cloudflare D1 (Serverless Edge SQLite) |
+| | `RDBMS` | ACID Structured Data | SQLite / Structured Python Schemas | Serverless Postgres (Neon) / Cloudflare D1 |
+| | `ObjStore` | Artifacts & Receipts | `E:\ARIA FILES\` & Feature #54 Receipts | Backblaze B2 (S3-compatible, 10GB free, Bandwidth Alliance) |
 | | `DataWarehouse`| Insights & Analytics | `data/project_insights.json` | ClickHouse / Snowflake |
-| **L6: Infra** | `Orchestration`| Execution Isolation | Python subprocess sandbox & AST isolation | Kubernetes (EKS/GKE) + Docker |
+| **L6: Infra** | `Orchestration`| Execution Isolation & Ingress | Python subprocess sandbox & AST isolation + Cloudflare Tunnel | Zero-Docker: Cloudflare Tunnel + Native Subprocess/Wasm Isolates |
 | | `OS` | Host Operating System | Windows 11 Enterprise (x64) | Ubuntu Linux LTS / Windows Server |
 | | `Hardware` | Compute & Accelerators | Intel Core / AMD CPU + NVIDIA RTX GPU + NVMe | Bare Metal GPU Nodes (A100/H100) |
 
@@ -370,22 +370,34 @@ def _atomic_write(file_path: str, content: str) -> bool:
 
 ---
 
-## 7. Multi-Device Network Architecture
+## 7. Multi-Device & Cloudflare Edge Network Architecture
 
 ```mermaid
 graph TD
-    subgraph Local Area Network 192.168.x.x
+    subgraph Cloudflare Edge & Global Anycast
+        UserRemote[Remote Phone / Web Browser] --> CFEdge[Cloudflare Edge Network / WAF]
+        CFEdge --> CFAccess[Cloudflare Zero Trust Access]
+        CFAccess --> QuickTunnel[Cloudflare Quick / Named Tunnel]
+    end
+
+    subgraph Local Workstation (Host PC)
+        Cloudflared[cloudflared daemon (~30MB binary)]
         Server[FastAPI Server on Host PC :8000]
         HostBrowser[Host PC Browser / Electron HUD localhost:8000]
-        PhoneBrowser[Mobile Phone Browser 192.168.1.x:8000]
+        PhoneBrowser[Mobile Phone Browser on LAN 192.168.x.x:8000]
         PhoneADB[Android ADB Wireless Daemon :5555]
         
+        QuickTunnel <== Encrypted WireGuard/QUIC Tunnel ==> Cloudflared
+        Cloudflared <== Local HTTP/WS ==> Server
         HostBrowser <== WebSocket / HTTP ==> Server
         PhoneBrowser <== WebSocket / HTTP ==> Server
         Server <== TCP/IP ADB Commands ==> PhoneADB
     end
 ```
 
-- **Network Binding**: Binds to `0.0.0.0:8000` with local IP auto-discovery (`get_local_ip()`).
-- **Session Authentication**: Token-based authentication (`aria_auth.py`). Validated sessions distinguish between Master Admin (`L`) and Guest users.
-- **CORS & Multi-Device Security**: Strict CORS headers permitting local host and approved LAN devices.
+- **Zero-Docker Ingress**: Remote access does not require running Nginx, Traefik, or reverse-proxy Docker containers. A lightweight single binary (`cloudflared`) creates an outbound encrypted tunnel to Cloudflare's edge.
+- **Zero Port Forwarding & DDoS Defense**: The local router requires zero exposed ports or dynamic DNS. Cloudflare protects the endpoint with edge rate-limiting and DDoS mitigation.
+- **Local LAN Fallback**: For offline or low-latency home use, binds to `0.0.0.0:8000` with local IP auto-discovery (`get_local_ip()`).
+- **Session Authentication**: Token-based authentication (`aria_auth.py`) coupled with Cloudflare Access policies distinguishes between Master Admin (`L`) and Guest users.
+- **CORS & Multi-Device Security**: Strict CORS headers permitting local host, LAN subnets, and Cloudflare tunnel origins.
+

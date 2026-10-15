@@ -40,6 +40,11 @@ SANDBOX_INCIDENTS_DIR = os.path.join(SANDBOX_DIR, "incidents")
 
 # Cognitive Telemetry & Inner Mind (Nested under data/)
 INNER_MIND_DIR = os.path.join(DATA_DIR, "inner_mind")
+RECORDINGS_DIR = os.path.join(DATA_DIR, "recordings")
+try:
+    os.makedirs(RECORDINGS_DIR, exist_ok=True)
+except Exception:
+    pass
 
 # Evolution & Baseline Paths
 ARIA_EVOLVED_DIR = r"E:\MyAgent" if os.path.exists(r"E:\MyAgent") else SANDBOX_DIR
